@@ -156,4 +156,15 @@ class UserModel
         $stmt->bind_param("sssi", $name, $email, $img_perfil, $id);
         return $stmt->execute();
     }
+
+    /**
+     * Registra un usuario solo si el email no existe.
+     * Retorna 'ok' si creó, 'exists' si ya estaba, 'error' si falló.
+     */
+    public function registerIfNotExists(string $username, string $email, string $password, string $role = 'Cliente'): string
+    {
+        $exists = $this->findByEmail($email);
+        if ($exists) return 'exists';
+        return $this->createUser($username, $email, $password, $role) ? 'ok' : 'error';
+    }
 }

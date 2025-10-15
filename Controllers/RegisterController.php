@@ -35,6 +35,8 @@ class RegisterController
 
     public function RegisterAdmin()
     {
+        // Solo un Administrador puede acceder a esta acción (GET/POST)
+        Auth::checkRole('Administrador');
         $user = Auth::user();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $username = $_POST['name'] ?? '';
@@ -60,51 +62,31 @@ class RegisterController
         $db = new Database();
         $db->connectDatabase();
         $userModel = new UserModel($db->getConnection());
-        $existingUser = $userModel->findByEmail($email);
-        if ($existingUser) {
-            // Si ya existe y venimos del flujo admin, no mandamos al registro público
-            $u = Auth::user();
-            $ref = $_SERVER['HTTP_REFERER'] ?? '';
-            $isAdminCtx = ($u && (($u['role'] ?? '') === 'Administrador')) || (strpos($ref, 'Register/RegisterAdmin') !== false);
-            if ($isAdminCtx) {
-                header("Location: /ProyectoPandora/Public/index.php?route=Register/RegisterAdmin&error=EmailYaRegistrado");
-            } else {
-                header("Location: /ProyectoPandora/Public/index.php?route=Register/Register&error=EmailYaRegistrado");
-            }
+        $role = ($email === 'admin@admin.com') ? 'Administrador' : 'Cliente';
+        $res = $userModel->registerIfNotExists($username, $email, $password, $role);
+        if ($res === 'exists') {
+            header("Location: /ProyectoPandora/Public/index.php?route=Register/Register&error=EmailYaRegistrado");
             exit;
         }
-
-        $role = ($email === 'admin@admin.com') ? 'Administrador' : 'Cliente';
-
-        if ($userModel->createUser($username, $email, $password, $role)) {
-            return "User registered successfully.";
-        } else {
-            return "Error registering user.";
-        }
+        return $res === 'ok' ? 'User registered successfully.' : 'Error registering user.';
     }
 
     public function RegisterUserWithRole($username, $email, $password, $role)
     {
+        // Defensa en profundidad: aunque esta ruta ya está protegida, validamos aquí también
+        Auth::checkRole('Administrador');
         $db = new Database();
         $db->connectDatabase();
         $userModel = new UserModel($db->getConnection());
 
-        $existingUser = $userModel->findByEmail($email);
-        if ($existingUser) {
-            // Detección robusta de contexto admin: por rol en sesión o referer
-            $u = Auth::user();
-            $ref = $_SERVER['HTTP_REFERER'] ?? '';
-            $isAdminCtx = ($u && (($u['role'] ?? '') === 'Administrador')) || (strpos($ref, 'Register/RegisterAdmin') !== false);
-            if ($isAdminCtx) {
-                // Desde panel admin: devolver a la lista con aviso (o de vuelta al form admin, si prefieres)
-                header("Location: /ProyectoPandora/Public/index.php?route=Admin/ListarUsers&info=EmailYaRegistrado");
-            } else {
-                header("Location: /ProyectoPandora/Public/index.php?route=Register/Register&error=EmailYaRegistrado");
-            }
+        $res = $userModel->registerIfNotExists($username, $email, $password, $role);
+        if ($res === 'exists') {
+            // Simples y consistentes: volver al formulario de registro admin con error
+            header("Location: /ProyectoPandora/Public/index.php?route=Register/RegisterAdmin&error=EmailYaRegistrado");
             exit;
         }
 
-        if ($userModel->createUser($username, $email, $password, $role)) {
+        if ($res === 'ok') {
             
             if (strcasecmp($role, 'Tecnico') === 0) {
                 require_once __DIR__ . '/../Models/Rating.php';
