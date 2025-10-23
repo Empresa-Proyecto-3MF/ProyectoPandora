@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../../Core/Auth.php';
+require_once __DIR__ . '/../../Core/I18n.php';
+I18n::boot();
 $authUser = Auth::user();
 $rol = $authUser['role'] ?? '';
 $name = $authUser['name'] ?? '';
@@ -32,46 +34,48 @@ function isHomeRoute(string $route): bool {
 }
 // Meta dinámica por ruta (título/subtítulo)
 function headerMeta(string $route, string $rol): array {
-	$title = 'Home Portal';
-	$subtitle = 'Bienvenido al sistema';
+	$titleKey = 'header.default.title';
+	$subtitleKey = 'header.default.subtitle';
 	switch (true) {
 		case stripos($route, 'Default/Index') === 0:
-			$title = 'Home'; $subtitle = 'Resumen y accesos rápidos'; break;
+			$titleKey = 'header.home.title'; $subtitleKey = 'header.home.subtitle'; break;
 		case stripos($route, 'EstadoTicket/') === 0:
-			$title = 'Estados de tickets'; $subtitle = 'Definiciones, flujos y transiciones'; break;
+			$titleKey = 'header.estados.title'; $subtitleKey = 'header.estados.subtitle'; break;
 		case stripos($route, 'Historial/') === 0:
-			$title = 'Historial del sistema'; $subtitle = 'Acciones registradas y filtros'; break;
+			$titleKey = 'header.historial.title'; $subtitleKey = 'header.historial.subtitle'; break;
 		case stripos($route, 'Admin/') === 0:
-			$title = 'Administración'; $subtitle = 'Gestión de usuarios y ajustes'; break;
+			$titleKey = 'header.admin.title'; $subtitleKey = 'header.admin.subtitle'; break;
 		case stripos($route, 'Supervisor/Asignar') === 0:
-			$title = 'Asignación de técnicos'; $subtitle = 'Tickets pendientes y carga de trabajo'; break;
+			$titleKey = 'header.asignar.title'; $subtitleKey = 'header.asignar.subtitle'; break;
 		case stripos($route, 'Supervisor/Presupuestos') === 0:
-			$title = 'Presupuestos'; $subtitle = 'Repuestos, mano de obra y aprobaciones'; break;
+			$titleKey = 'header.presupuestos.title'; $subtitleKey = 'header.presupuestos.subtitle'; break;
 		case stripos($route, 'Supervisor/GestionInventario') === 0:
-			$title = 'Inventario'; $subtitle = 'Ítems, stock y categorías'; break;
+			$titleKey = 'header.inventario.title'; $subtitleKey = 'header.inventario.subtitle'; break;
 		case stripos($route, 'Tecnico/MisRepuestos') === 0:
-			$title = 'Mis repuestos'; $subtitle = 'Solicitudes, consumos y stock asignado'; break;
+			$titleKey = 'header.tecnico.repuestos.title'; $subtitleKey = 'header.tecnico.repuestos.subtitle'; break;
 		case stripos($route, 'Tecnico/MisReparaciones') === 0:
-			$title = 'Mis reparaciones'; $subtitle = 'Trabajos en curso y pendientes'; break;
+			$titleKey = 'header.tecnico.reparaciones.title'; $subtitleKey = 'header.tecnico.reparaciones.subtitle'; break;
 		case stripos($route, 'Tecnico/MisStats') === 0:
-			$title = 'Mis estadísticas'; $subtitle = 'Rendimiento y métricas'; break;
+			$titleKey = 'header.tecnico.stats.title'; $subtitleKey = 'header.tecnico.stats.subtitle'; break;
 		case stripos($route, 'Cliente/MisDevice') === 0:
-			$title = 'Mis dispositivos'; $subtitle = 'Equipos registrados y tickets'; break;
+			$titleKey = 'header.cliente.devices.title'; $subtitleKey = 'header.cliente.devices.subtitle'; break;
 		case stripos($route, 'Cliente/MisTicket') === 0:
-			$title = 'Mis tickets'; $subtitle = 'Seguimiento y estado'; break;
+			$titleKey = 'header.cliente.tickets.title'; $subtitleKey = 'header.cliente.tickets.subtitle'; break;
 		case stripos($route, 'Ticket/') === 0:
-			$title = 'Tickets'; $subtitle = 'Listado y gestión'; break;
+			$titleKey = 'header.tickets.title'; $subtitleKey = 'header.tickets.subtitle'; break;
 		case stripos($route, 'Inventario/') === 0:
-			$title = 'Inventario'; $subtitle = 'Consulta y administración'; break;
+			$titleKey = 'header.inventario.title'; $subtitleKey = 'header.inventario.subtitle'; break;
 		case stripos($route, 'Device/') === 0:
-			$title = 'Dispositivos'; $subtitle = 'Gestión y categorías'; break;
+			$titleKey = 'header.device.title'; $subtitleKey = 'header.device.subtitle'; break;
 		case stripos($route, 'Default/Guia') === 0:
-			$title = 'Guía de uso'; $subtitle = 'Cómo utilizar Innovasys'; break;
+			$titleKey = 'header.guia.title'; $subtitleKey = 'header.guia.subtitle'; break;
 	}
-	return [$title, $subtitle];
+	return [$titleKey, $subtitleKey];
 }
 
-list($title, $subtitle) = headerMeta($route, $rol);
+list($titleKey, $subtitleKey) = headerMeta($route, $rol);
+$title = __($titleKey);
+$subtitle = __($subtitleKey);
 ?>
 <!-- Estilos del header consolidados en AdminDash.css -->
 
@@ -80,7 +84,10 @@ list($title, $subtitle) = headerMeta($route, $rol);
 		<div class="hero-left">
 			<?php if (isHomeRoute($route)): ?>
 				<p class="hero-greet">
-					<?= $authUser ? '¡Hola, '.htmlspecialchars($name).'!' : 'Bienvenido a Innovasys'; ?>
+					<?= $authUser 
+						? __('header.greet.hello', ['name' => htmlspecialchars($name)]) 
+						: __('header.greet.welcome', ['app' => __('app.name')]) 
+					?>
 				</p>
 			<?php endif; ?>
 			<p class="hero-sub">
@@ -88,19 +95,36 @@ list($title, $subtitle) = headerMeta($route, $rol);
 			</p>
 		</div>
 		<div class="hero-actions">
-			<?php if (stripos($route, 'Cliente/MisTicket') === 0 || stripos($route, 'Cliente/MisTicketActivo') === 0 || stripos($route, 'Cliente/MisTicketTerminados') === 0): ?>
-				<a href="/ProyectoPandora/Public/index.php?route=Cliente/MisTicketActivo" class="btn btn-outline small" title="Ver activos">Activos</a>
-				<a href="/ProyectoPandora/Public/index.php?route=Cliente/MisTicketTerminados" class="btn btn-outline small" title="Ver finalizados">Finalizados</a>
-			<?php endif; ?>
-		</div>
-	</div>
-	<div class="hamburger" id="menuToggle">
-		<span></span>
-		<span></span>
-		<span></span>
-	</div>
+			<?php 
+			// Unread count minimal (no JSON): calcular rápido solo cuando hay usuario
+			$unread = 0; 
+			if ($authUser) {
+				require_once __DIR__ . '/../../Core/Database.php';
+				require_once __DIR__ . '/../../Models/Notification.php';
+				$dbh = new Database(); $dbh->connectDatabase();
+				$nm = new NotificationModel($dbh->getConnection());
+				$unread = $nm->countUnread((int)$authUser['id'], (string)$authUser['role']);
+			}
+			?>
+			<?php if ($authUser): ?>
+			<a href="/ProyectoPandora/Public/index.php?route=Notification/Index" class="notif-btn" title="Notificaciones" id="notifBell">
+				<i class='bx bx-bell'></i>
+				<span class="notif-badge" id="notifBadge" style="display: <?= ($unread>0?'inline-block':'none') ?>;">
+					<?= (int)$unread ?>
+				</span>
+			</a>
 
+			<?php endif; ?>
+			
+		</div>
+  </div>
+
+	<div class="hamburger" id="menuToggle">
+    <span></span><span></span><span></span>
+  </div>
 </header>
+
+
 <script>
 	const menuBtn = document.getElementById('menuToggle');
 const sidebar = document.querySelector('.sidebar');
@@ -111,3 +135,40 @@ menuBtn.addEventListener('click', () => {
 });
 
 </script>
+<script>
+  const badge = document.getElementById('notifBadge');
+  const bell = document.getElementById('notifBell');
+  if (badge && badge.style.display !== 'none') {
+    bell.classList.add('shake');
+    setTimeout(() => bell.classList.remove('shake'), 1200);
+  }
+</script>
+
+<?php if ($authUser): ?>
+<script>
+	// Polling sencillo cada 10 segundos para actualizar el contador del badge
+	(function(){
+		const badge = document.getElementById('notifBadge');
+		if (!badge) return;
+		const refresh = () => {
+			fetch('/ProyectoPandora/Public/index.php?route=Notification/Count', { cache: 'no-store' })
+				.then(r => r.ok ? r.text() : '0')
+				.then(txt => {
+					const n = parseInt((txt||'0').trim(), 10);
+					if (isNaN(n) || n <= 0) {
+						badge.style.display = 'none';
+						badge.textContent = '0';
+					} else {
+						badge.style.display = 'inline-block';
+						badge.textContent = String(n);
+					}
+				})
+				.catch(() => {/* noop */});
+		};
+		// Primera carga inmediata y luego cada 10s
+		refresh();
+		setInterval(refresh, 10000);
+	})();
+</script>
+<?php endif; ?>
+<!-- Auto-refresh global deshabilitado: la UI se actualiza por AJAX en puntos específicos -->

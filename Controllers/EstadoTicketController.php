@@ -33,7 +33,7 @@ public function listar()
 
                 $user = Auth::user();
                 $accion = "Creación de estado de ticket";
-                $detalle = "Usuario {$user['name']} creó el estado '{$name}'";
+                $detalle = "{$user['name']} creó el estado de ticket '{$name}'.";
                 $this->historialController->agregarAccion($accion, $detalle);
 
                 header('Location: /ProyectoPandora/Public/index.php?route=EstadoTicket/ListarEstados');
@@ -83,7 +83,7 @@ public function listar()
 
             $user = Auth::user();
             $accion = "Eliminación de estado de ticket";
-            $detalle = "Usuario {$user['name']} eliminó el estado ID {$id}";
+            $detalle = "{$user['name']} eliminó el estado (ID {$id}).";
             $this->historialController->agregarAccion($accion, $detalle);
 
             header('Location: /ProyectoPandora/Public/index.php?route=EstadoTicket/ListarEstados');

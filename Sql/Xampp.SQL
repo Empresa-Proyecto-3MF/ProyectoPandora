@@ -22,6 +22,8 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS estados_tickets;
 DROP TABLE IF EXISTS categorias_inventario;
 DROP TABLE IF EXISTS categorias;
+DROP TABLE IF EXISTS notification_user;
+DROP TABLE IF EXISTS notifications;
 SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE categorias (
@@ -225,16 +227,7 @@ CREATE TABLE pagos (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
-CREATE TABLE mail_queue (
-    id INT(11) NOT NULL AUTO_INCREMENT,
-    recipient VARCHAR(150) NOT NULL,
-    subject VARCHAR(200) NOT NULL,
-    body TEXT NOT NULL,
-    status ENUM('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    sent_at DATETIME NULL,
-    PRIMARY KEY (id)
-);
+-- mail_queue removido: no se implementará
 
 CREATE TABLE ticket_ratings (
     id INT(11) NOT NULL AUTO_INCREMENT,
@@ -263,6 +256,31 @@ CREATE TABLE tecnico_stats (
     FOREIGN KEY (tecnico_id) REFERENCES tecnicos(id) ON DELETE CASCADE
 );
 
+-- Notificaciones
+CREATE TABLE notifications (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    title VARCHAR(150) NOT NULL,
+    body TEXT NOT NULL,
+    audience ENUM('ALL','ROLE','USER') NOT NULL DEFAULT 'ALL',
+    audience_role ENUM('Cliente','Tecnico','Supervisor','Administrador') NULL,
+    target_user_id INT(11) NULL,
+    created_by INT(11) NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE notification_user (
+    notification_id INT(11) NOT NULL,
+    user_id INT(11) NOT NULL,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    read_at DATETIME NULL,
+    PRIMARY KEY (notification_id, user_id),
+    FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 DELIMITER $$
 CREATE TRIGGER trigger_insertar_usuario_por_rol
 AFTER INSERT ON users
@@ -283,26 +301,26 @@ CREATE TRIGGER trigger_actualizar_usuario_por_rol
 AFTER UPDATE ON users
 FOR EACH ROW
 BEGIN
-    
-    IF OLD.role = 'Cliente' THEN
-        DELETE FROM clientes WHERE user_id = OLD.id;
-    ELSEIF OLD.role = 'Tecnico' THEN
-        DELETE FROM tecnicos WHERE user_id = OLD.id;
-    ELSEIF OLD.role = 'Supervisor' THEN
-        DELETE FROM supervisores WHERE user_id = OLD.id;
-    ELSEIF OLD.role = 'Administrador' THEN
-        DELETE FROM administradores WHERE user_id = OLD.id;
-    END IF;
+    IF OLD.role <> NEW.role THEN
+        IF OLD.role = 'Cliente' THEN
+            DELETE FROM clientes WHERE user_id = OLD.id;
+        ELSEIF OLD.role = 'Tecnico' THEN
+            DELETE FROM tecnicos WHERE user_id = OLD.id;
+        ELSEIF OLD.role = 'Supervisor' THEN
+            DELETE FROM supervisores WHERE user_id = OLD.id;
+        ELSEIF OLD.role = 'Administrador' THEN
+            DELETE FROM administradores WHERE user_id = OLD.id;
+        END IF;
 
-    
-    IF NEW.role = 'Cliente' THEN
-        INSERT INTO clientes(user_id) VALUES (NEW.id);
-    ELSEIF NEW.role = 'Tecnico' THEN
-        INSERT INTO tecnicos(user_id, disponibilidad) VALUES (NEW.id, 'Disponible');
-    ELSEIF NEW.role = 'Supervisor' THEN
-        INSERT INTO supervisores(user_id) VALUES (NEW.id);
-    ELSEIF NEW.role = 'Administrador' THEN
-        INSERT INTO administradores(user_id) VALUES (NEW.id);
+        IF NEW.role = 'Cliente' THEN
+            INSERT INTO clientes(user_id) VALUES (NEW.id);
+        ELSEIF NEW.role = 'Tecnico' THEN
+            INSERT INTO tecnicos(user_id, disponibilidad) VALUES (NEW.id, 'Disponible');
+        ELSEIF NEW.role = 'Supervisor' THEN
+            INSERT INTO supervisores(user_id) VALUES (NEW.id);
+        ELSEIF NEW.role = 'Administrador' THEN
+            INSERT INTO administradores(user_id) VALUES (NEW.id);
+        END IF;
     END IF;
 END $$
 DELIMITER ;

@@ -111,4 +111,14 @@ class DeviceModel
         $stmt->bind_param('ii', $deviceId, $userId);
         return $stmt->execute();
     }
+
+    public function countDevicesByCategory(int $categoryId): int
+    {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM dispositivos WHERE categoria_id = ?");
+        if (!$stmt) return 0;
+        $stmt->bind_param('i', $categoryId);
+        $stmt->execute();
+        $res = $stmt->get_result()->fetch_assoc();
+        return $res ? (int)$res['total'] : 0;
+    }
 }

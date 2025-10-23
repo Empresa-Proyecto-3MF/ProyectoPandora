@@ -1,4 +1,4 @@
-@startuml UC01_Crear_Ticket
+@startuml Crear_Ticket
 left to right direction
 skinparam actorStyle awesome
 skinparam shadowing false

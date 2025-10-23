@@ -6,7 +6,7 @@
             <div class="contact-form">
                 <h3>Editar Ticket</h3>
 
-                <form id="formActualizar" method="POST" action="/ProyectoPandora/Public/index.php?route=Ticket/Actualizar">
+                <form id="formActualizar" method="POST" action="/ProyectoPandora/Public/index.php?route=Ticket/Actualizar" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="<?= htmlspecialchars($ticket['id'] ?? '') ?>">
 
                     
@@ -57,7 +57,22 @@
                         </p>
                     <?php endif; ?>
 
-                    <p class="block">
+                    <fieldset style="margin-top:12px;">
+                        <legend>Fotos del ticket</legend>
+                        <p class="block">
+                            <label for="fotos">Agregar/editar fotos (puede seleccionar múltiples)</label>
+                            <input type="file" id="fotos" name="fotos[]" accept="image/*" multiple />
+                        </p>
+                        <?php if (!empty($fotos ?? [])): ?>
+                            <div class="galeria-slider" style="display:flex; gap:8px; overflow-x:auto; padding:6px 0;">
+                                <?php foreach (($fotos ?? []) as $src): ?>
+                                    <img src="<?= htmlspecialchars($src) ?>" alt="Foto ticket" style="height:120px; border-radius:8px; object-fit:cover;"/>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </fieldset>
+
+                    <p class="block" style="margin-top:12px;">
                         <button type="submit">Guardar Cambios</button>
                     </p>
                 </form>

@@ -63,8 +63,9 @@
                         </p>
 
                         <p>
-                            <label for="img_dispositivo">Imagen del Dispositivo:</label>
-                            <input type="file" id="img_dispositivo" name="img_dispositivo" accept="image/*" required>
+                            <label for="img_dispositivo">Imagen del Dispositivo (opcional):</label>
+                            <input type="file" id="img_dispositivo" name="img_dispositivo" accept="image/*">
+                            <small>Si no adjuntas una imagen, usaremos una por defecto (NoFoto.jpg).</small>
                         </p>
 
                         <p class="block">
@@ -77,7 +78,7 @@
                 $user = $_SESSION['user'] ?? null;
                 $rol = $user['role'] ?? '';
                 if ($rol === 'Administrador') {
-                    $volverUrl = "/ProyectoPandora/Public/index.php?route=Device/ListarDevice";
+                    $volverUrl = "/ProyectoPandora/Public/index.php?route=Default/Index";
                 } elseif ($rol === 'Cliente') {
                     $volverUrl = "/ProyectoPandora/Public/index.php?route=Cliente/MisDevice";
                 } else {

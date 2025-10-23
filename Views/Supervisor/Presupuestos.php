@@ -1,4 +1,5 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+<?php require_once __DIR__ . '/../../Core/LogFormatter.php'; ?>
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 <div class="Contenedor">
@@ -9,6 +10,13 @@
             <input type="number" name="ticket_id" id="ticket_id" min="1" 
                    value="<?= htmlspecialchars($_GET['ticket_id'] ?? '') ?>" 
                    class="asignar-input asignar-input--small"/>
+            <?php $cierreSel = strtolower($_GET['cierre'] ?? 'todos'); ?>
+            <label for="cierre">Cierre</label>
+            <select name="cierre" id="cierre" class="asignar-input asignar-input--small">
+                <option value="todos" <?= $cierreSel==='todos'?'selected':'' ?>>Todos</option>
+                <option value="activos" <?= $cierreSel==='activos'?'selected':'' ?>>No finalizados</option>
+                <option value="finalizados" <?= $cierreSel==='finalizados'?'selected':'' ?>>Finalizados</option>
+            </select>
             <button class="btn btn-outline" type="submit">Filtrar</button>
             <a href="/ProyectoPandora/Public/index.php?route=Supervisor/Presupuestos" class="btn btn-outline">Limpiar</a>
         </form>
@@ -71,8 +79,8 @@
                                     <td><?= htmlspecialchars($it['name_item']) ?></td>
                                     <td><?= htmlspecialchars($it['categoria']) ?></td>
                                     <td><?= (int)$it['cantidad'] ?></td>
-                                    <td>$<?= number_format((float)$it['valor_unitario'], 2, '.', ',') ?></td>
-                                    <td>$<?= number_format((float)$it['valor_total'], 2, '.', ',') ?></td>
+                                    <td><?= LogFormatter::monto((float)$it['valor_unitario']) ?></td>
+                                    <td><?= LogFormatter::monto((float)$it['valor_total']) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                             <?php endif; ?>
@@ -80,7 +88,7 @@
                     </table>
 
                     <div class="presu-totales">
-                        <div>Subtotal repuestos: <strong>$<?= number_format($p['subtotal_items'], 2, '.', ',') ?></strong></div>
+                        <div>Subtotal repuestos: <strong><?= LogFormatter::monto((float)$p['subtotal_items']) ?></strong></div>
 
                         <?php 
                             $sEstado = strtolower(trim($t['estado'] ?? ''));
@@ -96,24 +104,32 @@
                                        class="asignar-input asignar-input--small"/>
                                 <span class="badge badge--warning">Solo En Diagnóstico</span>
                             <?php else: ?>
-                                <span><strong>$<?= number_format((float)$p['mano_obra'], 2, '.', ',') ?></strong></span>
+                                <span><strong><?= LogFormatter::monto((float)$p['mano_obra']) ?></strong></span>
                                 <span class="badge <?= $laborDef ? 'badge--success' : 'badge--warning' ?>">
                                     <?= $laborDef ? 'Ya Definida' : 'Solo En Diagnóstico' ?>
                                 </span>
                             <?php endif; ?>
                         </div>
 
-                        <div>Total: <strong>$<?= number_format($p['total'], 2, '.', ',') ?></strong></div>
+                        <div>Total: <strong><?= LogFormatter::monto((float)$p['total']) ?></strong></div>
 
-                        <?php $ready = ($p['subtotal_items'] > 0 && $p['mano_obra'] > 0); ?>
-                        <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/PublicarPresupuesto" 
-                              style="margin-top:8px;display:flex;gap:8px;align-items:center;">
-                            <input type="hidden" name="ticket_id" value="<?= (int)$t['id'] ?>"/>
-                            <button class="btn btn-outline" type="submit" <?= $ready ? '' : 'disabled' ?>>Publicar presupuesto</button>
-                            <?php if (!$ready): ?>
-                                <span class="badge badge--danger">Faltan datos: <?= $p['mano_obra'] <= 0 ? 'Mano de obra' : '' ?></span>
-                            <?php endif; ?>
-                        </form>
+                        <?php 
+                            $ready = ($p['subtotal_items'] > 0 && $p['mano_obra'] > 0);
+                            $yaPublicado = ($sEstado === 'presupuesto');
+                            $postAprobacion = in_array($sEstado, ['en reparación','en reparacion','en pruebas','listo para retirar','finalizado','cancelado'], true);
+                        ?>
+                        <?php if (!$postAprobacion): ?>
+                            <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/PublicarPresupuesto" 
+                                  style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+                                <input type="hidden" name="ticket_id" value="<?= (int)$t['id'] ?>"/>
+                                <button class="btn btn-outline" type="submit" <?= ($ready && !$yaPublicado) ? '' : 'disabled' ?>>Publicar presupuesto</button>
+                                <?php if ($yaPublicado): ?>
+                                    <span class="badge badge--primary">Enviado al cliente</span>
+                                <?php elseif (!$ready): ?>
+                                    <span class="badge badge--danger">Faltan datos: <?= $p['mano_obra'] <= 0 ? 'Mano de obra' : '' ?></span>
+                                <?php endif; ?>
+                            </form>
+                        <?php endif; ?>
 
                         <?php 
                             $s = strtolower(trim($t['estado'] ?? ''));

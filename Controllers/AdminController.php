@@ -64,25 +64,6 @@ class AdminController
         $administradores = $this->userModel->getAllAdministradores();
         include_once __DIR__ . '/../Views/Admin/ListaAdmin.php';
     }
-    public function changeRole()
-    {
-        Auth::checkRole('Administrador');
-
-        $userId = $_POST['user_id'];
-        $newRole = $_POST['newRole'];
-
-        $db = new Database();
-        $db->connectDatabase();
-        $userModel = new UserModel($db->getConnection());
-        $userModel->updateRole($userId, $newRole);
-
-        $admin = Auth::user();
-        $accion = "Cambio de rol";
-        $detalle = "El administrador {$admin['name']} cambió el rol del usuario con ID {$userId} a {$newRole}.";
-        $this->historialController->agregarAccion($accion, $detalle);
-
-        exit;
-    }
 
     public function ActualizarUser()
     {
@@ -104,23 +85,55 @@ class AdminController
             exit;
         }
 
-        $user = $userModel->findById($userId);
+    $user = $userModel->findById($userId);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $name = $_POST['name'] ?? '';
-            $role = $_POST['role'] ?? '';
+            $name = trim((string)($_POST['name'] ?? ''));
+            $role = trim((string)($_POST['role'] ?? ''));
             $from = $_POST['from'] ?? 'Admin/ListarUsers';
+
+            // Validaciones básicas del servidor
+            if ($name === '') {
+                header('Location: /ProyectoPandora/Public/index.php?route=Admin/ActualizarUser&id='.(int)$userId.'&error=NombreRequerido&from='.urlencode($from));
+                exit;
+            }
+            $rolesValidos = ['Cliente','Tecnico','Supervisor','Administrador'];
+            if ($role === '' || !in_array($role, $rolesValidos, true)) {
+                header('Location: /ProyectoPandora/Public/index.php?route=Admin/ActualizarUser&id='.(int)$userId.'&error=RolInvalido&from='.urlencode($from));
+                exit;
+            }
 
             // Reobtén el usuario por ID para asegurar email correcto
             $current = $userModel->findById($userId);
             $email = $current['email'] ?? ($user['email'] ?? '');
 
+            // Guardar datos previos para un log más claro
+            $before = $userModel->findById($userId);
+            $oldName = $before['name'] ?? '—';
+            $oldEmail = $before['email'] ?? '—';
+            $oldRole = $before['role'] ?? '—';
+
             $userModel->updateUser($userId, $name, $email, $role);
 
             $admin = Auth::user();
-            $accion = "Actualización de Usuario";
-            $detalle = "El administrador {$admin['name']} editó el usuario con ID {$userId} (Nuevo nombre: {$name}, Nuevo rol: {$role}).";
+            $accion = "Actualización de usuario";
+            $cambios = [];
+            if ($name !== '' && $name !== $oldName) { $cambios[] = "nombre: '{$oldName}' → '{$name}'"; }
+            if ($role !== '' && $role !== $oldRole) { $cambios[] = "rol: {$oldRole} → {$role}"; }
+            // El email lo resolvemos siempre del registro real por seguridad
+            $detalle = "{$admin['name']} editó a {$oldName} (ID {$userId}, email {$oldEmail})";
+            if (!empty($cambios)) { $detalle .= ". Cambios: " . implode(', ', $cambios) . "."; }
             $this->historialController->agregarAccion($accion, $detalle);
+
+            // Si el admin se cambia a sí mismo el rol, forzar logout para refrescar permisos
+            $currentAdmin = Auth::user();
+            if ($currentAdmin && (int)$currentAdmin['id'] === (int)$userId && ($role !== ($currentAdmin['role'] ?? ''))) {
+                // Limpiar sesión y redirigir a login
+                session_unset();
+                session_destroy();
+                header('Location: /ProyectoPandora/Public/index.php?route=Auth/Login&info=Reinicio%20de%20sesion%20por%20cambio%20de%20rol');
+                exit;
+            }
 
             header("Location: index.php?route=$from");
             exit;
@@ -135,11 +148,17 @@ class AdminController
         $db = new Database();
         $db->connectDatabase();
         $userModel = new UserModel($db->getConnection());
+        // Capturar info antes de eliminar para tener un log legible
+        $victim = $userModel->findById((int)$userId);
         $userModel->deleteUser($userId);
 
         $admin = Auth::user();
         $accion = "Eliminación de usuario";
-        $detalle = "El administrador {$admin['name']} eliminó el usuario con ID {$userId}.";
+        if ($victim) {
+            $detalle = "{$admin['name']} eliminó al usuario {$victim['name']} (ID {$userId}, email {$victim['email']}, rol {$victim['role']}).";
+        } else {
+            $detalle = "{$admin['name']} eliminó al usuario con ID {$userId}.";
+        }
         $this->historialController->agregarAccion($accion, $detalle);
 
         header('Location: /ProyectoPandora/Public/index.php?route=Admin/ListarUsers');

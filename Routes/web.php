@@ -15,9 +15,7 @@ return [
     'Default/Perfil' => [
         'controller' => 'Default',
         'action' => 'perfil'
-    ],
-    // Ruta JSON removida: 'Default/StatsJson'
-    
+    ],    
     
     
     'Auth/Login' => [
@@ -268,13 +266,13 @@ return [
         'controller' => 'Ticket',
         'action' => 'MarcarPagadoYFinalizar'
     ],
-    'Ticket/EstadoJson' => [
-        'controller' => 'Ticket',
-        'action' => 'EstadoJson'
-    ],
     'Ticket/ActualizarEstado' => [
         'controller' => 'Ticket',
         'action' => 'ActualizarEstado'
+    ],
+    'Ticket/SyncStatus' => [
+        'controller' => 'Ticket',
+        'action' => 'SyncStatus'
     ],
     'Ticket/Eliminar' => [
         'controller' => 'Ticket',
@@ -343,6 +341,29 @@ return [
     'Device/Eliminar' => [
         'controller' => 'Device',
         'action' => 'Eliminar'
+    ],
+    
+    // Notificaciones
+    'Notification/Index' => [
+        'controller' => 'Notification',
+        'action' => 'Index'
+    ],
+    'Notification/Count' => [
+        'controller' => 'Notification',
+        'action' => 'Count'
+    ],
+    'Notification/MarkRead' => [
+        'controller' => 'Notification',
+        'action' => 'MarkRead'
+    ],
+    'Notification/Create' => [
+        'controller' => 'Notification',
+        'action' => 'Create'
+    ],
+    // Idioma
+    'Language/Set' => [
+        'controller' => 'Language',
+        'action' => 'Set'
     ],
 ];
 ?>

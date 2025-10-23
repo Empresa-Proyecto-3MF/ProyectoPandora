@@ -16,14 +16,33 @@ class RegisterController
     public function Register()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $username = $_POST['name'] ?? '';
-            $email = $_POST['email'] ?? '';
+            $username = trim((string)($_POST['name'] ?? ''));
+            $email = strtolower(trim($_POST['email'] ?? ''));
             $password = $_POST['password'] ?? '';
+
+            // Requisito: nombre obligatorio
+            if ($username === '') {
+                header('Location: /ProyectoPandora/Public/index.php?route=Register/Register&error=NombreRequerido');
+                exit;
+            }
+
+            // Requisito: prohibir espacios/blancos en contraseña
+            if (preg_match('/\s/', (string)$password)) {
+                header('Location: /ProyectoPandora/Public/index.php?route=Register/Register&error=PasswordEspacios');
+                exit;
+            }
+            // Requisito: contraseña mínima de 8 caracteres
+            if (strlen((string)$password) < 8) {
+                header('Location: /ProyectoPandora/Public/index.php?route=Register/Register&error=PasswordCorta');
+                exit;
+            }
+
+            // Validación de email delegada al cliente (JS); servidor solo controla duplicados
 
             $result = $this->RegisterUser($username, $email, $password);
             
             $accion = "Registro de usuario";
-            $detalle = "Se registró el usuario {$username} con email {$email}. Resultado: {$result}";
+            $detalle = "Se creó la cuenta de {$username} (email {$email}). Resultado: {$result}.";
             $this->historialController->agregarAccion($accion, $detalle);
 
             header('Location: /ProyectoPandora/Public/index.php?route=Auth/Login');
@@ -39,15 +58,34 @@ class RegisterController
         Auth::checkRole('Administrador');
         $user = Auth::user();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $username = $_POST['name'] ?? '';
-            $email = $_POST['email'] ?? '';
+            $username = trim((string)($_POST['name'] ?? ''));
+            $email = strtolower(trim($_POST['email'] ?? ''));
             $password = $_POST['password'] ?? '';
             $role = $_POST['role'] ?? 'Cliente';
 
+            // Requisito: nombre obligatorio
+            if ($username === '') {
+                header('Location: /ProyectoPandora/Public/index.php?route=Register/RegisterAdmin&error=NombreRequerido');
+                exit;
+            }
+
+            // Requisito: prohibir espacios/blancos en contraseña
+            if (preg_match('/\s/', (string)$password)) {
+                header('Location: /ProyectoPandora/Public/index.php?route=Register/RegisterAdmin&error=PasswordEspacios');
+                exit;
+            }
+            // Requisito: contraseña mínima de 8 caracteres
+            if (strlen((string)$password) < 8) {
+                header('Location: /ProyectoPandora/Public/index.php?route=Register/RegisterAdmin&error=PasswordCorta');
+                exit;
+            }
+
+            // Validación de email delegada al cliente (JS); servidor solo controla duplicados
+
             $result = $this->RegisterUserWithRole($username, $email, $password, $role);
 
-            $accion = "Registro de usuario por admin";
-            $detalle = "El administrador registró el usuario {$username} con email {$email} y rol {$role}. Resultado: {$result}";
+            $accion = "Registro de usuario por administrador";
+            $detalle = "Se creó la cuenta {$username} (email {$email}) con rol {$role} desde el panel de administración. Resultado: {$result}.";
             $this->historialController->agregarAccion($accion, $detalle);
 
             header('Location: /ProyectoPandora/Public/index.php?route=Admin/ListarUsers');
@@ -114,4 +152,6 @@ class RegisterController
             return "Error al registrar usuario.";
         }
     }
+
+    // Nota: validación de email realizada en el cliente (JS). Aquí solo se controla existencia y creación.
 }

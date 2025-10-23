@@ -1,4 +1,5 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+<?php require_once __DIR__ . '/../../Core/LogFormatter.php'; ?>
 
 <main class="inv-page">
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
@@ -51,7 +52,7 @@
                 </td>
                 <td><?php echo htmlspecialchars($row['categoria']); ?></td>
                 <td><?php echo htmlspecialchars($row['name_item']); ?></td>
-                <td>$<?php echo number_format((float)$row['valor_unitario'], 2); ?></td>
+                <td><?php echo htmlspecialchars(LogFormatter::monto((float)$row['valor_unitario'])); ?></td>
                 <td><?php echo (int)$row['stock_actual']; ?></td>
 				<td><?php echo (int)$row['stock_minimo']; ?></td>
                 <td>

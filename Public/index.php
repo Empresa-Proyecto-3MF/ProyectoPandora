@@ -13,13 +13,15 @@ $noGuardar = [
     'Ticket/Ver',
     'Ticket/Editar',
     'Ticket/Actualizar',
-    'Ticket/EstadoJson',
     'Device/ActualizarDevice',
     'Device/CrearDevice',
     'Inventario/CrearItem',
     'Inventario/ActualizarItem',
     'EstadoTicket/Actualizar',
-    'EstadoTicket/CrearEstado'
+    'EstadoTicket/CrearEstado',
+    // Evitar que el polling y acciones AJAX sobreescriban prev_url
+    'Notification/Count',
+    'Notification/MarkRead'
 ];
 
 $guardarPrevUrl = true;

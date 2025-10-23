@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Core/Database.php';
 require_once __DIR__ . '/../Models/Device.php';
-require_once __DIR__ . '/../Models/Category.php';
+require_once __DIR__ . '/../Models/DeviceCategory.php';
 require_once __DIR__ . '/../Models/User.php';
 require_once __DIR__ . '/../Models/Ticket.php';
 require_once __DIR__ . '/../Models/Historial.php';
@@ -23,24 +23,24 @@ class DeviceController
 
         $this->historialController = new HistorialController();
         $this->deviceModel = new DeviceModel($conn);
-        $this->categoryModel = new CategoryModel($conn);
+    $this->categoryModel = new DeviceCategoryModel($conn);
         $this->userModel = new UserModel($conn);
     }
 
     public function listarDevice()
     {
+        // Vista ListaDispositivos no existe; mantenemos compatibilidad redirigiendo.
         $user = Auth::user();
         if (!$user) {
             header('Location: /ProyectoPandora/Public/index.php?route=Auth/Login');
             exit;
         }
-        if ($user['role'] === 'Administrador') {
-            
+        if (($user['role'] ?? '') === 'Cliente') {
+            header('Location: /ProyectoPandora/Public/index.php?route=Cliente/MisDevice');
+        } else {
             header('Location: /ProyectoPandora/Public/index.php?route=Default/Index');
-            exit;
         }
-        $dispositivos = $this->deviceModel->getAllDevices();
-        include_once __DIR__ . '/../Views/Device/ListaDispositivos.php';
+        exit;
     }
 
     public function listarCategoria()
@@ -104,22 +104,29 @@ class DeviceController
             $descripcion = $_POST['descripcion_falla'] ?? '';
             $img_dispositivo = $_FILES['img_dispositivo']['name'] ?? '';
 
-            if (!$categoriaId || !$marca || !$modelo || !$img_dispositivo) {
+            if (!$categoriaId || !$marca || !$modelo) {
                 $error = "Todos los campos son obligatorios.";
                 include_once __DIR__ . '/../Views/Device/CrearDevice.php';
                 return;
             }
 
-            $rutaDestino = __DIR__ . '/../Public/img/imgDispositivos/' . $img_dispositivo;
-            if (!move_uploaded_file($_FILES['img_dispositivo']['tmp_name'], $rutaDestino)) {
-                $error = "Error al subir la imagen.";
-                include_once __DIR__ . '/../Views/Device/CrearDevice.php';
-                return;
+            // Manejo de imagen opcional: usar NoFoto.jpg si no se sube
+            if (!empty($img_dispositivo)) {
+                $rutaDestinoDir = __DIR__ . '/../Public/img/imgDispositivos/';
+                if (!is_dir($rutaDestinoDir)) { @mkdir($rutaDestinoDir, 0777, true); }
+                $rutaDestino = $rutaDestinoDir . basename($img_dispositivo);
+                if (!move_uploaded_file($_FILES['img_dispositivo']['tmp_name'], $rutaDestino)) {
+                    $error = "Error al subir la imagen.";
+                    include_once __DIR__ . '/../Views/Device/CrearDevice.php';
+                    return;
+                }
+            } else {
+                $img_dispositivo = 'NoFoto.jpg';
             }
 
             if ($this->deviceModel->createDevice($userId, $categoriaId, $marca, $modelo, $descripcion, $img_dispositivo)) {
-                $accion = "Agregar dispositivo";
-                $detalle = "Usuario {$user['name']} agregó el dispositivo {$marca} {$modelo}";
+                $accion = "Registro de dispositivo";
+                $detalle = "{$user['name']} registró su dispositivo {$marca} {$modelo}";
                 $this->historialController->agregarAccion($accion, $detalle);
 
                 
@@ -230,7 +237,7 @@ class DeviceController
                 $admin = Auth::user();
                 $this->historialController->agregarAccion(
                     "Actualización de dispositivo",
-                    "{$admin['name']} actualizó el dispositivo con ID {$id}."
+                    "{$admin['name']} actualizó el dispositivo #{$id} ({$marca} {$modelo})."
                 );
                 header('Location: /ProyectoPandora/Public/index.php?route=Device/ListarDevice');
                 exit;
@@ -259,8 +266,8 @@ class DeviceController
         }
         if ($this->deviceModel->deleteDevice($deviceId)) {
             
-            $accion = "Eliminar dispositivo";
-            $detalle = "Usuario {$user['name']} eliminó el dispositivo con ID: $deviceId";
+            $accion = "Eliminación de dispositivo";
+            $detalle = "{$user['name']} eliminó el dispositivo #{$deviceId}.";
             $this->historialController->agregarAccion($accion, $detalle);
 
             header('Location: /ProyectoPandora/Public/index.php?route=Device/ListarDevice&success=1');
@@ -278,15 +285,37 @@ class DeviceController
             exit;
         }
 
-        $categoryId = $_GET['id'] ?? 0;
-        if (!$categoryId) {
+        // Enforce POST for destructive action
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            header('Location: /ProyectoPandora/Public/index.php?route=Device/ListarCategoria');
+            exit;
+        }
+
+        $categoryId = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+        if ($categoryId <= 0) {
             header('Location: /ProyectoPandora/Public/index.php?route=Device/ListarCategoria&error=CategoryNotFound');
             exit;
         }
+
+        // Validar existencia
+        $categoria = $this->categoryModel->getCategoryById($categoryId);
+        if (!$categoria) {
+            header('Location: /ProyectoPandora/Public/index.php?route=Device/ListarCategoria&error=CategoryNotFound');
+            exit;
+        }
+
+        // Prevenir eliminación si hay dispositivos usando esta categoría
+        $usos = method_exists($this->deviceModel, 'countDevicesByCategory')
+            ? $this->deviceModel->countDevicesByCategory($categoryId)
+            : 0;
+        if ($usos > 0) {
+            header('Location: /ProyectoPandora/Public/index.php?route=Device/ListarCategoria&error=CategoryInUse');
+            exit;
+        }
+
         if ($this->categoryModel->deleteCategory($categoryId)) {
-            
-            $accion = "Se Elimino una Categoria";
-            $detalle = "Usuario {$user['name']} elimino la categoria con ID: $categoryId";
+            $accion = "Se Eliminó una Categoría";
+            $detalle = "Usuario {$user['name']} eliminó la categoría con ID: $categoryId";
             $this->historialController->agregarAccion($accion, $detalle);
 
             header('Location: /ProyectoPandora/Public/index.php?route=Device/ListarCategoria&success=1');

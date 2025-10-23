@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../Core/Database.php';
 require_once __DIR__ . '/../Models/Historial.php';
 require_once __DIR__ . '/../Core/Auth.php';
+require_once __DIR__ . '/../Core/Date.php';
 class HistorialController
 {
     private $historialModel;
@@ -31,7 +32,13 @@ class HistorialController
         $perPage = max(1, min(100, (int)($_GET['perPage'] ?? 20)));
 
         $result = $this->historialModel->buscarHistorial($q, $tipo, $desde, $hasta, $page, $perPage);
-        $historial = $result['data'];
+        // Preformatear fechas para minimizar PHP en la vista
+        $historial = array_map(function($row){
+            $iso = $row['fecha'] ?? null;
+            $row['fecha_exact'] = DateHelper::exact($iso);
+            $row['fecha_human'] = DateHelper::smart($iso);
+            return $row;
+        }, $result['data'] ?? []);
         $total = (int)$result['total'];
         $perPage = (int)$result['perPage'];
         $page = (int)$result['page'];

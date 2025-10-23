@@ -39,8 +39,8 @@
                 <tr data-fecha="<?= htmlspecialchars(substr($mov['fecha'],0,10)) ?>"
                     data-tipo="<?= htmlspecialchars(strtolower(preg_match('/ticket|inventario|usuario|estado/i', $mov['acciones'], $m) ? $m[0] : '')) ?>">
                     <td>
-                        <time title="<?= htmlspecialchars(DateHelper::exact($mov['fecha'])) ?>">
-                            <?= htmlspecialchars(DateHelper::smart($mov['fecha'])) ?>
+                        <time title="<?= htmlspecialchars($mov['fecha_exact'] ?? '') ?>">
+                            <?= htmlspecialchars($mov['fecha_human'] ?? '') ?>
                         </time>
                     </td>
                     <td><?= htmlspecialchars($mov['acciones']) ?></td>

@@ -1,13 +1,14 @@
 <?php
 require_once __DIR__ . '/../Core/Auth.php';
+require_once __DIR__ . '/../Core/LogFormatter.php';
 require_once __DIR__ . '/../Core/Database.php';
 require_once __DIR__ . '/../Models/User.php';
 require_once __DIR__ . '/../Models/Ticket.php';
 require_once __DIR__ . '/../Models/Inventario.php';
-require_once __DIR__ . '/../Models/Category.php';
 require_once __DIR__ . '/../Models/ItemTicket.php';
 require_once __DIR__ . '/../Models/TicketLabor.php';
 require_once __DIR__ . '/../Models/Rating.php';
+require_once __DIR__ . '/../Models/Notification.php';
 
 class SupervisorController {
     public function PanelSupervisor() {
@@ -28,7 +29,7 @@ class SupervisorController {
         $tecnicos = $userModel->getAllTecnicos();
         $ticketsSinTecnico = $ticketModel->getTicketsSinTecnico();
 
-        
+
         foreach ($tecnicos as &$tec) {
             $tecId = (int)($tec['id'] ?? 0);
             list($avg, $count) = $ratingModel->getAvgForTecnico($tecId);
@@ -50,7 +51,7 @@ class SupervisorController {
         Auth::checkRole(['Supervisor']);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/asignar');
+            header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/Asignar');
             exit;
         }
 
@@ -58,15 +59,15 @@ class SupervisorController {
         $user = Auth::user();
         if (!$user) { $user = $_SESSION['user'] ?? null; }
         if (!$user || empty($user['id'])) {
-            header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/asignar&error=Sesion%20invalida');
-            exit;
+            header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/Asignar&error=Sesion%20invalida');
+            exit; 
         }
 
         // Datos de entrada
         $ticket_id = isset($_POST['ticket_id']) ? (int)$_POST['ticket_id'] : 0;
         $tecnico_id = isset($_POST['tecnico_id']) ? (int)$_POST['tecnico_id'] : 0;
         if (!$ticket_id || !$tecnico_id) {
-            header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/asignar&error=Datos incompletos');
+            header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/Asignar&error=Datos incompletos');
             exit;
         }
 
@@ -84,6 +85,19 @@ class SupervisorController {
             $rowChk = $stmtChk->get_result()->fetch_assoc();
             if (!empty($rowChk['tecnico_id'])) {
                 header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/Asignar&error=El ticket ya tiene técnico (no disponible para reasignar)');
+                exit;
+            }
+        }
+
+        // 1b) Validar que el técnico esté disponible
+        $stmtTec = $conn->prepare("SELECT disponibilidad FROM tecnicos WHERE id = ? LIMIT 1");
+        if ($stmtTec) {
+            $stmtTec->bind_param("i", $tecnico_id);
+            $stmtTec->execute();
+            $rowTec = $stmtTec->get_result()->fetch_assoc();
+            $disp = strtolower(trim($rowTec['disponibilidad'] ?? ''));
+            if ($disp !== 'disponible') {
+                header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/Asignar&error=Técnico no disponible para asignación');
                 exit;
             }
         }
@@ -115,7 +129,7 @@ class SupervisorController {
             exit;
         }
 
-        $ok = $ticketModel->asignarTecnico((int)$ticket_id, (int)$tecnico_id, (int)$user['id'], 'Supervisor');
+    $ok = $ticketModel->asignarTecnico((int)$ticket_id, (int)$tecnico_id, (int)$user['id'], 'Supervisor');
         if ($ok) {
             // 4) Asignar supervisor al ticket
             $supervisorUserId = $_SESSION['user']['id'] ?? null;
@@ -143,6 +157,45 @@ class SupervisorController {
                     }
                 }
             }
+            
+            // Notificaciones automáticas: al técnico asignado y al cliente dueño del ticket
+            try {
+                $nm = new NotificationModel($conn);
+                
+                // Obtener user_id del técnico y su nombre
+                $tecUserId = null; $tecNombre = 'técnico';
+                $stmtTU = $conn->prepare("SELECT u.id AS user_id, u.name AS nombre FROM tecnicos t INNER JOIN users u ON u.id=t.user_id WHERE t.id=? LIMIT 1");
+                if ($stmtTU) {
+                    $stmtTU->bind_param('i', $tecnico_id);
+                    $stmtTU->execute();
+                    $rowTU = $stmtTU->get_result()->fetch_assoc();
+                    if ($rowTU) { $tecUserId = (int)$rowTU['user_id']; $tecNombre = $rowTU['nombre'] ?? $tecNombre; }
+                }
+                
+                // Obtener user_id del cliente dueño del ticket
+                $cliUserId = null;
+                $stmtCU = $conn->prepare("SELECT u.id AS user_id FROM tickets tk INNER JOIN clientes c ON tk.cliente_id=c.id INNER JOIN users u ON u.id=c.user_id WHERE tk.id=? LIMIT 1");
+                if ($stmtCU) {
+                    $stmtCU->bind_param('i', $ticket_id);
+                    $stmtCU->execute();
+                    $rowCU = $stmtCU->get_result()->fetch_assoc();
+                    if ($rowCU) { $cliUserId = (int)$rowCU['user_id']; }
+                }
+                
+                // Notificar al técnico
+                if (!empty($tecUserId)) {
+                    $titleT = 'Nuevo ticket asignado';
+                    $bodyT  = 'Se te asignó el ticket #'.$ticket_id.'. Revisa Mis Reparaciones.';
+                    $nm->create($titleT, $bodyT, 'USER', null, (int)$tecUserId, (int)$user['id']);
+                }
+                
+                // Notificar al cliente
+                if (!empty($cliUserId)) {
+                    $titleC = 'Técnico asignado a tu ticket';
+                    $bodyC  = 'Se asignó el técnico '.$tecNombre.' a tu ticket #'.$ticket_id.'.';
+                    $nm->create($titleC, $bodyC, 'USER', null, (int)$cliUserId, (int)$user['id']);
+                }
+            } catch (\Throwable $e) { /* noop */ }
             header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/Asignar&success=1');
         } else {
             header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/Asignar&error=No se pudo asignar');
@@ -156,8 +209,6 @@ class SupervisorController {
         $db = new Database();
         $db->connectDatabase();
         $inventarioModel = new InventarioModel($db->getConnection());
-        $categoryModel = new CategoryModel($db->getConnection());
-
         $items = $inventarioModel->listar();
         $categorias = $inventarioModel->listarCategorias();
 
@@ -175,6 +226,7 @@ class SupervisorController {
 
         
         $ticket_id = isset($_GET['ticket_id']) ? (int)$_GET['ticket_id'] : 0;
+        $filtroCierre = strtolower(trim($_GET['cierre'] ?? 'todos')); // todos|activos|finalizados
         $tickets = $ticket_id ? [$ticketModel->ver($ticket_id)] : $ticketModel->getAllTickets();
         if (!$ticket_id) {
             
@@ -186,19 +238,23 @@ class SupervisorController {
             $tickets = [$tickets];
         }
 
+        // Filtro por cierre (finalizados vs no finalizados)
+        if ($filtroCierre === 'finalizados') {
+            $tickets = array_values(array_filter($tickets, function($t){ return !empty($t['fecha_cierre']); }));
+        } elseif ($filtroCierre === 'activos') {
+            $tickets = array_values(array_filter($tickets, function($t){ return empty($t['fecha_cierre']); }));
+        }
+
         $presupuestos = [];
         foreach ($tickets as $t) {
             if (!$t || !isset($t['id'])) continue;
             $tid = (int)$t['id'];
             $items = $itemTicketModel->listarPorTicket($tid);
-            $subtotal_items = 0.0;
-            foreach ($items as $it) {
-                
-                $subtotal_items += (float)$it['valor_total'];
-            }
-            $labor = $laborModel->getByTicket($tid);
-            $mano_obra = $labor ? (float)$labor['labor_amount'] : 0.0;
-            $total = $subtotal_items + $mano_obra;
+            // Usar helper para resumen
+            $res = LogFormatter::resumenPresupuesto($db->getConnection(), $tid);
+            $subtotal_items = (float)$res['subtotal'];
+            $mano_obra = (float)$res['mano'];
+            $total = (float)$res['total'];
             $presupuestos[] = [
                 'ticket' => $t,
                 'items' => $items,

@@ -48,7 +48,7 @@
 			</form>
 
 			<?php
-				$estadoFiltro = $_GET['estado'] ?? 'todos';
+				$estadoFiltro = $_GET['estado'] ?? 'Disponible';
 				$q = strtolower(trim($_GET['q'] ?? ''));
 				$filtrados = array_filter($tecnicos ?? [], function($tec) use ($estadoFiltro, $q) {
 					$okEstado = ($estadoFiltro === 'todos') || strcasecmp($tec['disponibilidad'] ?? '', $estadoFiltro) === 0;
@@ -109,9 +109,10 @@
 								<div class="chip">Activos: <?php echo (int)($tec['tickets_activos'] ?? 0); ?></div>
 								<div class="chip">Email: <?php echo htmlspecialchars($tec['email'] ?? ''); ?></div>
 							</div>
+							<?php $dispOk = strcasecmp($estado, 'Disponible') === 0; ?>
 							<form action="/ProyectoPandora/Public/index.php?route=Supervisor/AsignarTecnico" method="post" class="asignar-assign-form">
 								<input type="hidden" name="tecnico_id" value="<?php echo (int)$tec['id']; ?>" />
-								<select name="ticket_id" class="asignar-input asignar-input--small">
+								<select name="ticket_id" class="asignar-input asignar-input--small" <?php echo (!$dispOk || empty($ticketsSinTecnico)) ? 'disabled' : ''; ?>>
 									<?php if (empty($ticketsSinTecnico)): ?>
 										<option value="">No hay tickets sin técnico</option>
 									<?php else: ?>
@@ -122,7 +123,7 @@
 										<?php endforeach; ?>
 									<?php endif; ?>
 								</select>
-								<button type="submit" class="btn btn-primary">Asignar</button>
+								<button type="submit" class="btn btn-primary" <?php echo (!$dispOk || empty($ticketsSinTecnico)) ? 'disabled' : ''; ?>>Asignar</button>
 							</form>
 						</div>
 					<?php endforeach; ?>

@@ -102,19 +102,6 @@ CREATE TABLE estados_tickets (
 INSERT INTO estados_tickets (name) VALUES
 ('Nuevo'),('Diagnóstico'),('Presupuesto'),('En espera'),('En reparación'),('En pruebas'),('Listo para retirar'),('Finalizado'),('Cancelado');
 
-CREATE TABLE ticket_estado_historial (
-    id INT NOT NULL AUTO_INCREMENT,
-    ticket_id INT NOT NULL,
-    estado_id INT NOT NULL,
-    user_id INT NOT NULL,
-    user_role ENUM('Cliente','Tecnico','Supervisor','Administrador') NOT NULL,
-    comentario VARCHAR(255) DEFAULT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_teh_ticket FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE,
-    CONSTRAINT fk_teh_estado FOREIGN KEY (estado_id) REFERENCES estados_tickets(id) ON DELETE CASCADE,
-    CONSTRAINT fk_teh_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 CREATE TABLE tickets (
     id INT NOT NULL AUTO_INCREMENT,
     dispositivo_id INT NOT NULL,
@@ -132,6 +119,19 @@ CREATE TABLE tickets (
     CONSTRAINT fk_tickets_supervisor FOREIGN KEY (supervisor_id) REFERENCES supervisores(id) ON DELETE SET NULL,
     CONSTRAINT fk_tickets_estado FOREIGN KEY (estado_id) REFERENCES estados_tickets(id) ON DELETE RESTRICT
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+CREATE TABLE ticket_estado_historial (
+    id INT NOT NULL AUTO_INCREMENT,
+    ticket_id INT NOT NULL,
+    estado_id INT NOT NULL,
+    user_id INT NOT NULL,
+    user_role ENUM('Cliente','Tecnico','Supervisor','Administrador') NOT NULL,
+    comentario VARCHAR(255) DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_teh_ticket FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE,
+    CONSTRAINT fk_teh_estado FOREIGN KEY (estado_id) REFERENCES estados_tickets(id) ON DELETE CASCADE,
+    CONSTRAINT fk_teh_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 CREATE TABLE dispositivos (
     id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -195,16 +195,7 @@ CREATE TABLE pagos (
     CONSTRAINT fk_pagos_ticket FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE,
     CONSTRAINT fk_pagos_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
-CREATE TABLE mail_queue (
-    id INT NOT NULL AUTO_INCREMENT,
-    recipient VARCHAR(150) NOT NULL,
-    subject VARCHAR(200) NOT NULL,
-    body TEXT NOT NULL,
-    status ENUM('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    sent_at DATETIME NULL,
-    PRIMARY KEY (id)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+-- mail_queue removido: no se implementará
 CREATE TABLE ticket_ratings (
     id INT NOT NULL AUTO_INCREMENT,
     ticket_id INT NOT NULL,
@@ -274,3 +265,28 @@ BEGIN
     END IF;
 END $$
 DELIMITER ;
+
+-- Notificaciones
+CREATE TABLE notifications (
+    id INT NOT NULL AUTO_INCREMENT,
+    title VARCHAR(150) NOT NULL,
+    body TEXT NOT NULL,
+    audience ENUM('ALL','ROLE','USER') NOT NULL DEFAULT 'ALL',
+    audience_role ENUM('Cliente','Tecnico','Supervisor','Administrador') NULL,
+    target_user_id INT NULL,
+    created_by INT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_notif_target_user FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_notif_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE notification_user (
+    notification_id INT NOT NULL,
+    user_id INT NOT NULL,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    read_at DATETIME NULL,
+    PRIMARY KEY (notification_id, user_id),
+    CONSTRAINT fk_notif_user_notif FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE CASCADE,
+    CONSTRAINT fk_notif_user_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
