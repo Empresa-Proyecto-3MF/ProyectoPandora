@@ -2716,78 +2716,95 @@ h2, h3 {
     color: var(--color-texto-primario);
 }
 
-/* ===== Tarjetas de estadísticas mejoradas ===== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 24px;
-  margin-top: 25px;
-  padding: 10px;
+/* ===== Contenedor general ===== */
+.Contenedor-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: calc(100vh - 80px); /* ocupa toda la altura disponible menos el header */
+  width: 100%;
+  padding: 30px 40px;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
+/* ===== Grid de estadísticas ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 40px;
+  box-sizing: border-box;
+}
+
+/* ===== Tarjetas ===== */
 .stat-card {
-  background: radial-gradient(circle at top left, rgba(60, 50, 120, 0.15), rgba(10, 10, 25, 0.95));
+  background: linear-gradient(145deg, rgba(45, 45, 80, 0.75), rgba(15, 15, 35, 0.95));
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: 25px 20px;
+  border-radius: 20px;
+  padding: 35px 25px;
   text-align: center;
   box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.3),
-    inset 0 0 8px rgba(255, 255, 255, 0.03);
-  transition: all 0.3s ease;
+    0 4px 15px rgba(0, 0, 0, 0.4),
+    inset 0 0 10px rgba(255, 255, 255, 0.05);
+  transition: all 0.35s ease;
   opacity: 0;
-  transform: translateY(15px) scale(0.98);
+  transform: translateY(20px) scale(0.97);
   animation: fadeUpCard 0.6s forwards;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   position: relative;
   overflow: hidden;
 }
 
-/* Efecto de resplandor dinámico */
+/* ===== Efecto luminoso ===== */
 .stat-card::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 30% 20%, rgba(128, 0, 255, 0.15), transparent 60%);
-  opacity: 0.3;
+  background: radial-gradient(circle at 30% 20%, rgba(128, 0, 255, 0.18), transparent 70%);
+  opacity: 0.25;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s ease;
 }
 .stat-card:hover::before {
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .stat-card:hover {
-  transform: translateY(-6px) scale(1.02);
+  transform: translateY(-8px) scale(1.03);
   box-shadow:
-    0 10px 20px rgba(0, 0, 0, 0.4),
-    0 0 15px rgba(128, 0, 255, 0.15);
+    0 12px 25px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(128, 0, 255, 0.2);
   border-color: rgba(128, 0, 255, 0.3);
 }
 
+/* ===== Texto ===== */
 .stat-num {
-  font-size: 2.4em;
+  font-size: 2.8em;
   font-weight: 800;
   background: linear-gradient(90deg, var(--cuarto, #8b5cf6), var(--secundario, #60a5fa));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: block;
-  margin-bottom: 6px;
-  text-shadow: 0 0 10px rgba(128, 0, 255, 0.15);
-  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 12px rgba(128, 0, 255, 0.2);
+  letter-spacing: 0.6px;
 }
 
 .stat-label {
-  font-size: 0.95em;
+  font-size: 1em;
   color: var(--color-texto-secundario, #b3b3c6);
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
 }
 
-/* Animación suave */
+/* ===== Animación ===== */
 @keyframes fadeUpCard {
   0% {
     opacity: 0;
-    transform: translateY(15px) scale(0.98);
+    transform: translateY(20px) scale(0.97);
   }
   100% {
     opacity: 1;
@@ -2795,16 +2812,26 @@ h2, h3 {
   }
 }
 
-/* ===== Adaptabilidad ===== */
-@media (max-width: 600px) {
+/* ===== Responsivo ===== */
+@media (max-width: 992px) {
   .stats-grid {
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .Contenedor {
+    padding: 20px;
+  }
+  .stats-grid {
+    gap: 20px;
   }
   .stat-card {
-    padding: 18px 15px;
+    padding: 25px 18px;
   }
   .stat-num {
-    font-size: 2em;
+    font-size: 2.2em;
   }
 }
 
@@ -2921,45 +2948,6 @@ h2, h3 {
 .presu-filtros .btn[type="submit"]:hover {
   background: var(--cuarto, #0284c7);
 }
-
-/* ===== Temporizador ===== */
-.timer-box {
-  background: linear-gradient(145deg, var(--card), var(--glass));
-  border-radius: 16px;
-  padding: 30px;
-  margin-top: 30px;
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4), inset 0 0 6px rgba(255, 255, 255, 0.05);
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-.timer-box:hover {
-  box-shadow: 0 0 30px rgba(88, 166, 255, 0.25);
-}
-
-.timer-box h3 {
-  font-size: 1.2rem;
-  margin-bottom: 16px;
-  background: linear-gradient(90deg, var(--secundario), var(--cuarto));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.timer-display {
-  font-size: 2.2rem;
-  letter-spacing: 2px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 12px 30px;
-  margin: 12px auto 22px;
-  display: inline-block;
-  color: var(--secundario);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
-  font-family: 'Courier New', monospace;
-}
-
 .card-actions {
   display: flex;
   justify-content: center;
@@ -3270,10 +3258,14 @@ input[type="radio"]:checked + label {
 
 /* ===== Mis Repuestos: Overrides de visibilidad input ===== */
 
+<<<<<<< HEAD
 /* ==========================================
    FILTRADOR (zona "Mis reparaciones")
    Solo aplica a <form> con clase .filtros
    ========================================== */
+=======
+/* FILTRADOR */
+>>>>>>> 26b1931848bcd9d2d5a4fe07c2bc3ace6b4674ed
 form.filtros {
   display: flex !important;
   flex-direction: row !important;
@@ -3741,7 +3733,10 @@ form.filtros .btn-outline:hover {
   border-bottom: 1px solid var(--color-border);
   position: relative;
 }
+<<<<<<< HEAD
 /* ===== CAMBIO DE FOTO PERFIL ===== */
+=======
+>>>>>>> 26b1931848bcd9d2d5a4fe07c2bc3ace6b4674ed
 .img-label {
   cursor: pointer;
   display: flex;
@@ -3821,7 +3816,7 @@ form.filtros .btn-outline:hover {
   font-weight: 600;
 }
 
-/* === CONTENIDOS DE CADA TAB === */
+/* === CONTENIDOS === */
 .perfil-content {
   display: none;
   padding: 32px 40px;
@@ -3833,17 +3828,11 @@ form.filtros .btn-outline:hover {
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* === CAMPOS DE FORMULARIO === */
+/* === CAMPOS === */
 .perfil-campo {
   margin-bottom: 16px;
   display: flex;
@@ -3892,7 +3881,7 @@ form.filtros .btn-outline:hover {
   transform: scale(1.02);
 }
 
-/* === VOLVER AL PANEL === */
+/* === VOLVER PANEL === */
 .perfil-volver-panel {
   display: flex;
   justify-content: center;
@@ -3917,31 +3906,6 @@ form.filtros .btn-outline:hover {
   transform: translateY(-1px);
 }
 
-/* === ESTADÍSTICAS (si aplica) === */
-.perfil-stats {
-  display: flex;
-  gap: 24px;
-  margin-top: 28px;
-  flex-wrap: wrap;
-}
-.stat-card {
-  flex: 1;
-  background: var(--fondo-formulario);
-  border-radius: 10px;
-  padding: 20px 24px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-}
-.stat-num {
-  font-size: 2em;
-  font-weight: bold;
-  color: var(--secundario);
-  display: block;
-}
-.stat-label {
-  font-size: 1em;
-  color: var(--color-texto-secundario);
-}
 /* === TOGGLE DARK MODE === */
 .modo-oscuro-toggle {
   display: flex;
@@ -3957,11 +3921,7 @@ form.filtros .btn-outline:hover {
   height: 28px;
 }
 
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+.switch input { opacity: 0; width: 0; height: 0; }
 
 .slider {
   position: absolute;
@@ -3991,6 +3951,58 @@ input:checked + .slider:before {
   transform: translateX(26px);
 }
 
+/* === SELECTOR DE IDIOMA === */
+.perfil-idioma {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--fondo-formulario);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.perfil-idioma label {
+  font-weight: 500;
+  color: var(--color-texto-primario);
+}
+
+.perfil-idioma select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-texto-primario);
+  border: 1px solid var(--color-border);
+  outline: none;
+  font-size: 0.95em;
+  transition: border 0.2s, background 0.2s;
+}
+
+.perfil-idioma select:hover,
+.perfil-idioma select:focus {
+  border-color: var(--secundario);
+  background: var(--fondo-header);
+}
+
+.perfil-idioma button {
+  background: var(--secundario);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  font-weight: 500;
+}
+
+.perfil-idioma button:hover {
+  background: var(--cuarto);
+  transform: scale(1.03);
+}
+  
 /* === BLOQUE USUARIO EN SIDEBAR === */
 .user-block {
   padding: 12px 16px;
@@ -4139,6 +4151,45 @@ input:checked + .slider:before {
   font-size: clamp(0.9rem, 1.9vw, 1.1rem);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
+<<<<<<< HEAD
+=======
+.home-charts {
+  background: var(--bg-card, #0d1117);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.home-charts h3 {
+  margin-bottom: 1rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.chart-box {
+  background: #161b22;
+  border-radius: 1rem;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.chart-box h4 {
+  margin-bottom: 0.5rem;
+  color: var(--primario, #c9d1d9);
+}
+
+.chart-box canvas {
+  width: 100%;
+  height: 240px;
+}
+
+
+>>>>>>> 26b1931848bcd9d2d5a4fe07c2bc3ace6b4674ed
 
 /* ======= Botón hamburguesa ======= */
 .hamburger {

@@ -17,6 +17,11 @@ $locale = I18n::getLocale();
     <link href='https://cdn.boxicons.com/fonts/basic/boxicons.min.css' rel='stylesheet'>
     <link href='https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <title><?= __('app.name') ?></title>
+<<<<<<< HEAD
+=======
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+>>>>>>> 26b1931848bcd9d2d5a4fe07c2bc3ace6b4674ed
 </head>
 
 <body>
@@ -137,7 +142,11 @@ $locale = I18n::getLocale();
                             </li>
                             <li class="item menu-item-static">
                                 <a href="index.php?route=Tecnico/MisStats" class="link flex">
+<<<<<<< HEAD
                                     <i class='bxr  bx-ticket'></i>
+=======
+                                    <i class='bx bx-medal'></i>
+>>>>>>> 26b1931848bcd9d2d5a4fe07c2bc3ace6b4674ed
                                     <span><?= __('nav.my.stats') ?></span>
                                 </a>
 

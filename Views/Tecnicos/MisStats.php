@@ -2,7 +2,7 @@
 
 <main>
     <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
-    <div class="Contenedor">
+    <div class="Contenedor-stats">
         <section class="tecnico-stats">
             <div class="stats-grid">
                 <div class="stat-card">

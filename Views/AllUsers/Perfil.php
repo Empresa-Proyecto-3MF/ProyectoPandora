@@ -21,8 +21,7 @@
 
     <!-- PERFIL -->
     <div class="perfil-content active" id="info">
-      <!-- ... campos ... -->
-       <form method="POST" action="">
+      <form method="POST" action="">
         <div class="perfil-campo">
           <label><?= __('profile.field.name') ?>:</label>
           <input type="text" name="name" value="<?= htmlspecialchars($userName) ?>">
@@ -65,22 +64,38 @@
       </form>
       <?php endif; ?>
 
+<<<<<<< HEAD
       <!-- Selector de idioma (en Perfil) -->
+=======
+      <!-- Selector de idioma -->
+>>>>>>> 26b1931848bcd9d2d5a4fe07c2bc3ace6b4674ed
       <?php 
         $current = $_SERVER['REQUEST_URI'] ?? '/ProyectoPandora/Public/index.php?route=Default/Perfil';
         $prev = htmlspecialchars($current, ENT_QUOTES, 'UTF-8');
         $locale = function_exists('I18n\\getLocale') ? I18n::getLocale() : ($_SESSION['lang'] ?? 'es');
       ?>
+<<<<<<< HEAD
       <form method="get" action="/ProyectoPandora/Public/index.php" class="perfil-idioma" style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <input type="hidden" name="route" value="Language/Set" />
         <input type="hidden" name="prev" value="<?= $prev ?>" />
         <label for="langSelect"><?= __('profile.language.label') ?>:</label>
         <select id="langSelect" name="lang" class="asignar-input asignar-input--small">
+=======
+      <form method="get" action="/ProyectoPandora/Public/index.php" class="perfil-idioma">
+        <input type="hidden" name="route" value="Language/Set" />
+        <input type="hidden" name="prev" value="<?= $prev ?>" />
+        <label for="langSelect"><?= __('profile.language.label') ?>:</label>
+        <select id="langSelect" name="lang">
+>>>>>>> 26b1931848bcd9d2d5a4fe07c2bc3ace6b4674ed
           <option value="es" <?= ($locale==='es'?'selected':'') ?>><?= __('lang.spanish') ?></option>
           <option value="en" <?= ($locale==='en'?'selected':'') ?>><?= __('lang.english') ?></option>
           <option value="pt" <?= ($locale==='pt'?'selected':'') ?>><?= __('lang.portuguese') ?></option>
         </select>
+<<<<<<< HEAD
         <button type="submit" class="btn btn-outline"><?= __('profile.language.change') ?></button>
+=======
+        <button type="submit"><?= __('profile.language.change') ?></button>
+>>>>>>> 26b1931848bcd9d2d5a4fe07c2bc3ace6b4674ed
       </form>
 
       <!-- TOGGLE GLOBAL -->
@@ -94,7 +109,11 @@
     </div>
 
     <div class="perfil-volver-panel">
+<<<<<<< HEAD
       <a href="/ProyectoPandora/Public/index.php?route=Default/Index" class="btn-volver">
+=======
+      <a href="/ProyectoPandora/Public/index.php?route=Default/Index" class="btn-volver-panel">
+>>>>>>> 26b1931848bcd9d2d5a4fe07c2bc3ace6b4674ed
         <i class="bx bx-arrow-back"></i> <?= __('profile.back') ?>
       </a>
     </div>

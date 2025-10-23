@@ -9,16 +9,196 @@ class DefaultController
 
     public function index()
     {
-        // Auto-refresh de la página cada 30s sin usar JSON/AJAX
-        header('Refresh: 30');
         $user = Auth::user();
         $stats = $this->computeHomeStats($user);
         include_once __DIR__ . '/../Views/AllUsers/Home.php';
     }
 
-    // Endpoint JSON removido por requerimiento: solo PHP renderizado en servidor
+    public function HomeMetrics()
+    {
+        $user = Auth::user();
+        header('Content-Type: application/json; charset=utf-8');
 
-    private function computeHomeStats(?array $user): array
+        try {
+            $db = new \Database();
+            $db->connectDatabase();
+            $conn = $db->getConnection();
+
+            $scope = $this->buildTicketScope($user);
+
+            @require_once __DIR__ . '/../Models/Rating.php';
+            if (class_exists('RatingModel')) {
+                new \RatingModel($conn); // asegura ticket_ratings
+            }
+
+            $counts = ['activos' => 0, 'finalizados' => 0, 'cancelados' => 0];
+            $sqlTickets = <<<SQL
+                SELECT
+                    SUM(CASE WHEN t.fecha_cierre IS NULL THEN 1 ELSE 0 END) AS activos,
+                    SUM(CASE WHEN t.fecha_cierre IS NOT NULL THEN 1 ELSE 0 END) AS finalizados,
+                    SUM(CASE WHEN est.name = 'Cancelado' THEN 1 ELSE 0 END) AS cancelados
+                FROM tickets t
+                INNER JOIN estados_tickets est ON est.id = t.estado_id
+            SQL;
+            $sqlTickets .= $scope['joins'];
+            $sqlTickets .= ' WHERE 1=1' . $scope['where'];
+
+            if ($scope['param'] !== null && ($stmt = $conn->prepare($sqlTickets))) {
+                $param = (int)$scope['param'];
+                $stmt->bind_param('i', $param);
+                if ($stmt->execute()) {
+                    $res = $stmt->get_result();
+                    if ($res) {
+                        $row = $res->fetch_assoc();
+                        if ($row) {
+                            $counts = array_merge($counts, array_filter($row, function ($v) { return $v !== null; }));
+                        }
+                    }
+                }
+                $stmt->close();
+            } elseif ($scope['param'] === null && ($res = $conn->query($sqlTickets))) {
+                $row = $res->fetch_assoc();
+                if ($row) {
+                    $counts = array_merge($counts, array_filter($row, function ($v) { return $v !== null; }));
+                }
+            }
+
+            $categories = ['labels' => [], 'data' => []];
+            $sqlCat = <<<SQL
+                SELECT cat.name AS categoria, COUNT(*) AS total
+                FROM tickets t
+                INNER JOIN dispositivos d ON d.id = t.dispositivo_id
+                INNER JOIN categorias cat ON cat.id = d.categoria_id
+            SQL;
+            $sqlCat .= $scope['joins'];
+            $sqlCat .= ' WHERE 1=1' . $scope['where'];
+            $sqlCat .= ' GROUP BY cat.name ORDER BY total DESC LIMIT 6';
+
+            if ($scope['param'] !== null && ($stmt = $conn->prepare($sqlCat))) {
+                $param = (int)$scope['param'];
+                $stmt->bind_param('i', $param);
+                if ($stmt->execute()) {
+                    $res = $stmt->get_result();
+                    while ($res && ($row = $res->fetch_assoc())) {
+                        $categories['labels'][] = $row['categoria'];
+                        $categories['data'][] = (int)$row['total'];
+                    }
+                }
+                $stmt->close();
+            } elseif ($scope['param'] === null && ($res = $conn->query($sqlCat))) {
+                while ($row = $res->fetch_assoc()) {
+                    $categories['labels'][] = $row['categoria'];
+                    $categories['data'][] = (int)$row['total'];
+                }
+            }
+
+            $ranking = ['labels' => [1, 2, 3, 4, 5], 'data' => [0, 0, 0, 0, 0]];
+            $sqlRanking = <<<SQL
+                SELECT bucket, COUNT(*) AS total
+                FROM (
+                    SELECT 
+                        CASE
+                            WHEN ROUND(AVG(r.stars)) < 1 THEN 1
+                            WHEN ROUND(AVG(r.stars)) > 5 THEN 5
+                            ELSE ROUND(AVG(r.stars))
+                        END AS bucket
+                    FROM ticket_ratings r
+                    INNER JOIN tickets t ON t.id = r.ticket_id
+                    INNER JOIN tecnicos tc ON tc.id = r.tecnico_id
+            SQL;
+            $sqlRanking .= $scope['joins'];
+            $sqlRanking .= ' WHERE 1=1' . $scope['where'];
+            $sqlRanking .= ' GROUP BY tc.id
+                ) buckets
+                WHERE bucket IS NOT NULL
+                GROUP BY bucket
+                ORDER BY bucket ASC';
+
+            if ($scope['param'] !== null && ($stmt = $conn->prepare($sqlRanking))) {
+                $param = (int)$scope['param'];
+                $stmt->bind_param('i', $param);
+                if ($stmt->execute()) {
+                    $res = $stmt->get_result();
+                    while ($res && ($row = $res->fetch_assoc())) {
+                        $bucket = (int)($row['bucket'] ?? 0);
+                        if ($bucket >= 1 && $bucket <= 5) {
+                            $ranking['data'][$bucket - 1] = (int)$row['total'];
+                        }
+                    }
+                }
+                $stmt->close();
+            } elseif ($scope['param'] === null && ($res = $conn->query($sqlRanking))) {
+                while ($row = $res->fetch_assoc()) {
+                    $bucket = (int)($row['bucket'] ?? 0);
+                    if ($bucket >= 1 && $bucket <= 5) {
+                        $ranking['data'][$bucket - 1] = (int)$row['total'];
+                    }
+                }
+            }
+
+            $stats = $this->computeHomeStats($user, $conn);
+
+            echo json_encode([
+                'generated_at' => gmdate('c'),
+                'role' => $user['role'] ?? 'Invitado',
+                'stats' => $stats,
+                'charts' => [
+                    'tickets' => [
+                        'labels' => ['Activos', 'Finalizados', 'Cancelados'],
+                        'data' => [
+                            (int)($counts['activos'] ?? 0),
+                            (int)($counts['finalizados'] ?? 0),
+                            (int)($counts['cancelados'] ?? 0),
+                        ],
+                    ],
+                    'ranking' => $ranking,
+                    'categories' => $categories,
+                ],
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo json_encode([
+                'error' => true,
+                'message' => 'No se pudieron obtener las métricas',
+            ], JSON_UNESCAPED_UNICODE);
+        }
+        exit;
+    }
+
+    private function buildTicketScope(?array $user): array
+    {
+        $role = $user['role'] ?? '';
+        $userId = isset($user['id']) ? (int)$user['id'] : null;
+
+        if (!$userId) {
+            return ['joins' => '', 'where' => '', 'param' => null];
+        }
+
+        switch ($role) {
+            case 'Cliente':
+                return [
+                    'joins' => ' INNER JOIN clientes scope_cli ON t.cliente_id = scope_cli.id',
+                    'where' => ' AND scope_cli.user_id = ?',
+                    'param' => $userId,
+                ];
+            case 'Tecnico':
+                return [
+                    'joins' => ' INNER JOIN tecnicos scope_tc ON t.tecnico_id = scope_tc.id',
+                    'where' => ' AND scope_tc.user_id = ?',
+                    'param' => $userId,
+                ];
+            case 'Supervisor':
+                return [
+                    'joins' => ' INNER JOIN supervisores scope_sup ON t.supervisor_id = scope_sup.id',
+                    'where' => ' AND scope_sup.user_id = ?',
+                    'param' => $userId,
+                ];
+            default:
+                return ['joins' => '', 'where' => '', 'param' => null];
+        }
+    }
+
+    private function computeHomeStats(?array $user, ?\mysqli $connOverride = null): array
     {
         $stats = [
             'activeTickets'    => 0,
@@ -27,9 +207,15 @@ class DefaultController
             'lastUpdateHuman'  => '—',
         ];
         try {
-            $db = new \Database();
-            $db->connectDatabase();
-            $conn = $db->getConnection();
+            $conn = $connOverride;
+            if (!$connOverride) {
+                $db = new \Database();
+                $db->connectDatabase();
+                $conn = $db->getConnection();
+            }
+            if (!$conn) {
+                return $stats;
+            }
 
             $role = $user['role'] ?? 'Invitado';
             $userId = isset($user['id']) ? (int)$user['id'] : null;
