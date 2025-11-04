@@ -21,11 +21,32 @@
           <span data-field="cliente-nombre"><?= htmlspecialchars($t['cliente'] ?? $t['cliente_nombre'] ?? $t['user_name'] ?? 'No disponible') ?></span>
         </li>
 
-        <li class="dato-item"><strong>Estado:</strong>
-          <span id="estado-badge" data-field="estado-label" class="<?= htmlspecialchars($view['estadoClass']) ?>">
-            <?= htmlspecialchars($view['estadoStr']) ?>
-          </span>
+        <?php
+          $estado = strtolower(trim($ticket['estado'] ?? ''));
+          $estadoMap = [
+              'nuevo' => 'estado-nuevo',
+              'diagnóstico' => 'estado-diagnostico',
+              'diagnostico' => 'estado-diagnostico',
+              'presupuesto' => 'estado-presupuesto',
+              'en espera' => 'estado-espera',
+              'en reparación' => 'estado-reparacion',
+              'en reparacion' => 'estado-reparacion',
+              'en pruebas' => 'estado-pruebas',
+              'listo para retirar' => 'estado-retiro',
+              'finalizado' => 'estado-finalizado',
+              'cancelado' => 'estado-cancelado'
+          ];
+          $estadoClass = $estadoMap[$estado] ?? 'estado-default';
+          $estadoStr = ucfirst($estado);
+        ?>
+        <li class="dato-item">
+            <strong>Estado:</strong>
+            <span id="estado-badge" class="<?= htmlspecialchars($estadoClass) ?>">
+                <?= htmlspecialchars($estadoStr) ?>
+            </span>
         </li>
+
+
 
         <li class="dato-item"><strong>Técnico asignado:</strong>
           <span data-field="tecnico-nombre">
@@ -48,13 +69,13 @@
           </time>
         </li>
 
-        <!-- ✅ Descripción ocupa toda la fila -->
+        <!--  Descripción ocupa toda la fila -->
         <li class="dato-item dato-larga descripcion-falla">
           <strong>Descripción de la falla:</strong>
           <span data-field="descripcion-falla"><?= htmlspecialchars($t['descripcion'] ?? $t['descripcion_falla']) ?></span>
         </li>
 
-        <!-- ✅ Imagen del dispositivo como item -->
+        <!--  Imagen del dispositivo como item -->
         <?php
           $resolvedImg = \Storage::resolveDeviceUrl($t['img_dispositivo'] ?? '');
           $hasImg = $resolvedImg !== '';

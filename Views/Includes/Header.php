@@ -93,7 +93,7 @@ $subtitle = __($subtitleKey);
 			}
 			?>
 			<?php if ($authUser): ?>
-			<a href="/ProyectoPandora/Public/index.php?route=Notification/Index" class="notif-btn" title="Notificaciones" id="notifBell">
+			<a href="/ProyectoPandora/Public/index.php?route=Notification/Index" class="notif-btn-home" title="Notificaciones" id="notifBell">
 				<i class='bx bx-bell'></i>
 				<span class="notif-badge" id="notifBadge" style="display: <?= ($unread>0?'inline-block':'none') ?>;">
 					<?= (int)$unread ?>

@@ -1,5 +1,7 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Date.php'; ?>
+<?php require_once __DIR__ . '/../../Core/Storage.php'; ?>
+
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 
@@ -22,40 +24,59 @@
     <section class="section-mis-tickets">
         <h2 class="titulo-carrusel">Tickets Finalizados</h2>
 
-        <div class="carousel-container carousel-container-tecnico">
-            <button class="carousel-btn-tecnico prev-btn-tecnico" id="prevTicketBtnFinished">&#10094;</button>
+        <div class="carousel-container">
+            <button class="carousel-btn prev-btn" id="prevTicketBtnFinished">&#10094;</button>
 
-            <div class="carousel-track-tecnico" id="carouselTicketTrackFinished">
+            <div class="carousel-track" id="carouselTicketTrackFinished">
                 <?php if (!empty($tickets)): ?>
                     <?php foreach ($tickets as $ticket): ?>
                         <?php 
-                            $estadoStr = $ticket['estado'] ?? ''; 
-                            $estadoClass = $ticket['estadoClass'] ?? 'badge'; 
-                            $imgUrl = !empty($ticket['imagen']) 
-                                ? htmlspecialchars($ticket['imagen']) 
-                                : '/ProyectoPandora/Public/assets/img/default-device.jpg';
+                            $imgDevice = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? '');
+                            $estado = strtolower(trim($ticket['estado'] ?? 'finalizado'));
+                            $estadoMap = [
+                                'nuevo' => 'estado-nuevo',
+                                'diagnóstico' => 'estado-diagnostico',
+                                'diagnostico' => 'estado-diagnostico',
+                                'presupuesto' => 'estado-presupuesto',
+                                'en espera' => 'estado-espera',
+                                'en reparación' => 'estado-reparacion',
+                                'en reparacion' => 'estado-reparacion',
+                                'en pruebas' => 'estado-pruebas',
+                                'listo para retirar' => 'estado-retiro',
+                                'finalizado' => 'estado-finalizado',
+                                'cancelado' => 'estado-cancelado'
+                            ];
+                            $estadoClass = $estadoMap[$estado] ?? 'estado-default';
+                            $isWorking = false; // finalizados no muestran barra de progreso
                         ?>
-                        <div class="ticket-card">
-
+                        <article class="ticket-card">
+                            <div class="ticket-img">
+                                <img src="<?= htmlspecialchars($imgDevice) ?>" alt="Imagen dispositivo">
+                            </div>
                             <div class="ticket-info">
                                 <h3><?= htmlspecialchars($ticket['dispositivo']) ?> <?= htmlspecialchars($ticket['modelo']) ?></h3>
                                 <p class="line-clamp-3"><strong>Descripción:</strong> <?= htmlspecialchars($ticket['descripcion_falla']) ?></p>
-                                <p><strong>Estado:</strong> <span class="<?= $estadoClass ?>"><?= htmlspecialchars($estadoStr) ?></span></p>
+
+                                <div class="ticket-estado-wrapper">
+                                    <strong>Estado:</strong>
+                                    <span class="estado-tag <?= $estadoClass ?>"><?= htmlspecialchars(ucfirst($estado)) ?></span>
+                                </div>
+
                                 <p><strong>Fecha:</strong> <time title="<?= htmlspecialchars($ticket['fecha_exact'] ?? '') ?>"><?= htmlspecialchars($ticket['fecha_human'] ?? '') ?></time></p>
                                 <p><strong>Técnico:</strong> <?= htmlspecialchars($ticket['tecnico'] ?? 'Sin asignar') ?></p>
                             </div>
 
-                            <div class="ticket-actions">
-                                <a href="/ProyectoPandora/Public/index.php?route=Ticket/Ver&id=<?= (int)$ticket['id'] ?>" class="btn">Ver detalle</a>
+                            <div class="card-actions">
+                                <a href="/ProyectoPandora/Public/index.php?route=Ticket/Ver&id=<?= (int)$ticket['id'] ?>" class="btn btn-primary">Ver detalle</a>
                             </div>
-                        </div>
+                        </article>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <p>No tienes tickets finalizados o cancelados.</p>
                 <?php endif; ?>
             </div>
 
-            <button class="carousel-btn-tecnico next-btn-tecnico" id="nextTicketBtnFinished">&#10095;</button>
+            <button class="carousel-btn next-btn" id="nextTicketBtnFinished">&#10095;</button>
         </div>
     </section>
 </div>
@@ -67,13 +88,14 @@ const ticketTrackFinished = document.getElementById('carouselTicketTrackFinished
 const prevTicketBtnFinished = document.getElementById('prevTicketBtnFinished');
 const nextTicketBtnFinished = document.getElementById('nextTicketBtnFinished');
 
-const ticketCardWidthFinished = 300; // ancho aproximado de cada tarjeta + margen
+const ticketCardsFinished = ticketTrackFinished.querySelectorAll('.ticket-card');
 
-nextTicketBtnFinished.addEventListener('click', () => {
-  ticketTrackFinished.scrollBy({ left: ticketCardWidthFinished, behavior: 'smooth' });
-});
+if (ticketCardsFinished.length < 5) {
+    prevTicketBtnFinished.style.display = 'none';
+    nextTicketBtnFinished.style.display = 'none';
+}
 
-prevTicketBtnFinished.addEventListener('click', () => {
-  ticketTrackFinished.scrollBy({ left: -ticketCardWidthFinished, behavior: 'smooth' });
-});
+const ticketCardWidthFinished = 300; 
+nextTicketBtnFinished?.addEventListener('click', () => ticketTrackFinished.scrollBy({ left: ticketCardWidthFinished, behavior: 'smooth' }));
+prevTicketBtnFinished?.addEventListener('click', () => ticketTrackFinished.scrollBy({ left: -ticketCardWidthFinished, behavior: 'smooth' }));
 </script>

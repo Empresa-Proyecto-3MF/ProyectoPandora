@@ -1,6 +1,7 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Date.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Storage.php'; ?>
+
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 
@@ -43,7 +44,10 @@
               </article>
             <?php endforeach; ?>
           <?php else: ?>
-            <p>No tienes dispositivos registrados.</p>
+            <div class="no-device">
+              <p>No tienes dispositivos registrados aún.</p>
+              <a href="/ProyectoPandora/Public/index.php?route=Device/MostrarCrearDispositivo" class="btn-float-add btn-center" title="Agregar dispositivo">+</a>
+            </div>
           <?php endif; ?>
         </div>
         <button class="carousel-btn next-btn" id="nextBtn">&#10095;</button>
@@ -52,21 +56,32 @@
   </div>
 </main>
 
-<a href="/ProyectoPandora/Public/index.php?route=Device/MostrarCrearDispositivo" class="btn-float-add" title="Agregar dispositivo">+</a>
+<a href="/ProyectoPandora/Public/index.php?route=Device/MostrarCrearDispositivo" class="btn-float-add" id="btnAdd" title="Agregar dispositivo">+</a>
 
 <script>
   const track = document.getElementById('carouselTrack');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
+  const btnAdd = document.getElementById('btnAdd');
 
-  let scrollAmount = 0;
-  const cardWidth = 300; // ancho aprox de cada tarjeta + margen
+  // Si hay menos de 3 dispositivos, ocultar los botones del carrusel
+  const cards = track.querySelectorAll('.device-card');
+  if (cards.length < 5) {
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+  }
 
-  nextBtn.addEventListener('click', () => {
+  // Ocultar el botón flotante normal si no hay dispositivos
+  if (cards.length === 0) {
+    btnAdd.style.display = 'none';
+  }
+
+  // Desplazamiento del carrusel
+  const cardWidth = 300;
+  nextBtn?.addEventListener('click', () => {
     track.scrollBy({ left: cardWidth, behavior: 'smooth' });
   });
-
-  prevBtn.addEventListener('click', () => {
+  prevBtn?.addEventListener('click', () => {
     track.scrollBy({ left: -cardWidth, behavior: 'smooth' });
   });
 </script>

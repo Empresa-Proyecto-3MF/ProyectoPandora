@@ -22,58 +22,88 @@
     </form>
 
     <section class="section-mis-tickets">
-  <h2 class="titulo-carrusel">Mis Tickets</h2>
+      <h2 class="titulo-carrusel">Mis Tickets</h2>
 
-  <div class="carousel-container carousel-container-tecnico">
-    <button class="carousel-btn-tecnico prev-btn-tecnico" id="prevTicketBtnTech">&#10094;</button>
+      <div class="carousel-container">
+        <button class="carousel-btn prev-btn" id="prevTicketBtnTech">&#10094;</button>
 
-    <div class="carousel-track-tecnico" id="carouselTicketTrackTech">
-      <?php if (!empty($tickets)): ?>
-        <?php foreach ($tickets as $ticket): ?>
-          <?php $imgDevice = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? ''); ?>
-          <div class="ticket-card">
-            <div class="ticket-img">
-              <img src="<?= htmlspecialchars($imgDevice) ?>" alt="Imagen dispositivo">
-            </div>
+        <div class="carousel-track" id="carouselTicketTrackTech">
+          <?php if (!empty($tickets)): ?>
+            <?php foreach ($tickets as $ticket): ?>
+              <?php 
+                $imgDevice = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? '');
+                $estado = strtolower(trim($ticket['estado'] ?? ''));
+                $estadoMap = [
+                    'nuevo' => 'estado-nuevo',
+                    'diagnóstico' => 'estado-diagnostico',
+                    'diagnostico' => 'estado-diagnostico',
+                    'presupuesto' => 'estado-presupuesto',
+                    'en espera' => 'estado-espera',
+                    'en reparación' => 'estado-reparacion',
+                    'en reparacion' => 'estado-reparacion',
+                    'en pruebas' => 'estado-pruebas',
+                    'listo para retirar' => 'estado-retiro',
+                    'finalizado' => 'estado-finalizado',
+                    'cancelado' => 'estado-cancelado'
+                ];
+                $estadoClass = $estadoMap[$estado] ?? 'estado-default';
+                $isWorking = in_array($estado, ['diagnóstico','diagnostico','en reparación','en reparacion','en pruebas']);
+              ?>
+              <article class="ticket-card">
+                <div class="ticket-img">
+                  <img src="<?= htmlspecialchars($imgDevice) ?>" alt="Imagen dispositivo">
+                </div>
 
-            <div class="ticket-info">
-              <h3><?= htmlspecialchars($ticket['marca']) ?> <?= htmlspecialchars($ticket['modelo']) ?></h3>
-              <p><strong>Cliente:</strong> <?= htmlspecialchars($ticket['cliente']) ?></p>
-              <p class="line-clamp-3"><strong>Descripción:</strong> <?= htmlspecialchars($ticket['descripcion_falla']) ?></p>
-              <p><strong>Estado:</strong> <span class="<?= $ticket['estadoClass'] ?>"><?= htmlspecialchars($ticket['estado']) ?></span></p>
-              <p><strong>Fecha:</strong> <time title="<?= htmlspecialchars($ticket['fecha_exact']) ?>"><?= htmlspecialchars($ticket['fecha_human']) ?></time></p>
-            </div>
+                <div class="ticket-info">
+                  <h3><?= htmlspecialchars($ticket['marca']) ?> <?= htmlspecialchars($ticket['modelo']) ?></h3>
+                  <p><strong>Cliente:</strong> <?= htmlspecialchars($ticket['cliente']) ?></p>
+                   <div class="ticket-estado-wrapper">
+                    <strong>Estado:</strong>
+                    <span class="estado-tag <?= $estadoClass ?> <?= $isWorking ? 'estado-anim' : '' ?>">
+                      <?= htmlspecialchars(ucfirst($estado)) ?>
+                    </span>
+                    <?php if ($isWorking): ?>
+                      <div class="progress-bar">
+                        <div class="progress-bar-fill"></div>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                  <p class="line-clamp-3"><strong>Descripción:</strong> <?= htmlspecialchars($ticket['descripcion_falla']) ?></p>
+                  
+                  <p ><strong>Fecha:</strong> <time title="<?= htmlspecialchars($ticket['fecha_exact']) ?>"><?= htmlspecialchars($ticket['fecha_human']) ?></time></p>
+                </div>
+                <br>
+                <div class="ticket-actions">
+                  <a href="/ProyectoPandora/Public/index.php?route=Ticket/Ver&id=<?= $ticket['id'] ?>" class="btn btn-primary">Ver detalle</a>
+                </div>
+              </article>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <p>No tienes reparaciones asignadas.</p>
+          <?php endif; ?>
+        </div>
 
-            <div class="ticket-actions">
-              <a href="/ProyectoPandora/Public/index.php?route=Ticket/Ver&id=<?= $ticket['id'] ?>" class="btn">Ver detalle</a>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <p>No tienes reparaciones asignadas.</p>
-      <?php endif; ?>
-    </div>
-
-    <button class="carousel-btn-tecnico next-btn-tecnico" id="nextTicketBtnTech">&#10095;</button>
+        <button class="carousel-btn next-btn" id="nextTicketBtnTech">&#10095;</button>
+      </div>
+    </section>
   </div>
 </section>
 
-  </div>
-</section>
 <script>
   const ticketTrackTech = document.getElementById('carouselTicketTrackTech');
-const prevTicketBtnTech = document.getElementById('prevTicketBtnTech');
-const nextTicketBtnTech = document.getElementById('nextTicketBtnTech');
+  const prevTicketBtnTech = document.getElementById('prevTicketBtnTech');
+  const nextTicketBtnTech = document.getElementById('nextTicketBtnTech');
 
-const ticketCardWidthTech = 300; // ancho aproximado de cada tarjeta + margen
+  const ticketCardsTech = ticketTrackTech.querySelectorAll('.ticket-card');
 
-nextTicketBtnTech.addEventListener('click', () => {
-  ticketTrackTech.scrollBy({ left: ticketCardWidthTech, behavior: 'smooth' });
-});
+  // Carousel visible solo si hay 5 o más tickets
+  if (ticketCardsTech.length < 5) {
+    prevTicketBtnTech.style.display = 'none';
+    nextTicketBtnTech.style.display = 'none';
+  }
 
-prevTicketBtnTech.addEventListener('click', () => {
-  ticketTrackTech.scrollBy({ left: -ticketCardWidthTech, behavior: 'smooth' });
-});
-
+  const ticketCardWidthTech = 300; // ancho aproximado de cada tarjeta + margen
+  nextTicketBtnTech?.addEventListener('click', () => ticketTrackTech.scrollBy({ left: ticketCardWidthTech, behavior: 'smooth' }));
+  prevTicketBtnTech?.addEventListener('click', () => ticketTrackTech.scrollBy({ left: -ticketCardWidthTech, behavior: 'smooth' }));
 </script>
 </main>
