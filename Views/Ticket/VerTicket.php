@@ -1,6 +1,7 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Date.php'; ?>
 <?php require_once __DIR__ . '/../../Core/LogFormatter.php'; ?>
+
 <main>
   <div class="detalle-ticket-layout">
     <!-- ================== DETALLE IZQUIERDA ================== -->
@@ -9,44 +10,97 @@
 
       <!-- BLOQUE PRINCIPAL: INFO HORIZONTAL -->
       <div class="bloque-principal">
-        <?php if (!empty($view['ticket'])): ?>
-          <?php $t = $view['ticket']; ?>
-          <ul class="detalle-grid" id="detalleTicket" style="list-style:none;padding:0;margin:0;">
-              <li class="dato-item"><strong>ID Ticket:</strong><span><?= htmlspecialchars($t['id']) ?></span></li>
-              <li class="dato-item"><strong>Dispositivo:</strong><span><?= htmlspecialchars($t['marca']) ?> <?= htmlspecialchars($t['modelo']) ?></span></li>
-              <li class="dato-item"><strong>Cliente:</strong><span><?= htmlspecialchars($t['cliente'] ?? $t['cliente_nombre'] ?? $t['user_name'] ?? 'No disponible') ?></span></li>
-              <li class="dato-item"><strong>Estado:</strong><span id="estado-badge" class="<?= htmlspecialchars($view['estadoClass']) ?>"><?= htmlspecialchars($view['estadoStr']) ?></span></li>
-              <li class="dato-item dato-larga"><strong>Descripción de la falla:</strong><span><?= htmlspecialchars($t['descripcion'] ?? $t['descripcion_falla']) ?></span></li>
-              <li class="dato-item"><strong>Técnico asignado:</strong><span><?= !empty($t['tecnico']) ? htmlspecialchars($t['tecnico']) : '<span class="sin-asignar">Sin asignar</span>' ?></span></li>
-              <?php if (isset($t['fecha_creacion'])): ?>
-                <li class="dato-item"><strong>Fecha de creación:</strong>
-                  <time title="<?= htmlspecialchars(DateHelper::exact($t['fecha_creacion'])) ?>">
-                    <?= htmlspecialchars(DateHelper::smart($t['fecha_creacion'])) ?>
-                  </time>
-                </li>
-              <?php endif; ?>
-              <?php if (!empty($t['fecha_cierre'])): ?>
-                <li class="dato-item"><strong>Fecha de cierre:</strong>
-                  <time title="<?= htmlspecialchars(DateHelper::exact($t['fecha_cierre'])) ?>">
-                    <?= htmlspecialchars(DateHelper::smart($t['fecha_cierre'])) ?>
-                  </time>
-                </li>
-              <?php endif; ?>
+  <?php if (!empty($view['ticket'])): ?>
+    <?php $t = $view['ticket']; ?>
+    
+    <ul class="detalle-grid" id="detalleTicket" style="list-style:none;padding:0;margin:0;">
 
-              <!-- Zona imagen: destacada -->
-              <?php if (!empty($t['img_dispositivo'])): ?>
-                  <li class="dato-item imagen-wrap">
-                    <strong>Imagen del dispositivo:</strong>
-                    <div class="imagen-contenedor">
-                      <img class="imagen-dispositivo" src="/ProyectoPandora/Public/img/imgDispositivos/<?= htmlspecialchars($t['img_dispositivo']) ?>" alt="Imagen dispositivo">
-                    </div>
-                  </li>
-              <?php endif; ?>
-          </ul>
-        <?php else: ?>
-          <div class="alert alert-danger">No se encontró información para este ticket.</div>
+        <li class="dato-item"><strong>ID Ticket:</strong><span><?= htmlspecialchars($t['id']) ?></span></li>
+        <li class="dato-item"><strong>Dispositivo:</strong><span data-field="device-nombre"><?= htmlspecialchars($t['marca']) ?> <?= htmlspecialchars($t['modelo']) ?></span></li>
+        <li class="dato-item"><strong>Cliente:</strong>
+          <span data-field="cliente-nombre"><?= htmlspecialchars($t['cliente'] ?? $t['cliente_nombre'] ?? $t['user_name'] ?? 'No disponible') ?></span>
+        </li>
+
+        <?php
+          $estado = strtolower(trim($ticket['estado'] ?? ''));
+          $estadoMap = [
+              'nuevo' => 'estado-nuevo',
+              'diagnóstico' => 'estado-diagnostico',
+              'diagnostico' => 'estado-diagnostico',
+              'presupuesto' => 'estado-presupuesto',
+              'en espera' => 'estado-espera',
+              'en reparación' => 'estado-reparacion',
+              'en reparacion' => 'estado-reparacion',
+              'en pruebas' => 'estado-pruebas',
+              'listo para retirar' => 'estado-retiro',
+              'finalizado' => 'estado-finalizado',
+              'cancelado' => 'estado-cancelado'
+          ];
+          $estadoClass = $estadoMap[$estado] ?? 'estado-default';
+          $estadoStr = ucfirst($estado);
+        ?>
+        <li class="dato-item">
+            <strong>Estado:</strong>
+            <span id="estado-badge" class="<?= htmlspecialchars($estadoClass) ?>">
+                <?= htmlspecialchars($estadoStr) ?>
+            </span>
+        </li>
+
+
+
+        <li class="dato-item"><strong>Técnico asignado:</strong>
+          <span data-field="tecnico-nombre">
+            <?= !empty($t['tecnico']) ? htmlspecialchars($t['tecnico']) : '<span class="sin-asignar">Sin asignar</span>' ?>
+          </span>
+        </li>
+
+        <?php if (isset($t['fecha_creacion'])): ?>
+          <li class="dato-item"><strong>Fecha de creación:</strong>
+            <time data-field="fecha-creacion" data-exact="<?= htmlspecialchars(DateHelper::exact($t['fecha_creacion'])) ?>" title="<?= htmlspecialchars(DateHelper::exact($t['fecha_creacion'])) ?>">
+              <?= htmlspecialchars(DateHelper::smart($t['fecha_creacion'])) ?>
+            </time>
+          </li>
         <?php endif; ?>
-      </div> <!-- .bloque-principal -->
+
+        <?php $hasClose = !empty($t['fecha_cierre']); ?>
+        <li class="dato-item" data-field="fecha-cierre-row"<?= $hasClose ? '' : ' style="display:none;"' ?>><strong>Fecha de cierre:</strong>
+          <time data-field="fecha-cierre" data-exact="<?= $hasClose ? htmlspecialchars(DateHelper::exact($t['fecha_cierre'])) : '' ?>" title="<?= $hasClose ? htmlspecialchars(DateHelper::exact($t['fecha_cierre'])) : '' ?>">
+            <?= $hasClose ? htmlspecialchars(DateHelper::smart($t['fecha_cierre'])) : '' ?>
+          </time>
+        </li>
+
+        <!--  Descripción ocupa toda la fila -->
+        <li class="dato-item dato-larga descripcion-falla">
+          <strong>Descripción de la falla:</strong>
+          <span data-field="descripcion-falla"><?= htmlspecialchars($t['descripcion'] ?? $t['descripcion_falla']) ?></span>
+        </li>
+
+        <!--  Imagen del dispositivo como item -->
+        <?php
+          $resolvedImg = \Storage::resolveDeviceUrl($t['img_dispositivo'] ?? '');
+          $hasImg = $resolvedImg !== '';
+        ?>
+        <li class="dato-item imagen-card" data-field="device-image-card"<?= $hasImg ? '' : ' style="display:none;"' ?> >
+          <h3 style="margin-top:0;">Imagen del dispositivo</h3>
+          <div class="imagen-contenedor">
+            <img
+              class="imagen-dispositivo"
+              data-field="device-image"
+              src="<?= $hasImg ? htmlspecialchars($resolvedImg) : '' ?>"
+              alt="Imagen del dispositivo"
+            >
+          </div>
+          <div class="imagen-pie">
+            Cargada el <?= htmlspecialchars($t['fecha_creacion'] ?? '---') ?>
+          </div>
+        </li>
+
+    </ul>
+
+  <?php else: ?>
+    <div class="alert alert-danger">No se encontró información para este ticket.</div>
+  <?php endif; ?>
+</div>
 
       <!-- BLOQUE: MENSAJES / ALERTAS YA EXISTENTES (NO TOCAR su CSS original) -->
       <?php if (!empty($view['flash']['error']) && $view['flash']['error']==='estado'): ?>
@@ -256,26 +310,15 @@
         </div>
       <?php endif; ?>
 
-      <!-- === OVERLAY PAGADO === -->
-      <?php
-          $mostrarPagadoOverlay = false;
-          if ((!empty($view['flash']['ok']) && $view['flash']['ok']==='pagado') || $finalizado) {
-              require_once __DIR__ . '/../../Core/Database.php';
-              require_once __DIR__ . '/../../Models/Rating.php';
-              $dbx = new Database(); $dbx->connectDatabase();
-              $rtM = new RatingModel($dbx->getConnection());
-              $rt = $rtM->getByTicket((int)$view['ticket']['id']);
-              $mostrarPagadoOverlay = !empty($rt) && (int)($rt['stars'] ?? 0) > 0;
-              if (!$mostrarPagadoOverlay && $finalizado && $rol === 'Cliente') {
-                  echo '<div class="alert alert-warning">Tu ticket está finalizado. Por favor, califica la atención para completar el cierre.</div>';
-              }
-          }
-      ?>
-      <?php if ($mostrarPagadoOverlay): ?>
+    <!-- === OVERLAY PAGADO (pasado desde el controlador) === -->
+    <?php if (!empty($view['mostrarPagadoOverlay'])): ?>
       <div class="overlay-pagado">
           <div class="overlay-box">PAGADO</div>
       </div>
       <?php endif; ?>
+    <?php if (!empty($view['debeCalificar'])): ?>
+    <div class="alert alert-warning">Tu ticket está finalizado. Por favor, califica la atención para completar el cierre.</div>
+    <?php endif; ?>
     </div>
 
     <!-- ================== LÍNEA DE TIEMPO DERECHA ================== -->
@@ -285,7 +328,7 @@
         <div class="timeline-2col">
           <div>
             <strong>Técnico</strong>
-            <ul>
+            <ul data-timeline="Tecnico">
               <?php foreach (($view['timeline']['Tecnico'] ?? []) as $ev): ?>
                 <li>
                   <div class="timeline-fecha">
@@ -301,7 +344,7 @@
           </div>
           <div>
             <strong>Cliente</strong>
-            <ul>
+            <ul data-timeline="Cliente">
               <?php foreach (($view['timeline']['Cliente'] ?? []) as $ev): ?>
                 <li>
                   <div class="timeline-fecha">
@@ -317,7 +360,7 @@
           </div>
           <div>
             <strong>Supervisor</strong>
-            <ul>
+            <ul data-timeline="Supervisor">
               <?php foreach (($view['timeline']['Supervisor'] ?? []) as $ev): ?>
                 <li>
                   <div class="timeline-fecha">
@@ -337,18 +380,4 @@
   </div>
 </main>
 
-<script>
-(function(){
-  const badge = document.getElementById('estado-badge');
-  const id = <?= (int)($view['ticket']['id'] ?? 0) ?>;
-  if (!badge || !id) return;
-  const classFor = (txt)=>{
-      const t = (txt||'').toLowerCase();
-      if (["finalizado","cerrado","cancelado"].includes(t)) return 'badge badge--muted';
-      if (["presupuesto","en espera","pendiente"].includes(t)) return 'badge badge--warning';
-      if (["en reparación","diagnóstico","diagnostico","reparando"].includes(t)) return 'badge badge--info';
-      return 'badge badge--success';
-  };
-  badge.className = classFor(badge.textContent);
-})();
-</script>
+<script src="/ProyectoPandora/Public/js/ticket-ver.js" defer></script>

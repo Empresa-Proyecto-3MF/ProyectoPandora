@@ -1,5 +1,5 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Date.php'; ?>
+
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 <section class="content">
@@ -21,36 +21,80 @@
     </form>
 
     <section class="section-mis-tickets">
-      <div class="ticket-grid">
-        <?php if (!empty($tickets)): ?>
-          <?php foreach ($tickets as $ticket): ?>
-            <div class="ticket-card">
-              <div class="ticket-img">
-                <img src="/ProyectoPandora/Public/img/imgDispositivos/<?= htmlspecialchars($ticket['img_dispositivo']) ?>" alt="Imagen dispositivo">
-              </div>
+      <h2 class="titulo-carrusel">Mis Tickets</h2>
 
-              <div class="ticket-info">
-                <h3><?= htmlspecialchars($ticket['marca']) ?> <?= htmlspecialchars($ticket['modelo']) ?></h3>
-                <p><strong>Cliente:</strong> <?= htmlspecialchars($ticket['cliente']) ?></p>
-                <p class="line-clamp-3"><strong>Descripción:</strong> <?= htmlspecialchars($ticket['descripcion_falla']) ?></p>
-                <?php 
-                  $estadoStr = $ticket['estado'] ?? ''; 
-                  $estadoClass = $ticket['estadoClass'] ?? 'badge'; 
-                ?>
-                <p><strong>Estado:</strong> <span class="<?= $estadoClass ?>"><?= htmlspecialchars($estadoStr) ?></span></p>
-                <p><strong>Fecha:</strong> <time title="<?= htmlspecialchars($ticket['fecha_exact'] ?? '') ?>"><?= htmlspecialchars($ticket['fecha_human'] ?? '') ?></time></p>
-              </div>
+      <div class="carousel-container">
+        <button class="carousel-btn prev-btn" id="prevTicketBtnTech">&#10094;</button>
 
-              <div class="ticket-actions">
-                <a href="/ProyectoPandora/Public/index.php?route=Ticket/Ver&id=<?= $ticket['id'] ?>" class="btn">Ver detalle</a>
-              </div>
-            </div>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <p>No tienes reparaciones asignadas.</p>
-        <?php endif; ?>
+        <div class="carousel-track" id="carouselTicketTrackTech">
+          <?php if (!empty($tickets)): ?>
+            <?php foreach ($tickets as $ticket): ?>
+              <?php 
+                // Lógica movida al controlador: usar $ticket['img_preview']
+                $imgSrc = (string)($ticket['img_preview'] ?? '');
+
+                $estado = strtolower(trim($ticket['estado'] ?? ''));
+                $estadoMap = [
+                    'nuevo' => 'estado-nuevo',
+                    'diagnóstico' => 'estado-diagnostico',
+                    'diagnostico' => 'estado-diagnostico',
+                    'presupuesto' => 'estado-presupuesto',
+                    'en espera' => 'estado-espera',
+                    'en reparación' => 'estado-reparacion',
+                    'en reparacion' => 'estado-reparacion',
+                    'en pruebas' => 'estado-pruebas',
+                    'listo para retirar' => 'estado-retiro',
+                    'finalizado' => 'estado-finalizado',
+                    'cancelado' => 'estado-cancelado'
+                ];
+                $estadoClass = $estadoMap[$estado] ?? 'estado-default';
+                $isWorking = in_array($estado, ['diagnóstico','diagnostico','en reparación','en reparacion','en pruebas']);
+              ?>
+              <article class="ticket-card">
+                <div class="ticket-img">
+                  <img 
+                    src="<?= htmlspecialchars($imgSrc) ?>" 
+                    alt="Ticket #<?= (int)$ticket['id'] ?> - <?= htmlspecialchars($ticket['marca'] . ' ' . $ticket['modelo']) ?>"
+                    loading="lazy"
+                    decoding="async"
+                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(\Storage::fallbackDeviceUrl()) ?>'"
+                  >
+                </div>
+
+                <div class="ticket-info">
+                  <h3><?= htmlspecialchars($ticket['marca']) ?> <?= htmlspecialchars($ticket['modelo']) ?></h3>
+                  <p><strong>Cliente:</strong> <?= htmlspecialchars($ticket['cliente']) ?></p>
+                   <div class="ticket-estado-wrapper">
+                    <strong>Estado:</strong>
+                    <span class="estado-tag <?= $estadoClass ?> <?= $isWorking ? 'estado-anim' : '' ?>">
+                      <?= htmlspecialchars(ucfirst($estado)) ?>
+                    </span>
+                    <?php if ($isWorking): ?>
+                      <div class="progress-bar">
+                        <div class="progress-bar-fill"></div>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                  <p class="line-clamp-3"><strong>Descripción:</strong> <?= htmlspecialchars($ticket['descripcion_falla']) ?></p>
+                  
+                  <p ><strong>Fecha:</strong> <time title="<?= htmlspecialchars($ticket['fecha_exact']) ?>"><?= htmlspecialchars($ticket['fecha_human']) ?></time></p>
+                </div>
+                <br>
+                <div class="ticket-actions">
+                  <a href="/ProyectoPandora/Public/index.php?route=Ticket/Ver&id=<?= $ticket['id'] ?>" class="btn btn-primary">Ver detalle</a>
+                </div>
+              </article>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <p>No tienes reparaciones asignadas.</p>
+          <?php endif; ?>
+        </div>
+
+        <button class="carousel-btn next-btn" id="nextTicketBtnTech">&#10095;</button>
       </div>
     </section>
   </div>
 </section>
+
+<script src="/ProyectoPandora/Public/js/tecnicos-mis-reparaciones.js" defer></script>
 </main>

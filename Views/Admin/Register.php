@@ -26,7 +26,7 @@
         <div class="form-vertical">
             <h3>Añadir Usuario</h3>
 
-            <form action="/ProyectoPandora/Public/index.php?route=Register/RegisterAdmin" method="POST" novalidate onsubmit="return validarEmailRegistroAdmin(this)">
+            <form action="/ProyectoPandora/Public/index.php?route=Register/RegisterAdmin" method="POST" novalidate>
                 
                 <p>
                     <label for="name">Nombre:</label>
@@ -53,8 +53,22 @@
                     </select>
                 </p>
 
+                <?php
+                    $defaultBack = '/ProyectoPandora/Public/index.php?route=Admin/ListarUsers';
+                    $prevUrl = $_SESSION['prev_url'] ?? '';
+                    $prevUrlLower = strtolower($prevUrl);
+                    if (
+                        !$prevUrl ||
+                        strpos($prevUrlLower, 'register/registeradmin') !== false ||
+                        strpos($prevUrlLower, 'admin/register') !== false
+                    ) {
+                        $volverAdminUrl = $defaultBack;
+                    } else {
+                        $volverAdminUrl = $prevUrl;
+                    }
+                ?>
                 <button type="submit">Registrar</button>
-                <a href="/ProyectoPandora/Public/index.php?route=Default/Index" class="btn-volver">Volver</a>
+                <a href="<?= htmlspecialchars($volverAdminUrl, ENT_QUOTES, 'UTF-8') ?>" class="btn-volver">Volver</a>
             </form>
         </div>
     </div>

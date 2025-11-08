@@ -1,4 +1,3 @@
-
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 
 <main class="asignar-page">
@@ -66,23 +65,8 @@
 				<?php else: ?>
 					<?php foreach ($filtrados as $tec): ?>
 						<?php
-							$avatar = $tec['img_perfil'] ?? '';
-							$defaultAvatar = '/ProyectoPandora/Public/img/imgPerfil/default.png';
-							$fallbackAvatar = '/ProyectoPandora/Public/img/Innovasys.png';
-							if ($avatar && strpos($avatar, '/ProyectoPandora/') !== 0 && !preg_match('#^https?://#i', $avatar)) {
-								$avatar = '/ProyectoPandora/Public/img/imgPerfil/' . ltrim($avatar, '/');
-							}
-							$baseDocRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
-							$avatarFs = $baseDocRoot . $avatar;
-							if (!$avatar || ($baseDocRoot && !preg_match('#^https?://#i', $avatar) && !is_file($avatarFs))) {
-								$avatar = $defaultAvatar;
-								$defaultFs = $baseDocRoot . $defaultAvatar;
-								if ($baseDocRoot && !is_file($defaultFs)) {
-									$avatar = $fallbackAvatar;
-								}
-							}
+							$avatar = \Storage::resolveProfileUrl($tec['img_perfil'] ?? '');
 							$estado = $tec['disponibilidad'] ?? 'Desconocido';
-							$badgeColor = $estado === 'Disponible' ? '#16a34a' : ($estado==='Ocupado' ? '#ef4444' : '#64748b');
 						?>
 						<div class="asignar-card">
 							<div class="asignar-card__head">

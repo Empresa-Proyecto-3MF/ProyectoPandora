@@ -35,6 +35,24 @@ class InventarioModel
         $conds = [];
         $params = [];
         $types = '';
+
+        $allowedSort = [
+            'i.id' => 'i.id',
+            'id' => 'i.id',
+            'categoria' => 'c.name',
+            'c.name' => 'c.name',
+            'i.name_item' => 'i.name_item',
+            'name_item' => 'i.name_item',
+            'valor_unitario' => 'i.valor_unitario',
+            'i.valor_unitario' => 'i.valor_unitario',
+            'stock_actual' => 'i.stock_actual',
+            'i.stock_actual' => 'i.stock_actual',
+            'stock_minimo' => 'i.stock_minimo',
+            'i.stock_minimo' => 'i.stock_minimo'
+        ];
+        $sortKey = strtolower(trim((string)$sort));
+        $sortColumn = $allowedSort[$sortKey] ?? 'i.id';
+        $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
         if ($categoria_id) {
             $conds[] = 'i.categoria_id = ?';
             $types .= 'i';
@@ -48,7 +66,7 @@ class InventarioModel
         if ($conds) {
             $sql .= ' WHERE ' . implode(' AND ', $conds);
         }
-        $sql .= " ORDER BY $sort $dir";
+        $sql .= " ORDER BY $sortColumn $dir";
         if ($limit !== null && $offset !== null) {
             $sql .= ' LIMIT ? OFFSET ?';
             $types .= 'ii';
@@ -59,11 +77,11 @@ class InventarioModel
         if ($types) {
             $stmt = $this->conn->prepare($sql);
             if (!$stmt) return [];
-            
+
             $bindParams = [];
-            $bindParams[] = & $types;
+            $bindParams[] = &$types;
             foreach ($params as $k => $v) {
-                $bindParams[] = & $params[$k];
+                $bindParams[] = &$params[$k];
             }
             call_user_func_array([$stmt, 'bind_param'], $bindParams);
             $stmt->execute();

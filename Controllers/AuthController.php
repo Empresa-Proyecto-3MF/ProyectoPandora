@@ -22,6 +22,7 @@ class AuthController
             $db->connectDatabase();
             $userModel = new UserModel($db->getConnection());
             $user = $userModel->findByEmail($email);
+            $remember = !empty($_POST['remember']);
 
             
             if ($user && $email === 'admin@admin.com' && $password === '1234' && !password_verify($password, $user['password'])) {
@@ -43,7 +44,7 @@ class AuthController
                     $stmtAdm->bind_param("ii", $user['id'], $user['id']);
                     $stmtAdm->execute();
                 }
-                Auth::login($user);
+                Auth::login($user, $remember);
                 header('Location: /ProyectoPandora/Public/index.php?route=Default/Index');
                 exit;
             } else {

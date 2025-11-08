@@ -1,35 +1,32 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+
 <main>
-    <section class="fondo-login">
-        <div class="login">
-            <h2 class="bienvenida"><?= __('auth.login.welcome', ['app' => __('app.name')]) ?></h2>
-            <h3><?= __('auth.login.title') ?></h3>
+    <section class="login-body">
+        <div class="wrapper-login">
+            <form action="/ProyectoPandora/Public/index.php?route=Auth/Login" method="post">
+                <h1>bienvenido a Innovasys</h1>
 
-            <form class="form" id="loginForm" method="post" action="/ProyectoPandora/Public/index.php?route=Auth/Login">
-                <div class="textbox">
-                    <input type="email" name="email" id="email" required>
-                    <label for="email"><?= __('auth.login.email') ?></label>
+                <div class="input-box">
+                    <input type="email" name="email" id="email" placeholder="Email" required>
+                    <i class='bx bx-user'></i> 
                 </div>
 
-                <div class="textbox">
-                    <input type="password" name="password" id="password" autocomplete="off" required>
-                    <label for="password"><?= __('auth.login.password') ?></label>
+                <div class="input-box">
+                    <input type="password" name="password" id="password" placeholder="Contraseña" autocomplete="off" required>
+                    <i class='bx bx-lock'></i> 
                 </div>
 
-                <button type="submit">
-                    <span class="material-symbols-outlined"><?= __('auth.login.submit') ?></span>
-                </button>
+                <div class="remember-forgot">
+                    <label><input type="checkbox" name="remember" value="1"> Acordarme</label>
+                    <a href="#">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" class="btn-login">Login</button>
+
+                <div class="register-link">
+                    <p>¿No tienes una cuenta? <a href="/ProyectoPandora/Public/index.php?route=Register/Register">Regístrate</a></p>
+                </div>
             </form>
-
-            <!-- ZONA DE RESPUESTA -->
-            <div id="respuesta" style="margin-top: 10px; color: red;"></div>
-
-            <a class="footer-login" href="#">¿Olvidaste tu contraseña?</a>
-            <p>
-                <a class="footer-login" href="/ProyectoPandora/Public/index.php?route=Register/Register"><?= __('auth.register.title') ?></a>
-            </p>
         </div>
     </section>
 </main>
-
-

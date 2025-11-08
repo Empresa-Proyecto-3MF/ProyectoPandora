@@ -3,6 +3,7 @@ require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Models/Ticket.php';
 require_once __DIR__ . '/../Models/Device.php';
 require_once __DIR__ . '/../Core/Database.php';
+require_once __DIR__ . '/../Core/Storage.php';
 
 class DefaultController
 {
@@ -342,7 +343,7 @@ class DefaultController
         $user = $_SESSION['user'] ?? [];
         $userName = $user['name'] ?? 'Usuario';
         $userEmail = $user['email'] ?? '';
-        $userImg = $user['img_perfil'] ?? '/ProyectoPandora/Public/img/imgPerfil/default.png';
+        $userImg = \Storage::resolveProfileUrl($user['img_perfil'] ?? '');
         $rol = $user['role'] ?? '';
         $userId = $user['id'] ?? null;
 
@@ -416,7 +417,7 @@ class DefaultController
             } catch (\Throwable $e) { /* noop */ }
             $newName = isset($_POST['name']) ? trim((string)$_POST['name']) : '';
             $newEmail = isset($_POST['email']) ? trim((string)$_POST['email']) : '';
-            $imgPerfil = $user['img_perfil'] ?? '/ProyectoPandora/Public/img/imgPerfil/default.png';
+            $imgPerfil = $user['img_perfil'] ?? '';
             $didUpload = false;
 
             // Aceptar tanto 'img_perfil' como 'avatar' desde el formulario
@@ -427,16 +428,11 @@ class DefaultController
                 $fileKey = 'avatar';
             }
             if ($fileKey !== null) {
-                $imgTmp = $_FILES[$fileKey]['tmp_name'];
-                $origName = $_FILES[$fileKey]['name'] ?? 'avatar.png';
-                $safeName = preg_replace('/[^A-Za-z0-9_\.-]/', '_', $origName);
-                $imgName = uniqid('perfil_') . '_' . $safeName;
-                $webDir = '/ProyectoPandora/Public/img/imgPerfil';
-                $fsDir = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . $webDir;
-                if (!is_dir($fsDir)) { @mkdir($fsDir, 0775, true); }
-                $imgPath = $webDir . '/' . $imgName;
-                $destFs = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . $imgPath;
-                if (@move_uploaded_file($imgTmp, $destFs)) { $imgPerfil = $imgPath; $didUpload = true; }
+                $stored = \Storage::storeUploadedFile($_FILES[$fileKey], 'profile');
+                if ($stored) {
+                    $imgPerfil = $stored['relative'];
+                    $didUpload = true;
+                }
             }
 
             $userModel = new \UserModel($db->getConnection());

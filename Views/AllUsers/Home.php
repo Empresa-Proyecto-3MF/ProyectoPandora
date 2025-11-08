@@ -1,7 +1,6 @@
 <?php 
 include_once __DIR__ . '/../Includes/Sidebar.php'; 
 $role = strtolower($authUser['role'] ?? 'invitado');
-require_once __DIR__ . '/../../Core/Date.php';
 ?>
 
 <main>
@@ -49,8 +48,8 @@ require_once __DIR__ . '/../../Core/Date.php';
                         <i class='bx bx-refresh'></i>
                         <span class="num" id="lastUpdate">
                             <?php if (!empty($stats['lastUpdateIso'])): ?>
-                                <time title="<?= htmlspecialchars(DateHelper::exact($stats['lastUpdateIso'])) ?>">
-                                    <?= htmlspecialchars(DateHelper::smart($stats['lastUpdateIso'])) ?>
+                                <time title="<?= htmlspecialchars($stats['lastUpdateIso']) ?>">
+                                    <?= htmlspecialchars($stats['lastUpdateHuman'] ?? '') ?>
                                 </time>
                             <?php else: ?>
                                 —

@@ -3,6 +3,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/../Core/Auth.php';
+Auth::user();
+
 // Zona horaria: Uruguay
 date_default_timezone_set('America/Montevideo');
 
@@ -17,8 +20,13 @@ $noGuardar = [
     'Device/CrearDevice',
     'Inventario/CrearItem',
     'Inventario/ActualizarItem',
+    'Inventario/CrearCategoria',
+    'Inventario/MostrarCrearCategoria',
+    'Inventario/MostrarCrearItem',
     'EstadoTicket/Actualizar',
     'EstadoTicket/CrearEstado',
+    'Register/RegisterAdmin',
+    'Admin/Register',
     // Evitar que el polling y acciones AJAX sobreescriban prev_url
     'Notification/Count',
     'Notification/MarkRead'

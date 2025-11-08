@@ -22,7 +22,25 @@ class NotificationModel
         // Pre-popular notification_user para performance de contadores
         if ($audience === 'ALL') {
             $q = $this->conn->query("SELECT id FROM users");
-            while ($row = $q && $q->fetch_assoc() ? $q->fetch_assoc() : null) {}
+            if ($q) {
+                while ($row = $q->fetch_assoc()) {
+                    $this->attachNotificationUser($notifId, (int)$row['id']);
+                }
+            }
+        } elseif ($audience === 'ROLE' && $role) {
+            $stmtMap = $this->conn->prepare("SELECT id FROM users WHERE role = ?");
+            if ($stmtMap) {
+                $stmtMap->bind_param('s', $role);
+                if ($stmtMap->execute()) {
+                    $res = $stmtMap->get_result();
+                    while ($row = $res->fetch_assoc()) {
+                        $this->attachNotificationUser($notifId, (int)$row['id']);
+                    }
+                }
+                $stmtMap->close();
+            }
+        } elseif ($audience === 'USER' && $userId) {
+            $this->attachNotificationUser($notifId, (int)$userId);
         }
         return $notifId;
     }
@@ -80,5 +98,14 @@ class NotificationModel
         if (!$stmt) return false;
         $stmt->bind_param('ii', $notificationId, $userId);
         return $stmt->execute();
+    }
+
+    private function attachNotificationUser(int $notifId, int $userId): void
+    {
+        $stmt = $this->conn->prepare("INSERT IGNORE INTO notification_user (notification_id, user_id) VALUES (?, ?)");
+        if (!$stmt) return;
+        $stmt->bind_param('ii', $notifId, $userId);
+        $stmt->execute();
+        $stmt->close();
     }
 }

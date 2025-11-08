@@ -80,6 +80,9 @@ CREATE TABLE users (
     img_perfil VARCHAR(255) DEFAULT NULL,
     telefono VARCHAR(20),
     direccion VARCHAR(100),
+    remember_selector VARCHAR(100) DEFAULT NULL,
+    remember_token VARCHAR(255) DEFAULT NULL,
+    remember_expires_at DATETIME DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     role ENUM(
         'Cliente',
@@ -87,7 +90,8 @@ CREATE TABLE users (
         'Supervisor',
         'Administrador'
     ) NOT NULL DEFAULT 'Cliente',
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_users_remember_selector (remember_selector)
 );
 
 

@@ -5,11 +5,6 @@
       <h2>Notificaciones</h2>
       <?php
         // Mostrar botón "Nueva" solo a Administrador y Supervisor
-        if (!isset($authUser)) {
-          // Asegurar disponibilidad de Auth si no viene de Sidebar.php
-          require_once __DIR__ . '/../../Core/Auth.php';
-          $authUser = Auth::user();
-        }
         $role = strtolower($authUser['role'] ?? '');
         if ($role === 'administrador' || $role === 'supervisor'):
       ?>

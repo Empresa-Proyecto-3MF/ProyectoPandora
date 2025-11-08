@@ -44,9 +44,7 @@
                 <td>
                   <?php 
                     $foto = $row['foto_item'] ?? '';
-                    $imgSrc = $foto 
-                      ? '/ProyectoPandora/Public/img/imgInventario/' . $foto 
-                      : '/ProyectoPandora/Public/img/imgInventario/images.jpg';
+                    $imgSrc = \Storage::resolveInventoryUrl($foto);
                   ?>
                   <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($row['name_item']); ?>"/>
                 </td>

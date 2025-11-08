@@ -4,6 +4,7 @@ require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Models/Inventario.php';
 require_once __DIR__ . '/HistorialController.php';
 require_once __DIR__ . '/../Models/InventoryCategory.php';
+require_once __DIR__ . '/../Core/Storage.php';
 
 class InventarioController
 {
@@ -48,13 +49,17 @@ class InventarioController
             $descripcion = $_POST['descripcion'] ?? '';
             $stock_actual = $_POST['stock_actual'] ?? 0;
             $stock_minimo = $_POST['stock_minimo'] ?? 0;
-            $foto_item = null;
+            $foto_item = 'NoItem.jpg';
 
-            
-            if (isset($_FILES['foto_item']) && $_FILES['foto_item']['error'] === UPLOAD_ERR_OK) {
-                $foto_item = $_FILES['foto_item']['name'];
-                $destino = __DIR__ . '/../Public/img/imgInventario/' . $foto_item;
-                move_uploaded_file($_FILES['foto_item']['tmp_name'], $destino);
+            if (!empty($_FILES['foto_item']['name'])) {
+                $stored = Storage::storeUploadedFile($_FILES['foto_item'], 'inventory');
+                if (!$stored) {
+                    $categorias = $this->inventarioModel->listarCategorias();
+                    $errorMsg = "Error al subir la imagen del ítem.";
+                    include_once __DIR__ . '/../Views/Inventario/CrearItem.php';
+                    return;
+                }
+                $foto_item = $stored['relative'];
             }
 
             
@@ -129,13 +134,14 @@ class InventarioController
             $descripcion = $_POST['descripcion'] ?? '';
             $stock_actual = $_POST['stock_actual'] ?? 0;
             $stock_minimo = $_POST['stock_minimo'] ?? 0;
-            $foto_item = $_POST['foto_item_actual'] ?? null;
+            $foto_item_actual = trim((string)($_POST['foto_item_actual'] ?? ''));
+            $foto_item = $foto_item_actual !== '' ? $foto_item_actual : 'NoItem.jpg';
 
-            
-            if (isset($_FILES['foto_item']) && $_FILES['foto_item']['error'] === UPLOAD_ERR_OK) {
-                $foto_item = $_FILES['foto_item']['name'];
-                $destino = __DIR__ . '/../Public/img/imgInventario/' . $foto_item;
-                move_uploaded_file($_FILES['foto_item']['tmp_name'], $destino);
+            if (!empty($_FILES['foto_item']['name'])) {
+                $stored = Storage::storeUploadedFile($_FILES['foto_item'], 'inventory');
+                if ($stored) {
+                    $foto_item = $stored['relative'];
+                }
             }
 
             if ($this->inventarioModel->actualizar($id, $categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo)) {
@@ -184,6 +190,13 @@ class InventarioController
         
         Auth::checkRole(['Administrador', 'Supervisor']);
         $categorias = $this->inventarioModel->listarCategorias();
+        // Mensajes flash centralizados
+        $flash = null;
+        if (isset($_GET['success'])) {
+            $flash = ['type' => 'success', 'message' => 'Operación realizada correctamente.'];
+        } elseif (isset($_GET['error'])) {
+            $flash = ['type' => 'error', 'message' => 'No se pudo realizar la operación.'];
+        }
         include_once __DIR__ . '/../Views/Inventario/ListaCategoria.php';
     }
 

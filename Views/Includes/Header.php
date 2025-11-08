@@ -1,28 +1,11 @@
 <?php
-require_once __DIR__ . '/../../Core/Auth.php';
-require_once __DIR__ . '/../../Core/I18n.php';
-I18n::boot();
+// Dependencias principales ya cargadas por Sidebar (Auth, I18n, Storage)
 $authUser = Auth::user();
 $rol = $authUser['role'] ?? '';
 $name = $authUser['name'] ?? '';
 $email = $authUser['email'] ?? '';
-$avatar = $authUser['img_perfil'] ?? '';
-
-$defaultAvatar = '/ProyectoPandora/Public/img/imgPerfil/default.png';
-$fallbackAvatar = '/ProyectoPandora/Public/img/Innovasys.png';
-
-if ($avatar && strpos($avatar, '/ProyectoPandora/') !== 0) {
-	$avatar = '/ProyectoPandora/Public/img/imgPerfil/' . ltrim($avatar, '/');
-}
-
-$avatarFs = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . $avatar;
-if (!$avatar || !is_file($avatarFs)) {
-	$avatar = $defaultAvatar;
-	$defaultFs = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . $defaultAvatar;
-	if (!is_file($defaultFs)) {
-		$avatar = $fallbackAvatar;
-	}
-}
+$avatarStored = $authUser['img_perfil'] ?? '';
+$avatar = \Storage::resolveProfileUrl($avatarStored);
 
 
 // Ruta actual (por si se requiere algún ajuste puntual)
@@ -107,7 +90,7 @@ $subtitle = __($subtitleKey);
 			}
 			?>
 			<?php if ($authUser): ?>
-			<a href="/ProyectoPandora/Public/index.php?route=Notification/Index" class="notif-btn" title="Notificaciones" id="notifBell">
+			<a href="/ProyectoPandora/Public/index.php?route=Notification/Index" class="notif-btn-home" title="Notificaciones" id="notifBell">
 				<i class='bx bx-bell'></i>
 				<span class="notif-badge" id="notifBadge" style="display: <?= ($unread>0?'inline-block':'none') ?>;">
 					<?= (int)$unread ?>
@@ -125,50 +108,5 @@ $subtitle = __($subtitleKey);
 </header>
 
 
-<script>
-	const menuBtn = document.getElementById('menuToggle');
-const sidebar = document.querySelector('.sidebar');
-
-menuBtn.addEventListener('click', () => {
-  menuBtn.classList.toggle('active');
-  sidebar.classList.toggle('active');
-});
-
-</script>
-<script>
-  const badge = document.getElementById('notifBadge');
-  const bell = document.getElementById('notifBell');
-  if (badge && badge.style.display !== 'none') {
-    bell.classList.add('shake');
-    setTimeout(() => bell.classList.remove('shake'), 1200);
-  }
-</script>
-
-<?php if ($authUser): ?>
-<script>
-	// Polling sencillo cada 10 segundos para actualizar el contador del badge
-	(function(){
-		const badge = document.getElementById('notifBadge');
-		if (!badge) return;
-		const refresh = () => {
-			fetch('/ProyectoPandora/Public/index.php?route=Notification/Count', { cache: 'no-store' })
-				.then(r => r.ok ? r.text() : '0')
-				.then(txt => {
-					const n = parseInt((txt||'0').trim(), 10);
-					if (isNaN(n) || n <= 0) {
-						badge.style.display = 'none';
-						badge.textContent = '0';
-					} else {
-						badge.style.display = 'inline-block';
-						badge.textContent = String(n);
-					}
-				})
-				.catch(() => {/* noop */});
-		};
-		// Primera carga inmediata y luego cada 10s
-		refresh();
-		setInterval(refresh, 10000);
-	})();
-</script>
-<?php endif; ?>
+<script src="/ProyectoPandora/Public/js/layout-header.js" defer></script>
 <!-- Auto-refresh global deshabilitado: la UI se actualiza por AJAX en puntos específicos -->

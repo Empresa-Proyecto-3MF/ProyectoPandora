@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS pandoraDB DEFAULT CHARACTER SET utf8mb4;
+USE pandoraDB;
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TRIGGER IF EXISTS trigger_insertar_usuario_por_rol;
@@ -29,6 +31,9 @@ CREATE TABLE users (
     img_perfil VARCHAR(255) DEFAULT NULL,
     telefono VARCHAR(20),
     direccion VARCHAR(100),
+    remember_selector VARCHAR(100) DEFAULT NULL,
+    remember_token VARCHAR(255) DEFAULT NULL,
+    remember_expires_at DATETIME DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     role ENUM(
         'Cliente',
@@ -36,7 +41,8 @@ CREATE TABLE users (
         'Supervisor',
         'Administrador'
     ) NOT NULL DEFAULT 'Cliente',
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_users_remember_selector (remember_selector)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 INSERT INTO users (name, email, password, role)
@@ -102,6 +108,20 @@ CREATE TABLE estados_tickets (
 INSERT INTO estados_tickets (name) VALUES
 ('Nuevo'),('Diagnóstico'),('Presupuesto'),('En espera'),('En reparación'),('En pruebas'),('Listo para retirar'),('Finalizado'),('Cancelado');
 
+CREATE TABLE dispositivos (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    categoria_id INT NOT NULL,
+    marca VARCHAR(50),
+    modelo VARCHAR(50),
+    numero_serie VARCHAR(50),
+    descripcion_falla TEXT,
+    img_dispositivo VARCHAR(255) DEFAULT NULL,
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_dispositivos_cliente FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_dispositivos_categoria FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 CREATE TABLE tickets (
     id INT NOT NULL AUTO_INCREMENT,
     dispositivo_id INT NOT NULL,
@@ -132,20 +152,6 @@ CREATE TABLE ticket_estado_historial (
     CONSTRAINT fk_teh_estado FOREIGN KEY (estado_id) REFERENCES estados_tickets(id) ON DELETE CASCADE,
     CONSTRAINT fk_teh_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
-CREATE TABLE dispositivos (
-    id INT NOT NULL AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    categoria_id INT NOT NULL,
-    marca VARCHAR(50),
-    modelo VARCHAR(50),
-    numero_serie VARCHAR(50),
-    descripcion_falla TEXT,
-    img_dispositivo VARCHAR(255) DEFAULT NULL,
-    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_dispositivos_cliente FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_dispositivos_categoria FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 CREATE TABLE inventarios (
     id INT NOT NULL AUTO_INCREMENT,
     categoria_id INT NOT NULL,

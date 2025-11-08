@@ -54,6 +54,25 @@ class RatingModel {
         $row = $stmt->get_result()->fetch_assoc();
         return [$row['avg_stars'] ?? null, (int)($row['total'] ?? 0)];
     }
+
+    public function listForTecnico(int $tecnicoId): array
+    {
+        $sql = "SELECT r.ticket_id, r.stars, r.comment, r.created_at,
+                       u.name AS cliente_nombre, u.email AS cliente_email
+                FROM ticket_ratings r
+                INNER JOIN clientes c ON r.cliente_id = c.id
+                INNER JOIN users u ON c.user_id = u.id
+                WHERE r.tecnico_id = ?
+                ORDER BY r.created_at DESC";
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return [];
+        }
+        $stmt->bind_param('i', $tecnicoId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        return $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
+    }
 }
 
 ?>

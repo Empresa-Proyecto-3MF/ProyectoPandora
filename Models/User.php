@@ -167,4 +167,39 @@ class UserModel
         if ($exists) return 'exists';
         return $this->createUser($username, $email, $password, $role) ? 'ok' : 'error';
     }
+
+    public function storeRememberToken(int $userId, string $selector, string $tokenHash, string $expiresAt): bool
+    {
+        $sql = "UPDATE users SET remember_selector = ?, remember_token = ?, remember_expires_at = ? WHERE id = ?";
+        $stmt = $this->connection->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+        $stmt->bind_param("sssi", $selector, $tokenHash, $expiresAt, $userId);
+        return $stmt->execute();
+    }
+
+    public function clearRememberToken(int $userId): bool
+    {
+        $sql = "UPDATE users SET remember_selector = NULL, remember_token = NULL, remember_expires_at = NULL WHERE id = ?";
+        $stmt = $this->connection->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+        $stmt->bind_param("i", $userId);
+        return $stmt->execute();
+    }
+
+    public function findByRememberSelector(string $selector): ?array
+    {
+        $sql = "SELECT * FROM users WHERE remember_selector = ? LIMIT 1";
+        $stmt = $this->connection->prepare($sql);
+        if (!$stmt) {
+            return null;
+        }
+        $stmt->bind_param("s", $selector);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result ? $result->fetch_assoc() : null;
+    }
 }

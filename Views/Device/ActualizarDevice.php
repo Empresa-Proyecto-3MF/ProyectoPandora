@@ -1,4 +1,5 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+
 <main>
     <div class="content">
 
@@ -45,7 +46,8 @@
                     <?php if (!empty($dispositivo['img_dispositivo'])): ?>
                         <p class="block">
                             <div class="preview-img">
-                                <img src="/ProyectoPandora/Public/img/imgDispositivos/<?= htmlspecialchars($dispositivo['img_dispositivo']) ?>" alt="Dispositivo">
+                                    <?php $imgPreview = \Storage::resolveDeviceUrl($dispositivo['img_dispositivo']); ?>
+                                    <img src="<?= htmlspecialchars($imgPreview) ?>" alt="Dispositivo">
                             </div>
                         </p>
                     <?php endif; ?>

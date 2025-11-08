@@ -76,4 +76,26 @@
     }
     return true;
   };
+  
+  // Auto-bind submit handlers so views no longer need inline onsubmit
+  function attachValidation(form, fn){
+    form.addEventListener('submit', function(e){
+      try {
+        if (!fn(form)) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      } catch(err){
+        // En caso de error inesperado, previene submit para no enviar datos inconsistentes
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+  }
+
+  // Registrar listeners para formularios de registro público y admin
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('form[action*="route=Register/Register"]').forEach(function(f){ attachValidation(f, window.validarEmailRegistro); });
+    document.querySelectorAll('form[action*="route=Register/RegisterAdmin"]').forEach(function(f){ attachValidation(f, window.validarEmailRegistroAdmin); });
+  });
 })();

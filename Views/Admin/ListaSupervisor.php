@@ -1,8 +1,12 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Date.php'; ?>
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
     <div class="Tabla-Contenedor">
+        <?php if (!empty($flash)): ?>
+            <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
+                <?= htmlspecialchars($flash['message']) ?>
+            </div>
+        <?php endif; ?>
         <div class="dropdown">
             <label for="menu-toggle" class="dropdown-label">Opciones</label>
             <input type="checkbox" id="menu-toggle" />
@@ -36,13 +40,12 @@
                         echo "<td>".htmlspecialchars($super['name'])."</td>";
                         echo "<td>".htmlspecialchars($super['email'])."</td>";
                         echo "<td><span class='role ".$role."'>".$role."</span></td>";
-                        $created = $super['created_at'] ?? '';
-                        echo "<td><span class='created-at'>🕒 <time title='".htmlspecialchars(DateHelper::exact($created))."'>".htmlspecialchars(DateHelper::smart($created))."</time></span></td>";
+                        echo "<td><span class='created-at'>🕒 <time title='".htmlspecialchars($super['created_exact'] ?? '')."'>".htmlspecialchars($super['created_human'] ?? '')."</time></span></td>";
                         echo "<td>
                             <div class='action-buttons'>
                                 <a href='/ProyectoPandora/Public/index.php?route=Admin/ActualizarUser&id=".htmlspecialchars($super['id'])."&from=Admin/ListarSupers' class='btn edit-btn'>Actualizar</a>
                                 |
-                                <a href='/ProyectoPandora/Public/index.php?route=Admin/DeleteUser&id=".htmlspecialchars($super['id'])."' class='btn delete-btn' onclick=\"return confirm('¿Eliminar este usuario?');\">Eliminar</a>
+                                <a href='/ProyectoPandora/Public/index.php?route=Admin/DeleteUser&id=".htmlspecialchars($super['id'])."' class='btn delete-btn' data-confirm='¿Eliminar este usuario?'>Eliminar</a>
                             </div>
                         </td>";
                         echo "</tr>";

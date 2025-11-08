@@ -16,8 +16,23 @@
 
                 <button type="submit">Agregar Categoría</button>
             </form>
-
-            <a href="<?= $_SESSION['prev_url'] ?? '/ProyectoPandora/Public/index.php?route=Default/Index' ?>" class="btn-volver">Volver</a>
+            <?php
+                $fallbackUrl = '/ProyectoPandora/Public/index.php?route=Inventario/ListarCategorias';
+                $prevUrl = $_SESSION['prev_url'] ?? '';
+                $prevUrlLower = strtolower($prevUrl);
+                if (
+                    !$prevUrl ||
+                    strpos($prevUrlLower, 'inventario/mostrarcrearcategoria') !== false ||
+                    strpos($prevUrlLower, 'inventario/crearcategoria') !== false ||
+                    strpos($prevUrlLower, 'inventario/crearitem') !== false ||
+                    strpos($prevUrlLower, 'inventario/actualizaritem') !== false
+                ) {
+                    $volverUrl = $fallbackUrl;
+                } else {
+                    $volverUrl = $prevUrl;
+                }
+            ?>
+            <a href="<?= htmlspecialchars($volverUrl, ENT_QUOTES, 'UTF-8') ?>" class="btn-volver">Volver</a>
         </div>
     </div>
 </main>
