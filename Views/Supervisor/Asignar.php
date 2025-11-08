@@ -1,5 +1,3 @@
-<?php require_once __DIR__ . '/../../Core/Storage.php'; ?>
-
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 
 <main class="asignar-page">

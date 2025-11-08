@@ -59,7 +59,7 @@
 
         <div class="notif-field" id="userField" style="display:none;">
           <label>Usuario</label>
-          <input type="text" id="userSearch" placeholder="Buscar por nombre o email" class="notif-input-small" oninput="filterUsers()" />
+          <input type="text" id="userSearch" placeholder="Buscar por nombre o email" class="notif-input-small" />
           <select name="target_user_id" id="userSelect" size="6" class="notif-select-large">
             <?php foreach (($selectableUsers ?? []) as $u): ?>
               <option value="<?= (int)$u['id'] ?>"><?= htmlspecialchars(($u['name'] ?? '')) ?> — <?= htmlspecialchars(($u['email'] ?? '')) ?> (<?= htmlspecialchars($u['role'] ?? '') ?>)</option>
@@ -74,26 +74,4 @@
   </div>
 </main>
 
-<script>
-  const sel = document.getElementById('audienceSelect');
-  const roleF = document.getElementById('roleField');
-  const userF = document.getElementById('userField');
-
-  function upd(){
-    const v = sel.value;
-    roleF.style.display = (v==='ROLE') ? 'block' : 'none';
-    userF.style.display = (v==='USER') ? 'block' : 'none';
-  }
-
-  sel.addEventListener('change', upd);
-  upd();
-
-  function filterUsers(){
-    const q = (document.getElementById('userSearch').value || '').toLowerCase();
-    const select = document.getElementById('userSelect');
-    for (const opt of select.options) {
-      const txt = opt.textContent.toLowerCase();
-      opt.hidden = q && !txt.includes(q);
-    }
-  }
-</script>
+<script src="/ProyectoPandora/Public/js/notifications-create.js?v=<?= time(); ?>" defer></script>

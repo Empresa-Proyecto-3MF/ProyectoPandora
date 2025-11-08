@@ -1,8 +1,5 @@
 <?php
-require_once __DIR__ . '/../../Core/Auth.php';
-require_once __DIR__ . '/../../Core/I18n.php';
-require_once __DIR__ . '/../../Core/Storage.php';
-I18n::boot();
+// Dependencias principales ya cargadas por Sidebar (Auth, I18n, Storage)
 $authUser = Auth::user();
 $rol = $authUser['role'] ?? '';
 $name = $authUser['name'] ?? '';
@@ -104,57 +101,13 @@ $subtitle = __($subtitleKey);
 			
 		</div>
   </div>
-
-	<div class="hamburger" id="menuToggle">
-    <span></span><span></span><span></span>
-  </div>
+  <div class="hamburger" id="menuToggle">
+        <span></span><span></span><span></span>
+    </div>
 </header>
 
+<script src="/ProyectoPandora/Public/js/DarkMode.js?v=<?= time(); ?>" defer></script>
+<script src="/ProyectoPandora/Public/js/Sidebar.js?v=<?= time(); ?>" defer></script>
 
-<script>
-	const menuBtn = document.getElementById('menuToggle');
-const sidebar = document.querySelector('.sidebar');
-
-menuBtn.addEventListener('click', () => {
-  menuBtn.classList.toggle('active');
-  sidebar.classList.toggle('active');
-});
-
-</script>
-<script>
-  const badge = document.getElementById('notifBadge');
-  const bell = document.getElementById('notifBell');
-  if (badge && badge.style.display !== 'none') {
-    bell.classList.add('shake');
-    setTimeout(() => bell.classList.remove('shake'), 1200);
-  }
-</script>
-
-<?php if ($authUser): ?>
-<script>
-	// Polling sencillo cada 10 segundos para actualizar el contador del badge
-	(function(){
-		const badge = document.getElementById('notifBadge');
-		if (!badge) return;
-		const refresh = () => {
-			fetch('/ProyectoPandora/Public/index.php?route=Notification/Count', { cache: 'no-store' })
-				.then(r => r.ok ? r.text() : '0')
-				.then(txt => {
-					const n = parseInt((txt||'0').trim(), 10);
-					if (isNaN(n) || n <= 0) {
-						badge.style.display = 'none';
-						badge.textContent = '0';
-					} else {
-						badge.style.display = 'inline-block';
-						badge.textContent = String(n);
-					}
-				})
-				.catch(() => {/* noop */});
-		};
-		// Primera carga inmediata y luego cada 10s
-		refresh();
-		setInterval(refresh, 10000);
-	})();
-</script>
-<?php endif; ?>
+<script src="/ProyectoPandora/Public/js/layout-header.js" defer></script>
 <!-- Auto-refresh global deshabilitado: la UI se actualiza por AJAX en puntos específicos -->

@@ -7,7 +7,7 @@
         <label for="avatarUpload" title="Cambiar foto de perfil">
           <img src="<?= htmlspecialchars($userImg) ?>" class="perfil-avatar" alt="Foto de perfil">
         </label>
-        <input type="file" id="avatarUpload" name="avatar" accept="image/*" style="display: none;" onchange="this.form.submit()">
+        <input type="file" id="avatarUpload" name="avatar" accept="image/*" style="display: none;">
       </form>
       <h2><?= htmlspecialchars($userName) ?></h2>
       <p><?= htmlspecialchars($rol) ?></p>
@@ -99,15 +99,5 @@
     </div>
   </div>
 </main>
-
-<!-- Script de tabs -->
-<script>
-  document.querySelectorAll('.perfil-tabs .tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.perfil-tabs .tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.perfil-content').forEach(c => c.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById(tab.dataset.tab).classList.add('active');
-    });
-  });
-</script>
+<script src="/ProyectoPandora/Public/js/perfil-tabs.js?v=<?= time(); ?>" defer></script>
+<script src="/ProyectoPandora/Public/js/DarkMode.js?v=<?= time(); ?>" defer></script>

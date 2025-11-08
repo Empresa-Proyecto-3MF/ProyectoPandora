@@ -1,6 +1,5 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Date.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Storage.php'; ?>
+
 
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
@@ -31,7 +30,9 @@
                 <?php if (!empty($tickets)): ?>
                     <?php foreach ($tickets as $ticket): ?>
                         <?php 
-                            $imgDevice = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? '');
+                            // Lógica movida al controlador: usar $ticket['img_preview']
+                            $imgSrc = (string)($ticket['img_preview'] ?? '');
+
                             $estado = strtolower(trim($ticket['estado'] ?? 'finalizado'));
                             $estadoMap = [
                                 'nuevo' => 'estado-nuevo',
@@ -50,9 +51,15 @@
                             $isWorking = false; // finalizados no muestran barra de progreso
                         ?>
                         <article class="ticket-card">
-                            <div class="ticket-img">
-                                <img src="<?= htmlspecialchars($imgDevice) ?>" alt="Imagen dispositivo">
-                            </div>
+                                                        <div class="ticket-img">
+                                                                <img 
+                                                                    src="<?= htmlspecialchars($imgSrc) ?>" 
+                                                                    alt="Ticket #<?= (int)$ticket['id'] ?> - <?= htmlspecialchars(($ticket['dispositivo'] ?? '') . ' ' . ($ticket['modelo'] ?? '')) ?>"
+                                                                    loading="lazy"
+                                                                    decoding="async"
+                                                                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(\Storage::fallbackDeviceUrl()) ?>'"
+                                                                >
+                                                        </div>
                             <div class="ticket-info">
                                 <h3><?= htmlspecialchars($ticket['dispositivo']) ?> <?= htmlspecialchars($ticket['modelo']) ?></h3>
                                 <p class="line-clamp-3"><strong>Descripción:</strong> <?= htmlspecialchars($ticket['descripcion_falla']) ?></p>
@@ -83,19 +90,4 @@
 
 </main>
 
-<script>
-const ticketTrackFinished = document.getElementById('carouselTicketTrackFinished');
-const prevTicketBtnFinished = document.getElementById('prevTicketBtnFinished');
-const nextTicketBtnFinished = document.getElementById('nextTicketBtnFinished');
-
-const ticketCardsFinished = ticketTrackFinished.querySelectorAll('.ticket-card');
-
-if (ticketCardsFinished.length < 5) {
-    prevTicketBtnFinished.style.display = 'none';
-    nextTicketBtnFinished.style.display = 'none';
-}
-
-const ticketCardWidthFinished = 300; 
-nextTicketBtnFinished?.addEventListener('click', () => ticketTrackFinished.scrollBy({ left: ticketCardWidthFinished, behavior: 'smooth' }));
-prevTicketBtnFinished?.addEventListener('click', () => ticketTrackFinished.scrollBy({ left: -ticketCardWidthFinished, behavior: 'smooth' }));
-</script>
+<script src="/ProyectoPandora/Public/js/clientes-mis-ticket-terminados.js" defer></script>

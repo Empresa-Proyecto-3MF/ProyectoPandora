@@ -3,7 +3,7 @@
 <main>
   <section class="login-body">
     <div class="wrapper-login">
-      <form action="/ProyectoPandora/Public/index.php?route=Register/Register" method="POST" novalidate onsubmit="return validarEmailRegistro(this)">
+  <form action="/ProyectoPandora/Public/index.php?route=Register/Register" method="POST" novalidate>
         <h1>Bienvenido a Innovasys</h1>
 
         <?php if (isset($_GET['error']) && $_GET['error'] === 'EmailYaRegistrado'): ?>

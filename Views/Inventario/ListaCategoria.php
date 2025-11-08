@@ -2,11 +2,19 @@
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
     <div class="Tabla-Contenedor">
+        <?php if (!empty($flash)): ?>
+            <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
+                <?= htmlspecialchars($flash['message']) ?>
+            </div>
+        <?php endif; ?>
         <div class="botones">
-            <div class="btn-table-acciones">
-                <a class="btn-all btn-acciones-inventario-cate" href="/ProyectoPandora/Public/index.php?route=Inventario/MostrarCrearCategoria">Añadir Categoría</a>
+            <div class="dropdown">
+                <div class="btn-table-acciones">
+                    <a class="btn-all btn-acciones-inventario-cate" href="/ProyectoPandora/Public/index.php?route=Inventario/MostrarCrearCategoria">Añadir Categoría</a>
+                </div>
             </div>
         </div>
+        <br>
             <table id="userTable">
                 <thead>
                     <tr>
@@ -19,13 +27,13 @@
                     <?php if (!empty($categorias)): ?>
                         <?php foreach ($categorias as $cat): ?>
                             <tr>
-                                <td><?= $cat['id'] ?></td>
-                                <td><?= htmlspecialchars($cat['name']) ?></td>
-                                <td>
+                                <td data-label="id"><?= $cat['id'] ?></td>
+                                <td data-label="name"><?= htmlspecialchars($cat['name']) ?></td>
+                                <td data-label="acciones">
                                     <div class='action-buttons'>
                                         <a href="/ProyectoPandora/Public/index.php?route=Inventario/ActualizarCategoria&id=<?= $cat['id'] ?>" class="btn edit-btn">Actualizar</a>
                                         |
-                                        <a href="/ProyectoPandora/Public/index.php?route=Inventario/EliminarCategoriaInventario&id=<?= $cat['id'] ?>" class="btn delete-btn" onclick="return confirm('¿Seguro que deseas eliminar esta categoría?');">Eliminar</a>
+                                        <a href="/ProyectoPandora/Public/index.php?route=Inventario/EliminarCategoriaInventario&id=<?= $cat['id'] ?>" class="btn delete-btn" data-confirm="¿Seguro que deseas eliminar esta categoría?">Eliminar</a>
                                     </div>
                                 </td>
                             </tr>

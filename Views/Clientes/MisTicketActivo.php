@@ -1,11 +1,10 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Date.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Storage.php'; ?>
-
 <main>
   <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
   
   <div class="Contenedor">
+
+    <?php /* Lógica de preview movida al controlador: usa $ticket['img_preview'] */ ?>
 
     <form method="get" action="/ProyectoPandora/Public/index.php" class="filtros" style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;align-items:center;">
       <input type="hidden" name="route" value="Cliente/MisTicketActivo" />
@@ -35,7 +34,8 @@
             <?php foreach ($tickets as $ticket): ?>
 
               <?php
-                $imgDevice = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? '');
+                // Imagen principal: helper encapsula la lógica nueva (uploads + fallback)
+                $imgSrc = (string)($ticket['img_preview'] ?? '');
                 $estado = strtolower(trim($ticket['estado'] ?? ''));
 
                 $estadoMap = [
@@ -61,7 +61,13 @@
 
               <article class="ticket-card">
                 <div class="ticket-img">
-                  <img src="<?= htmlspecialchars($imgDevice) ?>" alt="Imagen dispositivo">
+                  <img 
+                    src="<?= htmlspecialchars($imgSrc) ?>" 
+                    alt="Ticket #<?= (int)$ticket['id'] ?> - <?= htmlspecialchars(($ticket['dispositivo'] ?? '') . ' ' . ($ticket['modelo'] ?? '')) ?>"
+                    loading="lazy"
+                    decoding="async"
+                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(\Storage::fallbackDeviceUrl()) ?>'"
+                  >
                 </div>
 
                 <div class="ticket-info u-flex-col u-flex-1">
@@ -89,9 +95,9 @@
                   <div class="card-actions">
                     <a href="/ProyectoPandora/Public/index.php?route=Ticket/Ver&id=<?= (int)$ticket['id'] ?>" class="btn btn-primary">Ver detalle</a>
                     <a href="/ProyectoPandora/Public/index.php?route=Ticket/Editar&id=<?= (int)$ticket['id'] ?>" class="btn btn-edit">Editar</a>
-                    <?php if (!empty($ticket['puedeEliminar'])): ?>
-                      <a href="/ProyectoPandora/Public/index.php?route=Ticket/Eliminar&id=<?= (int)$ticket['id'] ?>" class="btn delete-btn" onclick="return confirm('¿Seguro que deseas eliminar este ticket? Esta acción no se puede deshacer.');">Eliminar</a>
-                    <?php endif; ?>
+                      <?php if (!empty($ticket['puedeEliminar'])): ?>
+                        <a href="/ProyectoPandora/Public/index.php?route=Ticket/Eliminar&id=<?= (int)$ticket['id'] ?>" class="btn delete-btn" data-confirm="¿Seguro que deseas eliminar este ticket? Esta acción no se puede deshacer.">Eliminar</a>
+                      <?php endif; ?>
                   </div>
                 </div>
               </article>
@@ -112,28 +118,4 @@
   </div>
 </main>
 
-<script>
-  const ticketTrack = document.getElementById('carouselTicketTrack');
-  const prevTicketBtn = document.getElementById('prevTicketBtn');
-  const nextTicketBtn = document.getElementById('nextTicketBtn');
-  const btnAddTicket = document.getElementById('btnAddTicket');
-
-  const ticketCards = ticketTrack.querySelectorAll('.ticket-card');
-
-  if (ticketCards.length < 5) {
-    prevTicketBtn.style.display = 'none';
-    nextTicketBtn.style.display = 'none';
-  }
-
-  if (ticketCards.length === 0) {
-    btnAddTicket.style.display = 'none';
-  }
-
-  const ticketCardWidth = 300;
-  nextTicketBtn?.addEventListener('click', () => {
-    ticketTrack.scrollBy({ left: ticketCardWidth, behavior: 'smooth' });
-  });
-  prevTicketBtn?.addEventListener('click', () => {
-    ticketTrack.scrollBy({ left: -ticketCardWidth, behavior: 'smooth' });
-  });
-</script>
+<script src="/ProyectoPandora/Public/js/clientes-mis-ticket-activo.js" defer></script>

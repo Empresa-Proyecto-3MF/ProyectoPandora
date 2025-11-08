@@ -26,7 +26,7 @@
         <div class="form-vertical">
             <h3>Añadir Usuario</h3>
 
-            <form action="/ProyectoPandora/Public/index.php?route=Register/RegisterAdmin" method="POST" novalidate onsubmit="return validarEmailRegistroAdmin(this)">
+            <form action="/ProyectoPandora/Public/index.php?route=Register/RegisterAdmin" method="POST" novalidate>
                 
                 <p>
                     <label for="name">Nombre:</label>

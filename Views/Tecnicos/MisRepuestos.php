@@ -1,7 +1,7 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Date.php'; ?>
 <?php require_once __DIR__ . '/../../Core/LogFormatter.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Date.php'; ?>
+
 
 <main class="inv-page">
     <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
@@ -127,11 +127,9 @@
                                 <td>
                                     <?php
                                     $foto = $row['foto_item'] ?? '';
-                                    $imgSrc = $foto
-                                        ? '/ProyectoPandora/Public/img/imgInventario/' . $foto
-                                        : '/ProyectoPandora/Public/img/imgInventario/images.jpg';
+                                    $imgSrc = \Storage::resolveInventoryUrl($foto);
                                     ?>
-                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($row['name_item']); ?>" />
+                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($row['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars(\Storage::fallbackInventoryUrl()); ?>'" />
                                 </td>
                                 <td><?php echo htmlspecialchars($row['categoria']); ?></td>
                                 <td><?php echo htmlspecialchars($row['name_item']); ?></td>
@@ -183,11 +181,9 @@
                                 <td>
                                     <?php
                                     $foto = $it['foto_item'] ?? '';
-                                    $imgSrc = $foto
-                                        ? '/ProyectoPandora/Public/img/imgInventario/' . $foto
-                                        : '/ProyectoPandora/Public/img/imgInventario/images.jpg';
+                                    $imgSrc = \Storage::resolveInventoryUrl($foto);
                                     ?>
-                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($it['name_item']); ?>" />
+                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($it['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars(\Storage::fallbackInventoryUrl()); ?>'" />
                                 </td>
                                 <td><?php echo htmlspecialchars($it['categoria']); ?></td>
                                 <td><?php echo htmlspecialchars($it['name_item']); ?></td>
@@ -231,32 +227,4 @@
     </section>
 </main>
 
-<script>
-    // Calcula el total dinámico por fila
-    document.querySelectorAll('tr').forEach(function(row) {
-        const precioEl = row.querySelector('.precio');
-        const inputCant = row.querySelector('.js-cantidad');
-        const totalEl = row.querySelector('.js-total');
-        if (!precioEl || !inputCant || !totalEl) return;
-        const precio = parseFloat(precioEl.dataset.precio || '0');
-
-        function update() {
-            let cant = parseInt(inputCant.value || '0');
-            const max = parseInt(inputCant.getAttribute('max') || '0');
-            if (isNaN(cant) || cant < 0) {
-                // No tocar el valor del input si el usuario está escribiendo
-                cant = 0;
-            } else if (max && cant > max) {
-                cant = max;
-                inputCant.value = String(max);
-            }
-            const total = (cant > 0 && !isNaN(precio)) ? (cant * precio) : 0;
-            totalEl.textContent = total.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-        inputCant.addEventListener('input', update);
-        update();
-    });
-</script>
+<script src="/ProyectoPandora/Public/js/tecnicos-mis-repuestos.js" defer></script>

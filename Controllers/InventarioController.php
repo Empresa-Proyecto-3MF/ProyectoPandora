@@ -190,6 +190,13 @@ class InventarioController
         
         Auth::checkRole(['Administrador', 'Supervisor']);
         $categorias = $this->inventarioModel->listarCategorias();
+        // Mensajes flash centralizados
+        $flash = null;
+        if (isset($_GET['success'])) {
+            $flash = ['type' => 'success', 'message' => 'Operación realizada correctamente.'];
+        } elseif (isset($_GET['error'])) {
+            $flash = ['type' => 'error', 'message' => 'No se pudo realizar la operación.'];
+        }
         include_once __DIR__ . '/../Views/Inventario/ListaCategoria.php';
     }
 

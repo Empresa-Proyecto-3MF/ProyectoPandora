@@ -1,6 +1,5 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Date.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Storage.php'; ?>
+
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 <section class="content">
@@ -31,7 +30,9 @@
           <?php if (!empty($tickets)): ?>
             <?php foreach ($tickets as $ticket): ?>
               <?php 
-                $imgDevice = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? '');
+                // Lógica movida al controlador: usar $ticket['img_preview']
+                $imgSrc = (string)($ticket['img_preview'] ?? '');
+
                 $estado = strtolower(trim($ticket['estado'] ?? ''));
                 $estadoMap = [
                     'nuevo' => 'estado-nuevo',
@@ -51,7 +52,13 @@
               ?>
               <article class="ticket-card">
                 <div class="ticket-img">
-                  <img src="<?= htmlspecialchars($imgDevice) ?>" alt="Imagen dispositivo">
+                  <img 
+                    src="<?= htmlspecialchars($imgSrc) ?>" 
+                    alt="Ticket #<?= (int)$ticket['id'] ?> - <?= htmlspecialchars($ticket['marca'] . ' ' . $ticket['modelo']) ?>"
+                    loading="lazy"
+                    decoding="async"
+                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(\Storage::fallbackDeviceUrl()) ?>'"
+                  >
                 </div>
 
                 <div class="ticket-info">
@@ -89,21 +96,5 @@
   </div>
 </section>
 
-<script>
-  const ticketTrackTech = document.getElementById('carouselTicketTrackTech');
-  const prevTicketBtnTech = document.getElementById('prevTicketBtnTech');
-  const nextTicketBtnTech = document.getElementById('nextTicketBtnTech');
-
-  const ticketCardsTech = ticketTrackTech.querySelectorAll('.ticket-card');
-
-  // Carousel visible solo si hay 5 o más tickets
-  if (ticketCardsTech.length < 5) {
-    prevTicketBtnTech.style.display = 'none';
-    nextTicketBtnTech.style.display = 'none';
-  }
-
-  const ticketCardWidthTech = 300; // ancho aproximado de cada tarjeta + margen
-  nextTicketBtnTech?.addEventListener('click', () => ticketTrackTech.scrollBy({ left: ticketCardWidthTech, behavior: 'smooth' }));
-  prevTicketBtnTech?.addEventListener('click', () => ticketTrackTech.scrollBy({ left: -ticketCardWidthTech, behavior: 'smooth' }));
-</script>
+<script src="/ProyectoPandora/Public/js/tecnicos-mis-reparaciones.js" defer></script>
 </main>

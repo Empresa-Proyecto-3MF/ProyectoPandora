@@ -4,8 +4,54 @@ require_once __DIR__ . '/../Models/Device.php';
 require_once __DIR__ . '/../Core/Database.php';
 require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Core/Date.php';
+require_once __DIR__ . '/../Core/Storage.php';
 
 class ClienteController {
+    // Calcula la mejor imagen de preview para un ticket: uploads -> legacy -> imagen del dispositivo
+    private function ticketPreviewUrl(array $ticket): string {
+        $imgDevice = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? '');
+        $imgSrc = $imgDevice;
+        try {
+            $allowed = ['jpg','jpeg','png','gif','webp'];
+            $relDir = 'ticket/' . (int)($ticket['id'] ?? 0);
+            $absDir = \Storage::basePath() . '/' . $relDir . '/';
+            if (is_dir($absDir)) {
+                $files = @scandir($absDir) ?: [];
+                $latestFile = '';
+                $latestTime = 0;
+                foreach ($files as $fn) {
+                    if ($fn === '.' || $fn === '..') continue;
+                    $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
+                    if (!in_array($ext, $allowed, true)) continue;
+                    $t = @filemtime($absDir . $fn) ?: 0;
+                    if ($t >= $latestTime) { $latestTime = $t; $latestFile = $fn; }
+                }
+                if ($latestFile) {
+                    $imgSrc = \Storage::publicUrl($relDir . '/' . $latestFile);
+                }
+            }
+            if ($imgSrc === $imgDevice) {
+                $legacyDir = __DIR__ . '/../Public/img/imgTickets/' . (int)($ticket['id'] ?? 0) . '/';
+                $legacyUrlBase = '/ProyectoPandora/Public/img/imgTickets/' . (int)($ticket['id'] ?? 0) . '/';
+                if (is_dir($legacyDir)) {
+                    $files = @scandir($legacyDir) ?: [];
+                    $latestFile = '';
+                    $latestTime = 0;
+                    foreach ($files as $fn) {
+                        if ($fn === '.' || $fn === '..') continue;
+                        $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
+                        if (!in_array($ext, $allowed, true)) continue;
+                        $t = @filemtime($legacyDir . $fn) ?: 0;
+                        if ($t >= $latestTime) { $latestTime = $t; $latestFile = $fn; }
+                    }
+                    if ($latestFile) {
+                        $imgSrc = $legacyUrlBase . rawurlencode($latestFile);
+                    }
+                }
+            }
+        } catch (\Throwable $e) { /* noop */ }
+        return $imgSrc;
+    }
     // Helpers de presentación pedidos en el controlador
     private function estadoBadgeClass(?string $estado): string {
         $s = strtolower(trim($estado ?? ''));
@@ -84,9 +130,23 @@ class ClienteController {
         $db = new Database();
         $db->connectDatabase();
         $deviceModel = new DeviceModel($db->getConnection());
+        $ticketModel = new Ticket($db->getConnection());
 
         
         $dispositivos = $deviceModel->getDevicesByUserId($user['id']);
+        // Enriquecer datos para la vista: URL de imagen ya resuelta y flag de ticket activo
+        foreach ($dispositivos as &$d) {
+            $d['img_url'] = \Storage::resolveDeviceUrl($d['img_dispositivo'] ?? '');
+            if (!array_key_exists('has_active_ticket', $d)) {
+                $d['has_active_ticket'] = $ticketModel->hasActiveTicketForDevice((int)($d['id'] ?? 0));
+            }
+            // Fechas formateadas para la vista (evita usar DateHelper en la vista)
+            if (!empty($d['fecha_registro'])) {
+                $d['fecha_exact'] = DateHelper::exact($d['fecha_registro']);
+                $d['fecha_human'] = DateHelper::smart($d['fecha_registro']);
+            }
+        }
+        unset($d);
 
         include_once __DIR__ . '/../Views/Clientes/MisDevice.php';
     }
@@ -118,6 +178,11 @@ class ClienteController {
             $tickets = $ticketModel->getTicketsActivosByUserId($user['id']);
         }
         $tickets = $this->aplicarFiltrosYPresentacion($tickets);
+        // Enriquecer con imagen de preview ya resuelta para la vista
+        foreach ($tickets as &$t) {
+            $t['img_preview'] = $this->ticketPreviewUrl($t);
+        }
+        unset($t);
         include_once __DIR__ . '/../Views/Clientes/MisTicketActivo.php';
     }
 
@@ -141,6 +206,10 @@ class ClienteController {
             $tickets = $ticketModel->getTicketsTerminadosByUserId($user['id']);
         }
         $tickets = $this->aplicarFiltrosYPresentacion($tickets);
+        foreach ($tickets as &$t) {
+            $t['img_preview'] = $this->ticketPreviewUrl($t);
+        }
+        unset($t);
         include_once __DIR__ . '/../Views/Clientes/MisTicketTerminados.php';
     }
 }

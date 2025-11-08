@@ -222,6 +222,23 @@ class Storage
         if (preg_match('/^https?:\/\//i', $storedPath)) {
             return $storedPath;
         }
+        // Normalizar rutas Windows absolutas (C:\... o \\servidor\...): usar solo el nombre de archivo
+        $norm = str_replace('\\', '/', $storedPath);
+        if (preg_match('/^[A-Za-z]:\//', $norm) || str_starts_with($norm, '//')) {
+            $base = basename($norm);
+            if ($base !== '') {
+                // Buscar primero en uploads/device
+                $maybe = 'device/' . $base;
+                if (self::exists($maybe)) { return self::publicUrl($maybe); }
+                // Luego en uploads raíz
+                if (self::exists($base)) { return self::publicUrl($base); }
+                // Y por último en carpeta pública legacy
+                $legacy = '/ProyectoPandora/Public/img/imgDispositivos/' . $base;
+                $legacyFs = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\') . $legacy;
+                if ($legacyFs && is_file($legacyFs)) { return $legacy; }
+                return self::fallbackDeviceUrl();
+            }
+        }
         if ($storedPath[0] === '/') {
             $fs = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\') . $storedPath;
             if ($fs && is_file($fs)) {
@@ -269,6 +286,20 @@ class Storage
         }
         if (preg_match('/^https?:\/\//i', $storedPath)) {
             return $storedPath;
+        }
+        // Normalizar rutas Windows absolutas
+        $norm = str_replace('\\', '/', $storedPath);
+        if (preg_match('/^[A-Za-z]:\//', $norm) || str_starts_with($norm, '//')) {
+            $base = basename($norm);
+            if ($base !== '') {
+                $maybe = 'inventory/' . $base;
+                if (self::exists($maybe)) { return self::publicUrl($maybe); }
+                if (self::exists($base)) { return self::publicUrl($base); }
+                $legacy = '/ProyectoPandora/Public/img/imgInventario/' . $base;
+                $legacyFs = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\') . $legacy;
+                if ($legacyFs && is_file($legacyFs)) { return $legacy; }
+                return self::fallbackInventoryUrl();
+            }
         }
         if ($storedPath[0] === '/') {
             $fs = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\') . $storedPath;

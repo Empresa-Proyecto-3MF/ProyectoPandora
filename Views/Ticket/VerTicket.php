@@ -1,7 +1,7 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Date.php'; ?>
 <?php require_once __DIR__ . '/../../Core/LogFormatter.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Storage.php'; ?>
+
 <main>
   <div class="detalle-ticket-layout">
     <!-- ================== DETALLE IZQUIERDA ================== -->
@@ -310,26 +310,15 @@
         </div>
       <?php endif; ?>
 
-      <!-- === OVERLAY PAGADO === -->
-      <?php
-          $mostrarPagadoOverlay = false;
-          if ((!empty($view['flash']['ok']) && $view['flash']['ok']==='pagado') || $finalizado) {
-              require_once __DIR__ . '/../../Core/Database.php';
-              require_once __DIR__ . '/../../Models/Rating.php';
-              $dbx = new Database(); $dbx->connectDatabase();
-              $rtM = new RatingModel($dbx->getConnection());
-              $rt = $rtM->getByTicket((int)$view['ticket']['id']);
-              $mostrarPagadoOverlay = !empty($rt) && (int)($rt['stars'] ?? 0) > 0;
-              if (!$mostrarPagadoOverlay && $finalizado && $rol === 'Cliente') {
-                  echo '<div class="alert alert-warning">Tu ticket está finalizado. Por favor, califica la atención para completar el cierre.</div>';
-              }
-          }
-      ?>
-      <?php if ($mostrarPagadoOverlay): ?>
+    <!-- === OVERLAY PAGADO (pasado desde el controlador) === -->
+    <?php if (!empty($view['mostrarPagadoOverlay'])): ?>
       <div class="overlay-pagado">
           <div class="overlay-box">PAGADO</div>
       </div>
       <?php endif; ?>
+    <?php if (!empty($view['debeCalificar'])): ?>
+    <div class="alert alert-warning">Tu ticket está finalizado. Por favor, califica la atención para completar el cierre.</div>
+    <?php endif; ?>
     </div>
 
     <!-- ================== LÍNEA DE TIEMPO DERECHA ================== -->
@@ -391,31 +380,4 @@
   </div>
 </main>
 
-<script>
-(function(){
-  const badge = document.getElementById('estado-badge');
-  const id = <?= (int)($view['ticket']['id'] ?? 0) ?>;
-  if (!badge || !id) return;
-  const classFor = (txt)=>{
-      const t = (txt||'').toLowerCase();
-      if (["finalizado","cerrado","cancelado"].includes(t)) return 'badge badge--muted';
-      if (["presupuesto","en espera","pendiente"].includes(t)) return 'badge badge--warning';
-      if (["en reparación","diagnóstico","diagnostico","reparando"].includes(t)) return 'badge badge--info';
-      return 'badge badge--success';
-  };
-  badge.className = classFor(badge.textContent);
-})();
-
-document.addEventListener("DOMContentLoaded", () => {
-  const img = document.querySelector(".imagen-dispositivo");
-  if (!img) return;
-
-  const lightbox = document.createElement("div");
-  lightbox.className = "lightbox";
-  lightbox.innerHTML = `<img src="${img.src}">`;
-  document.body.appendChild(lightbox);
-
-  img.addEventListener("click", () => lightbox.classList.add("active"));
-  lightbox.addEventListener("click", () => lightbox.classList.remove("active"));
-});
-</script>
+<script src="/ProyectoPandora/Public/js/ticket-ver.js" defer></script>

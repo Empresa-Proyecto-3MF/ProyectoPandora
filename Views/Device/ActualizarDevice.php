@@ -1,5 +1,5 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
-<?php require_once __DIR__ . '/../../Core/Storage.php'; ?>
+
 <main>
     <div class="content">
 

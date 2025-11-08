@@ -23,7 +23,7 @@
           <h2 style="margin:0;">Stock actual</h2>
           <a class="btn btn-outline" href="/ProyectoPandora/Public/index.php?route=Inventario/MostrarCrearItem">Agregar nuevo item</a>
         </div>
-        <table>
+        <table id="userTable">
           <thead>
             <tr>
               <th>ID</th>
@@ -40,20 +40,20 @@
             <?php foreach (($items ?? []) as $row): ?>
               <?php $low = (int)$row['stock_actual'] <= (int)$row['stock_minimo']; ?>
               <tr class="<?php echo $low ? 'row-low-stock' : ''; ?>">
-                <td><?php echo (int)$row['id']; ?></td>
-                <td>
+                <td data-label="id"><?php echo (int)$row['id']; ?></td>
+                <td data-label="Img">
                   <?php 
                     $foto = $row['foto_item'] ?? '';
                     $imgSrc = \Storage::resolveInventoryUrl($foto);
                   ?>
                   <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($row['name_item']); ?>"/>
                 </td>
-                <td><?php echo htmlspecialchars($row['categoria']); ?></td>
-                <td><?php echo htmlspecialchars($row['name_item']); ?></td>
-                <td><?php echo htmlspecialchars(LogFormatter::monto((float)$row['valor_unitario'])); ?></td>
-                <td><?php echo (int)$row['stock_actual']; ?></td>
-				<td><?php echo (int)$row['stock_minimo']; ?></td>
-                <td>
+                <td data-label="categoria"><?php echo htmlspecialchars($row['categoria']); ?></td>
+                <td data-label="name_item"><?php echo htmlspecialchars($row['name_item']); ?></td>
+                <td data-label="Valor_unitario"><?php echo htmlspecialchars(LogFormatter::monto((float)$row['valor_unitario'])); ?></td>
+                <td data-label="stock_actual"><?php echo (int)$row['stock_actual']; ?></td>
+				<td data-label="stock_minimo"><?php echo (int)$row['stock_minimo']; ?></td>
+                <td data-label="Acciones">
                   <form action="/ProyectoPandora/Public/index.php?route=Inventario/SumarStock" method="post" style="display:flex; gap:6px; align-items:center;">
                     <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>" />
                     <input type="number" name="cantidad" min="1" class="asignar-input asignar-input--small" placeholder="+cantidad" required />

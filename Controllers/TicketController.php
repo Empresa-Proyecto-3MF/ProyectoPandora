@@ -369,21 +369,38 @@ class TicketController
         // Flash (lo que venía de GET)
         $flash = $_GET ?? [];
 
-        // Galería de fotos del ticket (carpeta por ticket)
-        $fotoDir = __DIR__ . '/../Public/img/imgTickets/' . (int)$ticket['id'] . '/';
-        $fotoUrlBase = '/ProyectoPandora/Public/img/imgTickets/' . (int)$ticket['id'] . '/';
+        // Galería de fotos del ticket (soporta storage nuevo y legacy)
         $fotos = [];
-        if (is_dir($fotoDir)) {
-            $allowed = ['jpg','jpeg','png','gif','webp'];
-            $files = @scandir($fotoDir) ?: [];
-            foreach ($files as $fn) {
-                if ($fn === '.' || $fn === '..') continue;
-                $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                if (in_array($ext, $allowed, true)) {
-                    $fotos[] = $fotoUrlBase . rawurlencode($fn);
+        $allowed = ['jpg','jpeg','png','gif','webp'];
+        try {
+            // Nuevo storage: uploads/ticket/{id}/...
+            $relDir = 'ticket/' . (int)$ticket['id'];
+            $absDir = \Storage::basePath() . '/' . $relDir . '/';
+            if (is_dir($absDir)) {
+                $files = @scandir($absDir) ?: [];
+                foreach ($files as $fn) {
+                    if ($fn === '.' || $fn === '..') continue;
+                    $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
+                    if (!in_array($ext, $allowed, true)) continue;
+                    $rel = $relDir . '/' . $fn;
+                    $fotos[] = \Storage::publicUrl($rel);
                 }
             }
-        }
+            // Legacy: Public/img/imgTickets/{id}/...
+            if (empty($fotos)) {
+                $legacyDir = __DIR__ . '/../Public/img/imgTickets/' . (int)$ticket['id'] . '/';
+                $legacyUrlBase = '/ProyectoPandora/Public/img/imgTickets/' . (int)$ticket['id'] . '/';
+                if (is_dir($legacyDir)) {
+                    $files = @scandir($legacyDir) ?: [];
+                    foreach ($files as $fn) {
+                        if ($fn === '.' || $fn === '..') continue;
+                        $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
+                        if (!in_array($ext, $allowed, true)) continue;
+                        $fotos[] = $legacyUrlBase . rawurlencode($fn);
+                    }
+                }
+            }
+        } catch (\Throwable $e) { /* noop */ }
 
         // Compute a simple revision token to detect concurrent changes (estado + labor + items count)
         $revState = md5($estadoLower.'|'.(string)$laborAmount.'|'.(string)count($items));
@@ -432,6 +449,21 @@ class TicketController
 
             'timeline' => $timeline,
         ];
+
+        // Overlay de PAGADO: si se marcó pago o el ticket está finalizado y ya está calificado
+        $mostrarPagadoOverlay = false;
+        $debeCalificar = false;
+        if (((string)($flash['ok'] ?? '') === 'pagado') || $finalizado) {
+            require_once __DIR__ . '/../Models/Rating.php';
+            $rt = (new RatingModel($conn))->getByTicket((int)$ticket['id']);
+            $mostrarPagadoOverlay = !empty($rt) && (int)($rt['stars'] ?? 0) > 0;
+            if (!$mostrarPagadoOverlay && $finalizado && $rol === 'Cliente') {
+                $debeCalificar = true;
+            }
+        }
+
+        $view['mostrarPagadoOverlay'] = $mostrarPagadoOverlay;
+        $view['debeCalificar'] = $debeCalificar;
 
         require __DIR__ . '/../Views/Ticket/VerTicket.php';
     }
@@ -994,21 +1026,36 @@ class TicketController
         $estados = $this->estadoModel->getAllEstados();
         $tecnicos = $this->userModel->getAllTecnicos();
 
-        // Fotos existentes del ticket
-        $fotoDir = __DIR__ . '/../Public/img/imgTickets/' . (int)$ticket['id'] . '/';
-        $fotoUrlBase = '/ProyectoPandora/Public/img/imgTickets/' . (int)$ticket['id'] . '/';
+        // Fotos existentes del ticket (nuevo storage + fallback legacy)
         $fotos = [];
-        if (is_dir($fotoDir)) {
-            $allowed = ['jpg','jpeg','png','gif','webp'];
-            $files = @scandir($fotoDir) ?: [];
-            foreach ($files as $fn) {
-                if ($fn === '.' || $fn === '..') continue;
-                $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                if (in_array($ext, $allowed, true)) {
-                    $fotos[] = $fotoUrlBase . rawurlencode($fn);
+        $allowed = ['jpg','jpeg','png','gif','webp'];
+        try {
+            $relDir = 'ticket/' . (int)$ticket['id'];
+            $absDir = \Storage::basePath() . '/' . $relDir . '/';
+            if (is_dir($absDir)) {
+                $files = @scandir($absDir) ?: [];
+                foreach ($files as $fn) {
+                    if ($fn === '.' || $fn === '..') continue;
+                    $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
+                    if (!in_array($ext, $allowed, true)) continue;
+                    $rel = $relDir . '/' . $fn;
+                    $fotos[] = \Storage::publicUrl($rel);
                 }
             }
-        }
+            if (empty($fotos)) {
+                $legacyDir = __DIR__ . '/../Public/img/imgTickets/' . (int)$ticket['id'] . '/';
+                $legacyUrlBase = '/ProyectoPandora/Public/img/imgTickets/' . (int)$ticket['id'] . '/';
+                if (is_dir($legacyDir)) {
+                    $files = @scandir($legacyDir) ?: [];
+                    foreach ($files as $fn) {
+                        if ($fn === '.' || $fn === '..') continue;
+                        $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
+                        if (!in_array($ext, $allowed, true)) continue;
+                        $fotos[] = $legacyUrlBase . rawurlencode($fn);
+                    }
+                }
+            }
+        } catch (\Throwable $e) { /* noop */ }
 
         include_once __DIR__ . '/../Views/Ticket/ActualizarTicket.php';
     }
@@ -1038,11 +1085,10 @@ class TicketController
         $ticketActual = $this->ticketModel->ver($id);
         $old_tecnico_id = $ticketActual['tecnico_id'] ?? null;
 
-        // Manejo de imágenes múltiples (opcional)
+        // Manejo de imágenes múltiples (opcional) - almacenar en uploads/ticket/{id}
         if (!empty($_FILES['fotos']) && is_array($_FILES['fotos']['name'])) {
-            $destBase = __DIR__ . '/../Public/img/imgTickets/' . (int)$id . '/';
-            if (!is_dir($destBase)) { @mkdir($destBase, 0777, true); }
             $allowed = ['jpg','jpeg','png','gif','webp'];
+            $destBase = \Storage::ensure('ticket/' . (int)$id);
             $count = count($_FILES['fotos']['name']);
             for ($i=0; $i < $count; $i++) {
                 $name = $_FILES['fotos']['name'][$i] ?? '';
@@ -1052,7 +1098,7 @@ class TicketController
                 $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
                 if (!in_array($ext, $allowed, true)) continue;
                 $safe = preg_replace('/[^a-zA-Z0-9_\.-]/','_', basename($name));
-                $target = $destBase . (time()) . '_' . $safe;
+                $target = rtrim($destBase, '/\\') . '/' . (time()) . '_' . $safe;
                 @move_uploaded_file($tmp, $target);
             }
         }
@@ -1093,6 +1139,8 @@ class TicketController
         $data = [];
         $dispositivos = $this->ticketModel->obtenerDispositivosPorCliente($cliente_id);
         while ($row = $dispositivos->fetch_assoc()) {
+            // Marcar si el dispositivo ya tiene ticket activo (para deshabilitar en la vista)
+            $row['hasActive'] = $this->ticketModel->hasActiveTicketForDevice((int)$row['id']);
             $data[] = $row;
         }
 

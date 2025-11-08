@@ -52,6 +52,19 @@ class DeviceController
             exit;
         }
         $categorias = $this->categoryModel->getAllCategories();
+        // Preparar mensajes flash (antes estaba en la vista)
+        $flash = null;
+        if (isset($_GET['success'])) {
+            $flash = ['type' => 'success', 'message' => 'Categoría eliminada correctamente.'];
+        } elseif (isset($_GET['error'])) {
+            $map = [
+                'CategoryInUse' => 'No se puede eliminar: la categoría está siendo usada por uno o más dispositivos.',
+                'CategoryNotFound' => 'Categoría no encontrada.',
+                'ErrorDeletingCategory' => 'No se pudo eliminar la categoría.'
+            ];
+            $code = $_GET['error'];
+            $flash = ['type' => 'error', 'message' => $map[$code] ?? 'No se pudo realizar la operación.'];
+        }
         include_once __DIR__ . '/../Views/Device/ListaCategoria.php';
     }
 

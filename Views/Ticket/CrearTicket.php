@@ -21,7 +21,7 @@
                     <?php if (isset($isAdmin) && $isAdmin && isset($clientes)): ?>
                         <p>
                             <label for="cliente_id">Seleccione un cliente:</label>
-                            <select id="cliente_id" name="cliente_id" required onchange="this.form.submit()">
+                            <select id="cliente_id" name="cliente_id" required>
                                 <option value="">-- Seleccionar --</option>
                                 <?php foreach ($clientes as $cliente): ?>
                                     <option value="<?= $cliente['id'] ?>" <?= (isset($_POST['cliente_id']) && $_POST['cliente_id'] == $cliente['id']) ? 'selected' : '' ?>>
@@ -34,22 +34,16 @@
 
                     <p>
                         <label for="dispositivoSelect">Seleccione un dispositivo:</label>
-                        <select id="dispositivoSelect" name="dispositivo_id" required onchange="mostrarDescripcion(this)">
+                        <select id="dispositivoSelect" name="dispositivo_id" required>
                             <option value="">Selecciona un dispositivo</option>
-                            <?php 
-                                // Determinar dispositivos bloqueados por ticket activo
-                                require_once __DIR__ . '/../../Core/Database.php';
-                                require_once __DIR__ . '/../../Models/Ticket.php';
-                                $dbv = new Database(); $dbv->connectDatabase();
-                                $tkM = new Ticket($dbv->getConnection());
-                            ?>
                             <?php foreach ($data as $dispositivo): ?>
                                 <?php 
-                                    $hasActive = $tkM->hasActiveTicketForDevice((int)$dispositivo['id']);
-                                    $label = $dispositivo['marca'] . ' ' . $dispositivo['modelo'] . ($hasActive ? ' — (con ticket activo)' : '');
+                                    $hasActive = !empty($dispositivo['hasActive']);
+                                    $label = ($dispositivo['marca'] ?? '') . ' ' . ($dispositivo['modelo'] ?? '');
+                                    if ($hasActive) { $label .= ' — (con ticket activo)'; }
                                 ?>
                                 <option value="<?= $dispositivo['id'] ?>" data-descripcion="<?= htmlspecialchars($dispositivo['descripcion_falla'] ?? '') ?>" <?= $hasActive ? 'disabled' : '' ?>>
-                                    <?= htmlspecialchars($label) ?>
+                                    <?= htmlspecialchars(trim($label)) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -61,7 +55,7 @@
                     </p>
 
                     <p>
-                        <button type="submit" onclick="document.getElementsByName('recarga_cliente')[0].value=''">Crear Ticket</button>
+                        <button type="submit" id="btnCrearTicket">Crear Ticket</button>
                     </p>
 
                     <p>
@@ -77,9 +71,4 @@
     </div>
 </main>
 
-<script>
-    function mostrarDescripcion(select) {
-        let descripcion = select.options[select.selectedIndex].getAttribute('data-descripcion');
-        document.getElementById('descripcion').value = descripcion || "";
-    }
-</script>
+<script src="/ProyectoPandora/Public/js/ticket-crear.js" defer></script>
