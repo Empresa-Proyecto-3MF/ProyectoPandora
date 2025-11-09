@@ -13,24 +13,23 @@
                     <div class="alert alert-warning"><?= htmlspecialchars($errorMsg) ?></div>
                 <?php endif; ?>
 
-                <?php if (!isset($errorMsg)): ?>
-                    <form action="/ProyectoPandora/Public/index.php?route=Inventario/CrearItem" method="POST" enctype="multipart/form-data">
+                <form action="/ProyectoPandora/Public/index.php?route=Inventario/CrearItem" method="POST" enctype="multipart/form-data">
                         <p>
                             <label for="categoria_id">Categoría:</label>
                             <select id="categoria_id" name="categoria_id" required>
                                 <option value="">-- Seleccionar --</option>
                                 <?php foreach ($categorias as $cat): ?>
-                                    <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                                    <option value="<?= $cat['id'] ?>" <?= isset($old['categoria_id']) && (int)$old['categoria_id'] === (int)$cat['id'] ? 'selected' : '' ?>><?= htmlspecialchars($cat['name']) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </p>
                         <p>
                             <label for="name_item">Tipo:</label>
-                            <input type="text" id="name_item" name="name_item" required>
+                            <input type="text" id="name_item" name="name_item" required value="<?= isset($old['name_item']) ? htmlspecialchars($old['name_item']) : '' ?>">
                         </p>
                         <p>
                             <label for="valor_unitario">Valor Unitario:</label>
-                            <input type="number" step="0.01" id="valor_unitario" name="valor_unitario" required>
+                            <input type="number" step="0.01" min="0" id="valor_unitario" name="valor_unitario" required value="<?= isset($old['valor_unitario']) ? htmlspecialchars($old['valor_unitario']) : '' ?>">
                         </p>
                         <p>
                             <label for="foto_item">Imagen:</label>
@@ -38,17 +37,16 @@
                         </p>
                         <p>
                             <label for="stock_actual">Cantidad:</label>
-                            <input type="number" id="stock_actual" name="stock_actual" required>
+                            <input type="number" min="0" id="stock_actual" name="stock_actual" required value="<?= isset($old['stock_actual']) ? htmlspecialchars($old['stock_actual']) : '' ?>">
                         </p>
                         <p>
                             <label for="stock_minimo">Stock Mínimo:</label>
-                            <input type="number" id="stock_minimo" name="stock_minimo" required>
+                            <input type="number" min="0" id="stock_minimo" name="stock_minimo" required value="<?= isset($old['stock_minimo']) ? htmlspecialchars($old['stock_minimo']) : '' ?>">
                         </p>
                         <p class="block">
                             <button type="submit">Agregar Item</button>
                         </p>
                     </form>
-                <?php endif; ?>
                 <?php
                     $fallbackUrl = '/ProyectoPandora/Public/index.php?route=Inventario/ListarCategorias';
                     $prevUrl = $_SESSION['prev_url'] ?? '';

@@ -202,4 +202,108 @@ class UserModel
         $result = $stmt->get_result();
         return $result ? $result->fetch_assoc() : null;
     }
+
+    /* ====== Password Reset (código 4 dígitos) ====== */
+    public function setResetCodeByEmail(string $email, string $code, string $expiresAt): bool
+    {
+        // Guardamos hash del código para evitar exposición en base
+        $hash = password_hash($code, PASSWORD_DEFAULT);
+        $sql = "UPDATE users SET reset_code = ?, reset_expires_at = ?, reset_attempts = 0, reset_locked_until = NULL WHERE email = ?";
+        $stmt = $this->connection->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+        $stmt->bind_param("sss", $hash, $expiresAt, $email);
+        return $stmt->execute();
+    }
+
+    public function verifyResetCode(string $email, string $code): array
+    {
+        // Retorna ['ok'=>bool, 'reason'=>string]
+        $sql = "SELECT id, reset_code, reset_expires_at, reset_attempts FROM users WHERE email = ? LIMIT 1";
+        $stmt = $this->connection->prepare($sql);
+        if (!$stmt) {
+            return ['ok' => false, 'reason' => 'db-error'];
+        }
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $user = $res ? $res->fetch_assoc() : null;
+        if (!$user) return ['ok' => false, 'reason' => 'not-found'];
+
+        // Expiración
+        if (empty($user['reset_code']) || empty($user['reset_expires_at'])) {
+            return ['ok' => false, 'reason' => 'no-request'];
+        }
+        $now = new DateTime('now');
+        $exp = new DateTime($user['reset_expires_at']);
+        if ($now > $exp) {
+            return ['ok' => false, 'reason' => 'expired'];
+        }
+
+        // Bloqueo si hay reset_locked_until
+        if (!empty($user['reset_locked_until'])) {
+            $lockedUntil = new DateTime($user['reset_locked_until']);
+            if ($now < $lockedUntil) {
+                return ['ok' => false, 'reason' => 'locked'];
+            }
+        }
+
+        if (password_verify((string)$code, (string)$user['reset_code'])) {
+            // Código correcto: opcionalmente limpiar attempts
+            $this->clearResetAttempts((int)$user['id']);
+            return ['ok' => true, 'reason' => 'ok'];
+        }
+
+        // Incrementar intentos en caso de fallo
+        $attempts = (int)$user['reset_attempts'];
+        $attempts++;
+        $this->incrementResetAttempts((int)$user['id']);
+        if ($attempts + 1 >= 5) { // tras 5 intentos fallidos, bloquear 10 minutos
+            $lockUntil = (new DateTime('+10 minutes'))->format('Y-m-d H:i:s');
+            $this->setLockUntil((int)$user['id'], $lockUntil);
+            return ['ok' => false, 'reason' => 'locked'];
+        }
+        return ['ok' => false, 'reason' => 'invalid'];
+    }
+
+    private function incrementResetAttempts(int $userId): void
+    {
+        $sql = "UPDATE users SET reset_attempts = COALESCE(reset_attempts,0) + 1 WHERE id = ?";
+        $stmt = $this->connection->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+        }
+    }
+
+    private function clearResetAttempts(int $userId): void
+    {
+        $sql = "UPDATE users SET reset_attempts = 0, reset_locked_until = NULL WHERE id = ?";
+        $stmt = $this->connection->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+        }
+    }
+
+    private function setLockUntil(int $userId, string $lockUntil): void
+    {
+        $sql = "UPDATE users SET reset_locked_until = ? WHERE id = ?";
+        $stmt = $this->connection->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("si", $lockUntil, $userId);
+            $stmt->execute();
+        }
+    }
+
+    public function updatePasswordByEmail(string $email, string $newPassword): bool
+    {
+        $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+        $sql = "UPDATE users SET password = ?, reset_code = NULL, reset_expires_at = NULL, reset_attempts = 0, reset_locked_until = NULL WHERE email = ?";
+        $stmt = $this->connection->prepare($sql);
+        if (!$stmt) return false;
+        $stmt->bind_param("ss", $hash, $email);
+        return $stmt->execute();
+    }
 }

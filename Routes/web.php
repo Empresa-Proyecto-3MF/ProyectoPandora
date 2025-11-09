@@ -26,6 +26,30 @@ return [
         'controller' => 'Auth',
         'action' => 'Login'
     ],
+    'Auth/Forgot' => [
+        'controller' => 'Auth',
+        'action' => 'Forgot'
+    ],
+    'Auth/SendResetCode' => [
+        'controller' => 'Auth',
+        'action' => 'SendResetCode'
+    ],
+    'Auth/EnterCode' => [
+        'controller' => 'Auth',
+        'action' => 'EnterCode'
+    ],
+    'Auth/VerifyResetCode' => [
+        'controller' => 'Auth',
+        'action' => 'VerifyResetCode'
+    ],
+    'Auth/ResetPassword' => [
+        'controller' => 'Auth',
+        'action' => 'ResetPassword'
+    ],
+    'Auth/DoResetPassword' => [
+        'controller' => 'Auth',
+        'action' => 'DoResetPassword'
+    ],
     'Register/Register' => [
         'controller' => 'Register',
         'action' => 'Register'

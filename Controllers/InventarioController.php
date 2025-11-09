@@ -43,13 +43,29 @@ class InventarioController
         
         Auth::checkRole(['Supervisor']);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $categoria_id = $_POST['categoria_id'] ?? null;
-            $name_item = $_POST['name_item'] ?? '';
-            $valor_unitario = $_POST['valor_unitario'] ?? 0;
-            $descripcion = $_POST['descripcion'] ?? '';
-            $stock_actual = $_POST['stock_actual'] ?? 0;
-            $stock_minimo = $_POST['stock_minimo'] ?? 0;
+            $categoria_id = isset($_POST['categoria_id']) ? (int)$_POST['categoria_id'] : null;
+            $name_item = trim((string)($_POST['name_item'] ?? ''));
+            $valor_unitario = (float)($_POST['valor_unitario'] ?? 0);
+            $descripcion = trim((string)($_POST['descripcion'] ?? ''));
+            $stock_actual = (int)($_POST['stock_actual'] ?? 0);
+            $stock_minimo = (int)($_POST['stock_minimo'] ?? 0);
             $foto_item = 'NoItem.jpg';
+
+            // Validaciones de negocio: no permitir negativos
+            $errores = [];
+            if (!$categoria_id) { $errores[] = 'Seleccioná una categoría.'; }
+            if ($name_item === '') { $errores[] = 'Indicá el nombre del ítem.'; }
+            if ($valor_unitario < 0) { $errores[] = 'El valor unitario no puede ser negativo.'; }
+            if ($stock_actual < 0) { $errores[] = 'La cantidad inicial no puede ser negativa.'; }
+            if ($stock_minimo < 0) { $errores[] = 'El stock mínimo no puede ser negativo.'; }
+
+            if ($errores) {
+                $categorias = $this->inventarioModel->listarCategorias();
+                $errorMsg = implode(' ', $errores);
+                $old = compact('categoria_id','name_item','valor_unitario','descripcion','stock_actual','stock_minimo');
+                include_once __DIR__ . '/../Views/Inventario/CrearItem.php';
+                return;
+            }
 
             if (!empty($_FILES['foto_item']['name'])) {
                 $stored = Storage::storeUploadedFile($_FILES['foto_item'], 'inventory');
@@ -65,6 +81,13 @@ class InventarioController
             
             $existente = $this->inventarioModel->findByCategoryAndName((int)$categoria_id, $name_item);
             if ($existente) {
+                if ($stock_actual <= 0) {
+                    $categorias = $this->inventarioModel->listarCategorias();
+                    $errorMsg = 'La cantidad a ingresar debe ser mayor que 0 para un ítem existente.';
+                    $old = compact('categoria_id','name_item','valor_unitario','descripcion','stock_actual','stock_minimo');
+                    include_once __DIR__ . '/../Views/Inventario/CrearItem.php';
+                    return;
+                }
                 $ok = $this->inventarioModel->sumarStock((int)$existente['id'], (int)$stock_actual);
             } else {
                 $ok = $this->inventarioModel->crear($categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo);
@@ -128,12 +151,12 @@ class InventarioController
         Auth::checkRole(['Supervisor']);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'] ?? null;
-            $categoria_id = $_POST['categoria_id'] ?? null;
-            $name_item = $_POST['name_item'] ?? '';
-            $valor_unitario = $_POST['valor_unitario'] ?? 0;
-            $descripcion = $_POST['descripcion'] ?? '';
-            $stock_actual = $_POST['stock_actual'] ?? 0;
-            $stock_minimo = $_POST['stock_minimo'] ?? 0;
+            $categoria_id = isset($_POST['categoria_id']) ? (int)$_POST['categoria_id'] : null;
+            $name_item = trim((string)($_POST['name_item'] ?? ''));
+            $valor_unitario = (float)($_POST['valor_unitario'] ?? 0);
+            $descripcion = trim((string)($_POST['descripcion'] ?? ''));
+            $stock_actual = (int)($_POST['stock_actual'] ?? 0);
+            $stock_minimo = (int)($_POST['stock_minimo'] ?? 0);
             $foto_item_actual = trim((string)($_POST['foto_item_actual'] ?? ''));
             $foto_item = $foto_item_actual !== '' ? $foto_item_actual : 'NoItem.jpg';
 
@@ -142,6 +165,12 @@ class InventarioController
                 if ($stored) {
                     $foto_item = $stored['relative'];
                 }
+            }
+
+            // Validaciones de negocio
+            if (!$id || !$categoria_id || $name_item === '' || $valor_unitario < 0 || $stock_actual < 0 || $stock_minimo < 0) {
+                header('Location: /ProyectoPandora/Public/index.php?route=Supervisor/GestionInventario&error=1');
+                exit;
             }
 
             if ($this->inventarioModel->actualizar($id, $categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo)) {

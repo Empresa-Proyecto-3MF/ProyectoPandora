@@ -18,7 +18,7 @@
 
                 <div class="remember-forgot">
                     <label><input type="checkbox" name="remember" value="1"> Acordarme</label>
-                    <a href="#">¿Olvidaste tu contraseña?</a>
+                    <a href="/ProyectoPandora/Public/index.php?route=Auth/Forgot">¿Olvidaste tu contraseña?</a>
                 </div>
 
                 <button type="submit" class="btn-login">Login</button>

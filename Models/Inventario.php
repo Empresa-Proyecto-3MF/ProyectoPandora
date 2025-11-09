@@ -142,6 +142,10 @@ class InventarioModel
     
     public function crear($categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo): bool
     {
+        // Reglas de negocio: no permitir valores negativos
+        if ((float)$valor_unitario < 0 || (int)$stock_actual < 0 || (int)$stock_minimo < 0) {
+            return false;
+        }
         $sql = "INSERT INTO inventarios (categoria_id, name_item, valor_unitario, descripcion, foto_item, stock_actual, stock_minimo)
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
@@ -178,6 +182,9 @@ class InventarioModel
     
     public function actualizar($id, $categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo): bool
     {
+        if ((float)$valor_unitario < 0 || (int)$stock_actual < 0 || (int)$stock_minimo < 0) {
+            return false;
+        }
         $sql = "UPDATE inventarios SET categoria_id=?, name_item=?, valor_unitario=?, descripcion=?, foto_item=?, stock_actual=?, stock_minimo=?
                 WHERE id=?";
         $stmt = $this->conn->prepare($sql);
@@ -205,6 +212,7 @@ class InventarioModel
     
     public function sumarStock($id, $cantidad): bool
     {
+        if ((int)$cantidad <= 0) { return false; }
         $sql = "UPDATE inventarios SET stock_actual = stock_actual + ? WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         if ($stmt) {

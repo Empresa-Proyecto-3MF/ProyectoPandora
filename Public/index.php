@@ -49,7 +49,7 @@ if ($guardarPrevUrl && !$isJsonAccept) {
     $_SESSION['prev_url'] = $currentUrl;
 }
 
-$routes = require_once __DIR__ . '../../routes/web.php';
+$routes = require __DIR__ . '/../Routes/web.php';
 $route = $_GET['route'] ?? 'Default/Index';
 if (isset($routes[$route])) {
     $controllerName = $routes[$route]['controller'];
