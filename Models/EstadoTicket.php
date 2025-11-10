@@ -10,13 +10,13 @@ class EstadoTicketModel
 
     public function obtenerTodos()
     {
-        // Delegar al método canónico
+        
         return $this->getAllEstados();
     }
 
     public function obtenerPorId($id)
     {
-        // Delegar al método canónico
+        
         return $this->getById($id);
     }
 

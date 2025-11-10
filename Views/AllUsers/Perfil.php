@@ -1,11 +1,12 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 <main>
   <div class="perfil-wrapper">
-    <!-- HEADER -->
+    
     <div class="perfil-header">
       <form method="POST" action="" enctype="multipart/form-data">
-        <label for="avatarUpload" title="Cambiar foto de perfil">
-          <img src="<?= htmlspecialchars($userImg) ?>" class="perfil-avatar" alt="Foto de perfil">
+        <?= Csrf::input(); ?>
+        <label for="avatarUpload" title="<?= __('profile.avatar.change'); ?>">
+          <img src="<?= htmlspecialchars($userImg) ?>" class="perfil-avatar" alt="<?= __('profile.avatar.alt'); ?>">
         </label>
         <input type="file" id="avatarUpload" name="avatar" accept="image/*" style="display: none;">
       </form>
@@ -13,15 +14,16 @@
       <p><?= htmlspecialchars($rol) ?></p>
     </div>
 
-    <!-- TABS -->
+    
     <div class="perfil-tabs">
       <button class="tab active" data-tab="info"><?= __('profile.tab.info') ?></button>
       <button class="tab" data-tab="ajustes"><?= __('profile.tab.settings') ?></button>
     </div>
 
-    <!-- PERFIL -->
+    
     <div class="perfil-content active" id="info">
       <form method="POST" action="">
+        <?= Csrf::input(); ?>
         <div class="perfil-campo">
           <label><?= __('profile.field.name') ?>:</label>
           <input type="text" name="name" value="<?= htmlspecialchars($userName) ?>">
@@ -40,7 +42,7 @@
         <?php if ($rol === 'Tecnico'): ?>
           <div class="perfil-campo">
             <label><?= __('profile.field.specialty') ?>:</label>
-            <input type="text" name="especialidad" value="<?= htmlspecialchars($tecnicoEspecialidad ?? '') ?>" placeholder="Ej: Electrónica, Microsoldadura, Software..." />
+            <input type="text" name="especialidad" value="<?= htmlspecialchars($tecnicoEspecialidad ?? '') ?>" placeholder="<?= __('profile.specialty.placeholder'); ?>" />
           </div>
         <?php endif; ?>
 
@@ -48,10 +50,11 @@
       </form>
     </div>
 
-    <!-- AJUSTES -->
+    
     <div class="perfil-content" id="ajustes">
       <?php if ($rol === 'Tecnico'): ?>
       <form method="POST" action="">
+        <?= Csrf::input(); ?>
         <div class="perfil-campo">
           <label><?= __('profile.field.availability') ?>:</label>
           <?php $dispActual = $tecnicoDisponibilidad ?? 'Disponible'; ?>
@@ -64,7 +67,7 @@
       </form>
       <?php endif; ?>
 
-      <!-- Selector de idioma -->
+      
       <?php 
         $current = $_SERVER['REQUEST_URI'] ?? '/ProyectoPandora/Public/index.php?route=Default/Perfil';
         $prev = htmlspecialchars($current, ENT_QUOTES, 'UTF-8');
@@ -82,7 +85,7 @@
         <button type="submit"><?= __('profile.language.change') ?></button>
       </form>
 
-      <!-- TOGGLE GLOBAL -->
+      
       <div class="perfil-campo modo-oscuro-toggle">
         <label for="toggle-darkmode">🌙 <?= __('profile.darkmode.toggle') ?>:</label>
         <label class="switch">

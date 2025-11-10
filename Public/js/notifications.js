@@ -28,6 +28,7 @@
 
     const li = form.closest('li, .notification-item');
     const formData = new FormData(form);
+    // CSRF: si el FormData no trae _csrf desde el formulario, el wrapper fetch lo agrega
     fetch(form.action || form.getAttribute('action') || window.location.href, {
       method: form.method || 'POST',
       body: formData,

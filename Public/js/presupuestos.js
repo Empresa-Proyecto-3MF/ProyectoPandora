@@ -15,7 +15,8 @@
     const url = form.action || window.location.href;
     const fd = new FormData(form);
 
-    fetch(url, { method, body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+  // CSRF se adjunta automáticamente por csrf.js si falta en el FormData
+  fetch(url, { method, body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then(async (resp) => {
         if (resp.redirected) { window.location.href = resp.url; return; }
         if (!resp.ok) throw new Error('Error HTTP');

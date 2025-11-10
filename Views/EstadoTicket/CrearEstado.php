@@ -10,6 +10,7 @@
                 <h3>Agregar Estado de Ticket</h3>
 
                 <form action="/ProyectoPandora/Public/index.php?route=EstadoTicket/Crear" method="POST">
+                    <?= Csrf::input(); ?>
                     <label for="name">Nombre del Estado:</label>
                     <input type="text" id="name" name="name" required>
 

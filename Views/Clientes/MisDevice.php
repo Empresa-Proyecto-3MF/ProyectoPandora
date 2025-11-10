@@ -36,6 +36,7 @@
         <form method="post" action="/ProyectoPandora/Public/index.php?route=Device/Eliminar"
           data-confirm="¿Eliminar este dispositivo? Esta acción no se puede deshacer."
           style="display:inline-block">
+                      <?= Csrf::input(); ?>
                       <input type="hidden" name="device_id" value="<?= (int)$d['id'] ?>">
                       <button type="submit" class="btn btn-danger">Eliminar</button>
                     </form>
@@ -60,4 +61,4 @@
 
 <a href="/ProyectoPandora/Public/index.php?route=Device/MostrarCrearDispositivo" class="btn-float-add" id="btnAdd" title="Agregar dispositivo">+</a>
 
-<script src="/ProyectoPandora/Public/js/clientes-mis-device.js" defer></script>
+<script src="/ProyectoPandora/Public/js/clientes-mis-device.js" defer></script>scriptscript

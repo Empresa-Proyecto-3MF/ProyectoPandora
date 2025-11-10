@@ -4,24 +4,25 @@
   <section class="login-body">
     <div class="wrapper-login">
       <form action="/ProyectoPandora/Public/index.php?route=Auth/VerifyResetCode" method="post">
-        <h1>Ingresar código</h1>
-  <p>Hemos enviado (o intentado enviar) un código de 4 dígitos al email: <strong><?php echo htmlspecialchars($email); ?></strong></p>
-  <p style="font-size:0.85em;color:#888">Si no te llega en entorno local, revisá el archivo <code>Logs/mail.log</code> donde se registra el código. Tras 5 intentos fallidos se bloquea por 10 minutos.</p>
+        <?= Csrf::input(); ?>
+    <h1><?= __('auth.code.title'); ?></h1>
+  <p><?= __('auth.code.instructions'); ?> <strong><?php echo htmlspecialchars($email); ?></strong></p>
+  <p style="font-size:0.85em;color:#888"><?= __('auth.code.local.hint'); ?></p>
         <?php if ($err): ?>
           <?php
-            $msg = 'Error desconocido.';
+            $msg = __('auth.code.error.unknown');
             switch ($err) {
-              case 'invalid': $msg = 'Código incorrecto. Revisá y volvé a intentar.'; break;
-              case 'expired': $msg = 'El código expiró. Solicitá uno nuevo.'; break;
-              case 'no-request': $msg = 'No hay una solicitud de recuperación activa para este email.'; break;
-              case 'not-found': $msg = 'Email no registrado (se oculta detalle por seguridad).'; break;
-              case 'locked': $msg = 'Demasiados intentos fallidos. Bloqueado temporalmente (10 min).'; break;
-              case 'db-error': $msg = 'Error interno de base de datos.'; break;
+              case 'invalid': $msg = __('auth.code.error.invalid'); break;
+              case 'expired': $msg = __('auth.code.error.expired'); break;
+              case 'no-request': $msg = __('auth.code.error.no_request'); break;
+              case 'not-found': $msg = __('auth.code.error.not_found'); break;
+              case 'locked': $msg = __('auth.code.error.locked'); break;
+              case 'db-error': $msg = __('auth.code.error.db_error'); break;
               case 'rate':
                 $wait = isset($_GET['wait']) ? (int)$_GET['wait'] : 60;
                 if ($wait < 1) $wait = 1;
                 if ($wait > 60) $wait = 60;
-                $msg = 'Ya enviamos un código hace poco. Esperá ' . $wait . 's para solicitar otro.';
+                $msg = str_replace('{seconds}', $wait, __('auth.code.error.rate'));
                 break;
             }
           ?>
@@ -29,12 +30,12 @@
         <?php endif; ?>
         <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
         <div class="input-box">
-          <input type="text" name="code" pattern="\d{4}" maxlength="4" placeholder="Código (4 dígitos)" required>
+          <input type="text" name="code" pattern="\d{4}" maxlength="4" placeholder="<?= __('auth.code.field.code'); ?>" required>
           <i class='bx bx-key'></i>
         </div>
-        <button type="submit" class="btn-login">Validar</button>
+  <button type="submit" class="btn-login"><?= __('auth.code.submit'); ?></button>
         <div class="register-link">
-          <p><a href="/ProyectoPandora/Public/index.php?route=Auth/Forgot">Reenviar / Cambiar email</a></p>
+          <p><a href="/ProyectoPandora/Public/index.php?route=Auth/Forgot"><?= __('auth.code.resend.link'); ?></a></p>
         </div>
       </form>
     </div>

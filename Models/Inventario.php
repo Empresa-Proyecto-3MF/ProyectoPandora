@@ -142,7 +142,7 @@ class InventarioModel
     
     public function crear($categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo): bool
     {
-        // Reglas de negocio: no permitir valores negativos
+        
         if ((float)$valor_unitario < 0 || (int)$stock_actual < 0 || (int)$stock_minimo < 0) {
             return false;
         }

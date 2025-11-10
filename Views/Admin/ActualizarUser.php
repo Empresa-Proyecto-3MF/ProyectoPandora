@@ -5,18 +5,14 @@
         <div class="actualizar-wrapper animated bounceInUp">
             <h3>Actualizar Usuario</h3>
 
-            <?php if (isset($_GET['error']) && $_GET['error'] === 'NombreRequerido'): ?>
-                <div class="alert alert-warning" role="alert" style="margin-bottom:10px;">El nombre es obligatorio.</div>
-            <?php endif; ?>
-            <?php if (isset($_GET['error']) && $_GET['error'] === 'RolInvalido'): ?>
-                <div class="alert alert-warning" role="alert" style="margin-bottom:10px;">Seleccioná un rol válido.</div>
-            <?php endif; ?>
+            
 
             <?php if (empty($user)): ?>
                 <p>Usuario no encontrado.</p>
             <?php else: ?>
             <?php $isSelf = isset($_SESSION['user']['id']) && isset($user['id']) && ((int)$_SESSION['user']['id'] === (int)$user['id']); ?>
             <form method="POST" action="">
+                <?= Csrf::input(); ?>
                 <input type="hidden" name="from" value="<?= $_GET['from'] ?? 'Admin/ListarUsers' ?>">
                 <input type="hidden" name="id" value="<?= $user['id'] ?? '' ?>">
 

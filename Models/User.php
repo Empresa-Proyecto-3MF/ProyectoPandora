@@ -157,10 +157,10 @@ class UserModel
         return $stmt->execute();
     }
 
-    /**
-     * Registra un usuario solo si el email no existe.
-     * Retorna 'ok' si creó, 'exists' si ya estaba, 'error' si falló.
-     */
+    
+
+
+
     public function registerIfNotExists(string $username, string $email, string $password, string $role = 'Cliente'): string
     {
         $exists = $this->findByEmail($email);
@@ -203,10 +203,10 @@ class UserModel
         return $result ? $result->fetch_assoc() : null;
     }
 
-    /* ====== Password Reset (código 4 dígitos) ====== */
+    
     public function setResetCodeByEmail(string $email, string $code, string $expiresAt): bool
     {
-        // Guardamos hash del código para evitar exposición en base
+        
         $hash = password_hash($code, PASSWORD_DEFAULT);
         $sql = "UPDATE users SET reset_code = ?, reset_expires_at = ?, reset_attempts = 0, reset_locked_until = NULL WHERE email = ?";
         $stmt = $this->connection->prepare($sql);
@@ -219,7 +219,7 @@ class UserModel
 
     public function verifyResetCode(string $email, string $code): array
     {
-        // Retorna ['ok'=>bool, 'reason'=>string]
+        
         $sql = "SELECT id, reset_code, reset_expires_at, reset_attempts FROM users WHERE email = ? LIMIT 1";
         $stmt = $this->connection->prepare($sql);
         if (!$stmt) {
@@ -231,7 +231,7 @@ class UserModel
         $user = $res ? $res->fetch_assoc() : null;
         if (!$user) return ['ok' => false, 'reason' => 'not-found'];
 
-        // Expiración
+        
         if (empty($user['reset_code']) || empty($user['reset_expires_at'])) {
             return ['ok' => false, 'reason' => 'no-request'];
         }
@@ -241,7 +241,7 @@ class UserModel
             return ['ok' => false, 'reason' => 'expired'];
         }
 
-        // Bloqueo si hay reset_locked_until
+        
         if (!empty($user['reset_locked_until'])) {
             $lockedUntil = new DateTime($user['reset_locked_until']);
             if ($now < $lockedUntil) {
@@ -250,16 +250,16 @@ class UserModel
         }
 
         if (password_verify((string)$code, (string)$user['reset_code'])) {
-            // Código correcto: opcionalmente limpiar attempts
+            
             $this->clearResetAttempts((int)$user['id']);
             return ['ok' => true, 'reason' => 'ok'];
         }
 
-        // Incrementar intentos en caso de fallo
+        
         $attempts = (int)$user['reset_attempts'];
         $attempts++;
         $this->incrementResetAttempts((int)$user['id']);
-        if ($attempts + 1 >= 5) { // tras 5 intentos fallidos, bloquear 10 minutos
+        if ($attempts + 1 >= 5) { 
             $lockUntil = (new DateTime('+10 minutes'))->format('Y-m-d H:i:s');
             $this->setLockUntil((int)$user['id'], $lockUntil);
             return ['ok' => false, 'reason' => 'locked'];

@@ -1,0 +1,13 @@
+# Normalizar finales de línea para el código fuente
+*.php text eol=lf
+*.js  text eol=lf
+*.css text eol=lf
+*.md  text eol=lf
+*.json text eol=lf
+*.sql text eol=lf
+
+# Detectar automáticamente otros textos
+* text=auto
+
+# No tocar los logs (mantener binario para evitar conversiones CRLF/LF)
+Logs/*.log -text

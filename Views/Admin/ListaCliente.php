@@ -2,11 +2,7 @@
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
     <div class="Tabla-Contenedor">
-        <?php if (!empty($flash)): ?>
-            <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
-                <?= htmlspecialchars($flash['message']) ?>
-            </div>
-        <?php endif; ?>
+        
         <div class="dropdown">
             <label for="menu-toggle" class="dropdown-label">Opciones</label>
             <input type="checkbox" id="menu-toggle" />

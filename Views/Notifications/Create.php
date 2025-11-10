@@ -25,7 +25,7 @@
       <?php endif; ?>
 
       <form class="notif-form" method="POST" action="">
-        <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'] ?? '') ?>" />
+        <?= Csrf::input(); ?>
 
         <div class="notif-field">
           <label>Título</label>

@@ -4,9 +4,9 @@ class Database
     private $connection;
     function connectDatabase()
     {
-        $host = 'localhost';
-        $user = 'root';
-        $password = '';
+        $host = '10.199.45.247';
+        $user = 'bruno';
+        $password = 'Bruno200@';
         $database = 'pandoraDB';
 
         $this->connection = new mysqli($host, $user, $password, $database);

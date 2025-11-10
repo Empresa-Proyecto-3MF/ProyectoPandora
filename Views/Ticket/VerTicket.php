@@ -4,21 +4,21 @@
 
 <main>
   <div class="detalle-ticket-layout">
-    <!-- ================== DETALLE IZQUIERDA ================== -->
+    
     <div class="detalle-izquierda">
-      <h2 id="tituloDetalle">Detalle del Ticket</h2>
+  <h2 id="tituloDetalle"><?= __('ticket.view.detailTitle') ?></h2>
 
-      <!-- BLOQUE PRINCIPAL: INFO HORIZONTAL -->
+      
       <div class="bloque-principal">
   <?php if (!empty($view['ticket'])): ?>
     <?php $t = $view['ticket']; ?>
     
     <ul class="detalle-grid" id="detalleTicket" style="list-style:none;padding:0;margin:0;">
 
-        <li class="dato-item"><strong>ID Ticket:</strong><span><?= htmlspecialchars($t['id']) ?></span></li>
-        <li class="dato-item"><strong>Dispositivo:</strong><span data-field="device-nombre"><?= htmlspecialchars($t['marca']) ?> <?= htmlspecialchars($t['modelo']) ?></span></li>
-        <li class="dato-item"><strong>Cliente:</strong>
-          <span data-field="cliente-nombre"><?= htmlspecialchars($t['cliente'] ?? $t['cliente_nombre'] ?? $t['user_name'] ?? 'No disponible') ?></span>
+  <li class="dato-item"><strong><?= __('ticket.field.idTicket') ?>:</strong><span><?= htmlspecialchars($t['id']) ?></span></li>
+  <li class="dato-item"><strong><?= __('ticket.field.device') ?>:</strong><span data-field="device-nombre"><?= htmlspecialchars($t['marca']) ?> <?= htmlspecialchars($t['modelo']) ?></span></li>
+  <li class="dato-item"><strong><?= __('ticket.field.client') ?>:</strong>
+          <span data-field="cliente-nombre"><?= htmlspecialchars($t['cliente'] ?? $t['cliente_nombre'] ?? $t['user_name'] ?? __('common.notAvailable')) ?></span>
         </li>
 
         <?php
@@ -39,8 +39,8 @@
           $estadoClass = $estadoMap[$estado] ?? 'estado-default';
           $estadoStr = ucfirst($estado);
         ?>
-        <li class="dato-item">
-            <strong>Estado:</strong>
+    <li class="dato-item">
+      <strong><?= __('ticket.field.state') ?>:</strong>
             <span id="estado-badge" class="<?= htmlspecialchars($estadoClass) ?>">
                 <?= htmlspecialchars($estadoStr) ?>
             </span>
@@ -48,14 +48,14 @@
 
 
 
-        <li class="dato-item"><strong>Técnico asignado:</strong>
+  <li class="dato-item"><strong><?= __('ticket.field.technicianAssigned') ?>:</strong>
           <span data-field="tecnico-nombre">
-            <?= !empty($t['tecnico']) ? htmlspecialchars($t['tecnico']) : '<span class="sin-asignar">Sin asignar</span>' ?>
+            <?= !empty($t['tecnico']) ? htmlspecialchars($t['tecnico']) : '<span class="sin-asignar">'.__('ticket.unassigned').'</span>' ?>
           </span>
         </li>
 
         <?php if (isset($t['fecha_creacion'])): ?>
-          <li class="dato-item"><strong>Fecha de creación:</strong>
+          <li class="dato-item"><strong><?= __('ticket.field.creationDate') ?>:</strong>
             <time data-field="fecha-creacion" data-exact="<?= htmlspecialchars(DateHelper::exact($t['fecha_creacion'])) ?>" title="<?= htmlspecialchars(DateHelper::exact($t['fecha_creacion'])) ?>">
               <?= htmlspecialchars(DateHelper::smart($t['fecha_creacion'])) ?>
             </time>
@@ -63,60 +63,75 @@
         <?php endif; ?>
 
         <?php $hasClose = !empty($t['fecha_cierre']); ?>
-        <li class="dato-item" data-field="fecha-cierre-row"<?= $hasClose ? '' : ' style="display:none;"' ?>><strong>Fecha de cierre:</strong>
+  <li class="dato-item" data-field="fecha-cierre-row"<?= $hasClose ? '' : ' style="display:none;"' ?>><strong><?= __('ticket.field.closeDate') ?>:</strong>
           <time data-field="fecha-cierre" data-exact="<?= $hasClose ? htmlspecialchars(DateHelper::exact($t['fecha_cierre'])) : '' ?>" title="<?= $hasClose ? htmlspecialchars(DateHelper::exact($t['fecha_cierre'])) : '' ?>">
             <?= $hasClose ? htmlspecialchars(DateHelper::smart($t['fecha_cierre'])) : '' ?>
           </time>
         </li>
 
-        <!--  Descripción ocupa toda la fila -->
+        
         <li class="dato-item dato-larga descripcion-falla">
-          <strong>Descripción de la falla:</strong>
+          <strong><?= __('ticket.field.description') ?>:</strong>
           <span data-field="descripcion-falla"><?= htmlspecialchars($t['descripcion'] ?? $t['descripcion_falla']) ?></span>
         </li>
 
-        <!--  Imagen del dispositivo como item -->
+        
         <?php
           $resolvedImg = \Storage::resolveDeviceUrl($t['img_dispositivo'] ?? '');
           $hasImg = $resolvedImg !== '';
         ?>
         <li class="dato-item imagen-card" data-field="device-image-card"<?= $hasImg ? '' : ' style="display:none;"' ?> >
-          <h3 style="margin-top:0;">Imagen del dispositivo</h3>
+          <h3 style="margin-top:0;"><?= __('ticket.field.deviceImage') ?></h3>
           <div class="imagen-contenedor">
             <img
               class="imagen-dispositivo"
               data-field="device-image"
               src="<?= $hasImg ? htmlspecialchars($resolvedImg) : '' ?>"
-              alt="Imagen del dispositivo"
+              alt="<?= __('ticket.field.deviceImage') ?>"
             >
           </div>
           <div class="imagen-pie">
-            Cargada el <?= htmlspecialchars($t['fecha_creacion'] ?? '---') ?>
+            <?= __('ticket.image.loadedOn') ?> <?= htmlspecialchars($t['fecha_creacion'] ?? '---') ?>
           </div>
         </li>
 
     </ul>
 
   <?php else: ?>
-    <div class="alert alert-danger">No se encontró información para este ticket.</div>
+  <div class="alert alert-danger"><?= __('ticket.view.notFound') ?></div>
   <?php endif; ?>
 </div>
 
-      <!-- BLOQUE: MENSAJES / ALERTAS YA EXISTENTES (NO TOCAR su CSS original) -->
+      
       <?php if (!empty($view['flash']['error']) && $view['flash']['error']==='estado'): ?>
-          <div class="alert alert-warning">Solo puedes calificar cuando el ticket esté finalizado.</div>
+          <div class="alert alert-warning"><?= __('ticket.alert.rate.onlyFinal') ?></div>
       <?php endif; ?>
       <?php if (!empty($view['flash']['error']) && $view['flash']['error']==='aprobacion'): ?>
-          <div class="alert alert-warning">Aún falta que el cliente apruebe el presupuesto.</div>
+          <div class="alert alert-warning"><?= __('ticket.alert.budget.pendingApproval') ?></div>
       <?php endif; ?>
+    <?php if (!empty($view['flash']['error']) && $view['flash']['error']==='presupuesto'): ?>
+      <div class="alert alert-warning"><?= __('ticket.labor.hint') ?></div>
+    <?php endif; ?>
+    <?php if (!empty($view['flash']['error']) && $view['flash']['error']==='transicion'): ?>
+      <div class="alert alert-warning"><?= __('ticket.alert.transition.invalid') ?></div>
+    <?php endif; ?>
+    <?php if (!empty($view['flash']['error']) && $view['flash']['error']==='estado_actual'): ?>
+      <div class="alert alert-warning"><?= __('ticket.alert.state.currentInvalid') ?></div>
+    <?php endif; ?>
       <?php if (!empty($view['flash']['ok']) && $view['flash']['ok']==='aprobado'): ?>
-          <div class="alert alert-success">Presupuesto aprobado. El técnico podrá continuar con la reparación.</div>
+          <div class="alert alert-success"><?= __('ticket.alert.budget.approved') ?></div>
       <?php elseif (!empty($view['flash']['ok']) && $view['flash']['ok']==='rechazado'): ?>
-          <div class="alert alert-warning">Presupuesto rechazado. El ticket ha sido marcado como cancelado.</div>
+          <div class="alert alert-warning"><?= __('ticket.alert.budget.rejected') ?></div>
       <?php endif; ?>
       <?php if (!empty($view['flash']['ok']) && $view['flash']['ok']==='pagado'): ?>
-          <div class="alert alert-success">Pago registrado. Ticket finalizado.</div>
+          <div class="alert alert-success"><?= __('ticket.alert.payment.registered') ?></div>
       <?php endif; ?>
+    <?php if (!empty($view['flash']['ok']) && $view['flash']['ok']==='estado'): ?>
+      <div class="alert alert-success"><?= __('ticket.success.stateUpdated') ?></div>
+    <?php endif; ?>
+    <?php if (!empty($view['flash']['ok']) && $view['flash']['ok']==='listo'): ?>
+      <div class="alert alert-success"><?= __('ticket.success.markedReady') ?></div>
+    <?php endif; ?>
 
       <?php
         $rol = $view['rol'] ?? '';
@@ -125,26 +140,26 @@
       ?>
 
       <?php if (!empty($view['ticket']) && $rol === 'Cliente' && !empty($view['ticket']['tecnico']) && !$finalizado): ?>
-          <div class="alert alert-info">Podrás calificar al técnico cuando el ticket esté finalizado.</div>
+          <div class="alert alert-info"><?= __('ticket.alert.client.canRateWhenFinished') ?></div>
       <?php endif; ?>
 
-      <!-- === BLOQUE CLIENTE (Presupuesto, botones aprobar/rechazar, calificación) === -->
+      
       <div class="bloque-cliente">
         <?php if (!empty($view['ticket']) && $rol === 'Cliente'): ?>
           <?php if (!empty($view['enPresu'])): ?>
             <?php $p = $view['presupuesto']; ?>
-            <?php $msgPrefix = ($estadoLower === 'presupuesto') ? 'Presupuesto publicado por' : 'Presupuesto preparado por'; ?>
+            <?php $msgPrefix = ($estadoLower === 'presupuesto') ? __('ticket.budget.publishedBy') : __('ticket.budget.preparedBy'); ?>
             <div class="alert alert-info">
               <?= $msgPrefix ?> <strong><?= $p['total_fmt'] ?? LogFormatter::monto((float)$p['total']) ?></strong>.
-              <?php if ($estadoLower === 'en espera'): ?> <span>(pendiente de publicación del supervisor)</span><?php endif; ?>
+              <?php if ($estadoLower === 'en espera'): ?> <span><?= __('ticket.budget.pendingSupervisor') ?></span><?php endif; ?>
             </div>
 
             <div class="Tabla-Contenedor presu-tabla">
                 <table>
-                    <thead><tr><th>Ítem</th><th>Categoría</th><th>Cant.</th><th>Subtotal</th></tr></thead>
+                    <thead><tr><th><?= __('ticket.budget.table.item') ?></th><th><?= __('ticket.budget.table.category') ?></th><th><?= __('ticket.budget.table.qty') ?></th><th><?= __('ticket.budget.table.subtotal') ?></th></tr></thead>
                     <tbody>
                     <?php if (empty($p['items'])): ?>
-                        <tr><td colspan="4">Sin repuestos</td></tr>
+                        <tr><td colspan="4"><?= __('ticket.budget.noParts') ?></td></tr>
           <?php else: foreach ($p['items'] as $it): ?>
                         <tr>
                             <td><?= htmlspecialchars($it['name_item']) ?></td>
@@ -156,40 +171,43 @@
                     </tbody>
                 </table>
                 <div class="tabla-totales">
-                  <div>Subtotal repuestos: <strong><?= htmlspecialchars($p['subtotal_fmt'] ?? LogFormatter::monto((float)$p['subtotal'])) ?></strong></div>
-                  <div>Mano de obra: <strong><?= htmlspecialchars($p['mano_obra_fmt'] ?? LogFormatter::monto((float)$p['mano_obra'])) ?></strong>
+                  <div><?= __('ticket.budget.subtotalParts') ?>: <strong><?= htmlspecialchars($p['subtotal_fmt'] ?? LogFormatter::monto((float)$p['subtotal'])) ?></strong></div>
+                  <div><?= __('ticket.budget.labor') ?>: <strong><?= htmlspecialchars($p['mano_obra_fmt'] ?? LogFormatter::monto((float)$p['mano_obra'])) ?></strong>
                         <?php if ((float)$p['mano_obra'] <= 0): ?>
-                            <span class="badge badge--muted">Falta definir mano de obra</span>
+                            <span class="badge badge--muted"><?= __('ticket.budget.laborMissing') ?></span>
                         <?php endif; ?>
                     </div>
-                  <div>Total: <strong><?= htmlspecialchars($p['total_fmt'] ?? LogFormatter::monto((float)$p['total'])) ?></strong></div>
+                  <div><?= __('ticket.budget.total') ?>: <strong><?= htmlspecialchars($p['total_fmt'] ?? LogFormatter::monto((float)$p['total'])) ?></strong></div>
                 </div>
             </div>
 
             <?php if ($estadoLower === 'presupuesto'): ?>
-            <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/AprobarPresupuesto" class="inline-form">
+      <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/AprobarPresupuesto" class="inline-form">
+        <?= Csrf::input(); ?>
                 <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
-                <input type="hidden" name="comentario" value="Aprobado por el cliente" />
-                <button class="btn btn-success" type="submit">Aprobar</button>
+                <input type="hidden" name="comentario" value="<?= __('ticket.budget.comment.approvedByClient') ?>" />
+                <button class="btn btn-success" type="submit"><?= __('ticket.budget.approve') ?></button>
             </form>
-            <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/RechazarPresupuesto" class="inline-form">
+      <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/RechazarPresupuesto" class="inline-form">
+        <?= Csrf::input(); ?>
                 <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
-                <input type="hidden" name="comentario" value="Rechazado por el cliente" />
-                <button class="btn btn-danger" type="submit">Rechazar</button>
+                <input type="hidden" name="comentario" value="<?= __('ticket.budget.comment.rejectedByClient') ?>" />
+                <button class="btn btn-danger" type="submit"><?= __('ticket.budget.reject') ?></button>
             </form>
             <?php endif; ?>
           <?php endif; ?>
         <?php endif; ?>
-      </div> <!-- .bloque-cliente -->
+      </div> 
 
-      <!-- === CALIFICACIÓN CLIENTE (si corresponde) === -->
+      
       <?php if (!empty($view['ticket']) && $rol === 'Cliente' && !empty($view['ticket']['tecnico']) && $finalizado): ?>
           <div class="bloque-cliente calificacion">
             <hr>
-            <h3>Calificar atención del técnico</h3>
-            <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/Calificar">
+            <h3><?= __('ticket.rating.title') ?></h3>
+      <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/Calificar">
+        <?= Csrf::input(); ?>
                 <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>"/>
-                <label>Estrellas:</label>
+                <label><?= __('ticket.rating.stars') ?></label>
                 <div class="rating">
                     <input type="radio" id="star5" name="stars" value="5"/><label for="star5" class="star">&#9733;</label>
                     <input type="radio" id="star4" name="stars" value="4"/><label for="star4" class="star">&#9733;</label>
@@ -197,24 +215,25 @@
                     <input type="radio" id="star2" name="stars" value="2"/><label for="star2" class="star">&#9733;</label>
                     <input type="radio" id="star1" name="stars" value="1"/><label for="star1" class="star">&#9733;</label>
                 </div>
-                <label>Comentario (opcional):</label>
-                <input type="text" name="comment" class="asignar-input-rating asignar-input--small-ratign" placeholder="Tu experiencia"/>
-                <button class="btn btn-primary-submit" type="submit">Enviar</button>
+                <label><?= __('ticket.rating.comment.optional') ?></label>
+                <input type="text" name="comment" class="asignar-input-rating asignar-input--small-ratign" placeholder="<?= __('ticket.rating.placeholder') ?>"/>
+                <button class="btn btn-primary-submit" type="submit"><?= __('common.send') ?></button>
             </form>
           </div>
       <?php endif; ?>
 
-      <!-- === BLOQUE TÉCNICO === -->
+      
       <div class="bloque-tecnico">
         <?php if (!empty($view['ticket']) && $rol === 'Tecnico'): ?>
             <hr>
-      <h3>Cambiar estado</h3>
+  <h3><?= __('ticket.tech.changeState') ?></h3>
       <?php if (!empty($view['tecnico']['acciones'])): ?>
         <?php $readyDiag = !empty($view['tecnico']['has_items']) && !empty($view['tecnico']['has_labor']); ?>
         <?php foreach ($view['tecnico']['acciones'] as $accion): ?>
           <?php $label = (string)$accion['label']; $isFinDiag = (stripos($label,'diagnóstico finalizado') !== false || stripos($label,'diagnostico finalizado') !== false); ?>
           <?php if ($isFinDiag && !$readyDiag) continue; ?>
           <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/ActualizarEstado" class="inline-form">
+            <?= Csrf::input(); ?>
             <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
             <input type="hidden" name="estado_id" value="<?= (int)$accion['estado_id'] ?>" />
             <input type="hidden" name="comentario" value="<?= htmlspecialchars($accion['comentario'], ENT_QUOTES, 'UTF-8') ?>" />
@@ -228,106 +247,113 @@
             <?php endif; ?>
 
       <div class="mano-obra">
-                <h4>Mano de obra</h4>
+                <h4><?= __('ticket.labor.title') ?></h4>
 
                 <?php $ready = !empty($view['tecnico']['has_items']) && !empty($view['tecnico']['has_labor']); ?>
-                <div class="alert <?= $ready ? 'alert-success':'alert-warning' ?>">
-                    <?= $ready ? 'Presupuesto listo para publicar.' : 'Para preparar el presupuesto: agrega repuestos y define mano de obra.' ?>
+        <div class="alert <?= $ready ? 'alert-success':'alert-warning' ?>">
+          <?= $ready ? __('ticket.labor.ready') : __('ticket.labor.hint') ?>
                 </div>
 
     <?php if (!empty($view['tecnico']['labor_editable'])): ?>
-                    <form method="post" action="/ProyectoPandora/Public/index.php?route=Tecnico/ActualizarStats" class="presu-labor">
+          <form method="post" action="/ProyectoPandora/Public/index.php?route=Tecnico/ActualizarStats" class="presu-labor">
+            <?= Csrf::input(); ?>
                         <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>"/>
             <input type="hidden" name="rev_state" value="<?= htmlspecialchars((string)($view['rev_state'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"/>
-            <label>Importe:</label>
+            <label><?= __('ticket.labor.amount') ?></label>
             <input type="number" name="labor_amount" step="0.01" min="0" class="asignar-input asignar-input--small" required />
-                        <button class="btn btn-primary" type="submit">Guardar mano de obra</button>
+                        <button class="btn btn-primary" type="submit"><?= __('ticket.labor.save') ?></button>
                     </form>
         <?php elseif (!empty($view['tecnico']['labor_editable_en_espera'])): ?>
           <form method="post" action="/ProyectoPandora/Public/index.php?route=Tecnico/ActualizarStats" class="presu-labor">
+            <?= Csrf::input(); ?>
             <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>"/>
             <input type="hidden" name="rev_state" value="<?= htmlspecialchars((string)($view['rev_state'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"/>
-            <label>Importe:</label>
+            <label><?= __('ticket.labor.amount') ?></label>
             <input type="number" name="labor_amount" step="0.01" min="0" class="asignar-input asignar-input--small" value="<?= htmlspecialchars((string)($view['presupuesto']['mano_obra'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>" required />
-            <button class="btn btn-primary" type="submit">Editar mano de obra</button>
+            <button class="btn btn-primary" type="submit"><?= __('ticket.labor.edit') ?></button>
           </form>
         <?php else: ?>
       <?php $lb = (float)($view['presupuesto']['mano_obra'] ?? 0); ?>
                     <div class="alert alert-info">
-            Mano de obra <?= $lb > 0 ? 'definida' : 'no disponible para edición' ?><?= $lb > 0 ? ': <strong>'.LogFormatter::monto((float)$lb).'</strong>' : '' ?>.
-            <?= ($estadoLower!=='diagnóstico' && $estadoLower!=='diagnostico') ? 'Solo editable durante Diagnóstico.' : '' ?>
+            <?= __('ticket.labor.title') ?> <?= $lb > 0 ? __('ticket.labor.defined') : __('ticket.labor.notEditable') ?><?= $lb > 0 ? ': <strong>'.LogFormatter::monto((float)$lb).'</strong>' : '' ?>.
+            <?= ($estadoLower!=='diagnóstico' && $estadoLower!=='diagnostico') ? __('ticket.labor.onlyDuringDiagnosis') : '' ?>
                     </div>
                 <?php endif; ?>
             </div>
 
       <?php
-        // Botón para gestionar repuestos: durante Diagnóstico (añadir) o en Espera con diagnóstico listo (editar)
+        
         if (in_array($estadoLower, ['diagnóstico','diagnostico'])): ?>
                 <div style="margin-top:12px;">
-                  <a class="btn btn-outline" href="/ProyectoPandora/Public/index.php?route=Tecnico/MisRepuestos&ticket_id=<?= (int)$view['ticket']['id'] ?>&rev=<?= urlencode((string)($view['rev_state'] ?? '')) ?>">Añadir repuestos a este ticket</a>
+                  <a class="btn btn-outline" href="/ProyectoPandora/Public/index.php?route=Tecnico/MisRepuestos&ticket_id=<?= (int)$view['ticket']['id'] ?>&rev=<?= urlencode((string)($view['rev_state'] ?? '')) ?>"><?= __('ticket.parts.addToThisTicket') ?></a>
                 </div>
       <?php elseif ($estadoLower === 'en espera' && !empty($view['tecnico']['has_items']) && !empty($view['tecnico']['has_labor'])): ?>
         <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-                  <a class="btn btn-outline" href="/ProyectoPandora/Public/index.php?route=Tecnico/MisRepuestos&ticket_id=<?= (int)$view['ticket']['id'] ?>&rev=<?= urlencode((string)($view['rev_state'] ?? '')) ?>">Editar repuestos</a>
+                  <a class="btn btn-outline" href="/ProyectoPandora/Public/index.php?route=Tecnico/MisRepuestos&ticket_id=<?= (int)$view['ticket']['id'] ?>&rev=<?= urlencode((string)($view['rev_state'] ?? '')) ?>"><?= __('ticket.parts.edit') ?></a>
         </div>
       <?php endif; ?>
         <?php endif; ?>
-      </div> <!-- .bloque-tecnico -->
+      </div> 
 
-      <!-- === BLOQUE SUPERVISOR === -->
+      
       <div class="bloque-supervisor">
         <?php if (!empty($view['ticket']) && $rol === 'Supervisor'): ?>
             <hr>
-            <h3>Acciones del supervisor</h3>
+            <h3><?= __('ticket.supervisor.actions') ?></h3>
             <?php if (!empty($view['supervisor']['puede_listo'])): ?>
-                <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/MarcarListoParaRetirar" class="inline-form">
+        <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/MarcarListoParaRetirar" class="inline-form">
+          <?= Csrf::input(); ?>
                     <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
-                    <button class="btn btn-primary" type="submit">Marcar listo para retirar</button>
+                    <button class="btn btn-primary" type="submit"><?= __('ticket.supervisor.markReadyForPickup') ?></button>
                 </form>
             <?php endif; ?>
             <?php if (!empty($view['supervisor']['puede_finalizar'])): ?>
-                <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/MarcarPagadoYFinalizar" class="inline-form">
+        <form method="post" action="/ProyectoPandora/Public/index.php?route=Ticket/MarcarPagadoYFinalizar" class="inline-form">
+          <?= Csrf::input(); ?>
                     <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
-                    <button class="btn btn-success" type="submit">Registrar pago y finalizar</button>
+                    <button class="btn btn-success" type="submit"><?= __('ticket.supervisor.registerPaymentAndFinish') ?></button>
                 </form>
             <?php endif; ?>
         <?php endif; ?>
-      </div> <!-- .bloque-supervisor -->
+      </div> 
 
-      <a href="<?= htmlspecialchars($view['backHref'] ?? '/ProyectoPandora/Public/index.php?route=Default/Index') ?>" class="boton-volver">Volver</a>
+  <a href="<?= htmlspecialchars($view['backHref'] ?? '/ProyectoPandora/Public/index.php?route=Default/Index') ?>" class="boton-volver"><?= __('common.back') ?></a>
 
       <?php
-        // Galería de fotos del ticket (si el controlador las provee)
+        
         $fotos = $view['fotos_ticket'] ?? [];
         if (!empty($fotos)):
       ?>
         <hr>
-        <h3>Fotos del ticket</h3>
+  <h3><?= __('ticket.photos.title') ?></h3>
         <div class="galeria-slider" style="display:flex; gap:8px; overflow-x:auto; padding:6px 0;">
           <?php foreach ($fotos as $src): ?>
-            <img src="<?= htmlspecialchars($src) ?>" alt="Foto ticket" style="height:140px; border-radius:8px; object-fit:cover;"/>
+            <img src="<?= htmlspecialchars($src) ?>" alt="<?= __('ticket.photos.alt') ?>" style="height:140px; border-radius:8px; object-fit:cover;"/>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
 
-    <!-- === OVERLAY PAGADO (pasado desde el controlador) === -->
+    
     <?php if (!empty($view['mostrarPagadoOverlay'])): ?>
       <div class="overlay-pagado">
-          <div class="overlay-box">PAGADO</div>
+          <div class="overlay-box"><?= __('ticket.overlay.paid') ?></div>
       </div>
       <?php endif; ?>
     <?php if (!empty($view['debeCalificar'])): ?>
-    <div class="alert alert-warning">Tu ticket está finalizado. Por favor, califica la atención para completar el cierre.</div>
+  <div class="alert alert-warning"><?= __('ticket.alert.mustRateToClose') ?></div>
     <?php endif; ?>
+  <?php if (!empty($view['flash']['rated'])): ?>
+  <div class="alert alert-success"><?= __('ticket.rating.thanks') ?></div>
+  <?php endif; ?>
     </div>
 
-    <!-- ================== LÍNEA DE TIEMPO DERECHA ================== -->
+    
     <div class="timeline-box">
       <div class="Tabla-Contenedor">
-        <h3 class="titulo-timeline">Línea de tiempo</h3>
+  <h3 class="titulo-timeline"><?= __('ticket.timeline.title') ?></h3>
         <div class="timeline-2col">
           <div>
-            <strong>Técnico</strong>
+            <strong><?= __('roles.technician') ?></strong>
             <ul data-timeline="Tecnico">
               <?php foreach (($view['timeline']['Tecnico'] ?? []) as $ev): ?>
                 <li>
@@ -336,14 +362,14 @@
                       <?= htmlspecialchars($ev['fecha_human'] ?? '') ?>
                     </time>
                   </div>
-                  <div>Estado: <span class="<?= htmlspecialchars($ev['badge_class'] ?? 'badge') ?>"><?= htmlspecialchars($ev['estado']) ?></span></div>
+                  <div><?= __('ticket.timeline.state') ?> <span class="<?= htmlspecialchars($ev['badge_class'] ?? 'badge') ?>"><?= htmlspecialchars($ev['estado']) ?></span></div>
                   <?php if (!empty($ev['comentario'])): ?><div>"<?= htmlspecialchars($ev['comentario']) ?>"</div><?php endif; ?>
                 </li>
               <?php endforeach; ?>
             </ul>
           </div>
           <div>
-            <strong>Cliente</strong>
+            <strong><?= __('roles.client') ?></strong>
             <ul data-timeline="Cliente">
               <?php foreach (($view['timeline']['Cliente'] ?? []) as $ev): ?>
                 <li>
@@ -352,14 +378,14 @@
                       <?= htmlspecialchars($ev['fecha_human'] ?? '') ?>
                     </time>
                   </div>
-                  <div>Estado: <span class="<?= htmlspecialchars($ev['badge_class'] ?? 'badge') ?>"><?= htmlspecialchars($ev['estado']) ?></span></div>
+                  <div><?= __('ticket.timeline.state') ?> <span class="<?= htmlspecialchars($ev['badge_class'] ?? 'badge') ?>"><?= htmlspecialchars($ev['estado']) ?></span></div>
                   <?php if (!empty($ev['comentario'])): ?><div>"<?= htmlspecialchars($ev['comentario']) ?>"</div><?php endif; ?>
                 </li>
               <?php endforeach; ?>
             </ul>
           </div>
           <div>
-            <strong>Supervisor</strong>
+            <strong><?= __('roles.supervisor') ?></strong>
             <ul data-timeline="Supervisor">
               <?php foreach (($view['timeline']['Supervisor'] ?? []) as $ev): ?>
                 <li>
@@ -368,7 +394,7 @@
                       <?= htmlspecialchars($ev['fecha_human'] ?? '') ?>
                     </time>
                   </div>
-                  <div>Estado: <span class="<?= htmlspecialchars($ev['badge_class'] ?? 'badge') ?>"><?= htmlspecialchars($ev['estado']) ?></span></div>
+                  <div><?= __('ticket.timeline.state') ?> <span class="<?= htmlspecialchars($ev['badge_class'] ?? 'badge') ?>"><?= htmlspecialchars($ev['estado']) ?></span></div>
                   <?php if (!empty($ev['comentario'])): ?><div>"<?= htmlspecialchars($ev['comentario']) ?>"</div><?php endif; ?>
                 </li>
               <?php endforeach; ?>
@@ -380,4 +406,4 @@
   </div>
 </main>
 
-<script src="/ProyectoPandora/Public/js/ticket-ver.js" defer></script>
+<script src="/ProyectoPandora/Public/js/ticket-ver.js" defer></script>scriptscript

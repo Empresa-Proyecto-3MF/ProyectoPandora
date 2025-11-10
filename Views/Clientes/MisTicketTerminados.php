@@ -30,7 +30,7 @@
                 <?php if (!empty($tickets)): ?>
                     <?php foreach ($tickets as $ticket): ?>
                         <?php 
-                            // Lógica movida al controlador: usar $ticket['img_preview']
+                            
                             $imgSrc = (string)($ticket['img_preview'] ?? '');
 
                             $estado = strtolower(trim($ticket['estado'] ?? 'finalizado'));
@@ -48,7 +48,7 @@
                                 'cancelado' => 'estado-cancelado'
                             ];
                             $estadoClass = $estadoMap[$estado] ?? 'estado-default';
-                            $isWorking = false; // finalizados no muestran barra de progreso
+                            $isWorking = false; 
                         ?>
                         <article class="ticket-card">
                                                         <div class="ticket-img">
@@ -90,4 +90,4 @@
 
 </main>
 
-<script src="/ProyectoPandora/Public/js/clientes-mis-ticket-terminados.js" defer></script>
+<script src="/ProyectoPandora/Public/js/clientes-mis-ticket-terminados.js" defer></script>scriptscript

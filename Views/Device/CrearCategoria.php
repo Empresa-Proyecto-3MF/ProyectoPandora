@@ -3,11 +3,11 @@
 <main>
     <div class="content">
 
-        <h1 class="logo">Inventario <span>Nueva Categoría</span></h1>
+    <h1 class="logo"><?= __('device.category.new.title') ?></h1>
 
         <div class="categoriadevice-wrapper animated bounceInUp">
             <div class="form-container">
-                <h3>Añadir Categoría</h3>
+                <h3><?= __('device.category.new.heading') ?></h3>
 
                 <?php if (isset($_GET['error']) && $_GET['error'] === 'CamposRequeridos'): ?>
                     <div class="alert alert-warning">
@@ -28,14 +28,15 @@
                 <?php endif; ?>
 
                 <form action="" method="POST">
-                    <label for="nombre">Nombre de la Categoría:</label>
+                    <?= Csrf::input(); ?>
+                    <label for="nombre"><?= __('device.category.field.name') ?>:</label>
                     <input type="text" id="nombre" name="nombre" autocomplete="off" required>
 
-                    <button type="submit">Añadir</button>
+                    <button type="submit"><?= __('device.category.button.add') ?></button>
                 </form>
 
                 <a href="/ProyectoPandora/Public/index.php?route=Device/ListarCategoria" class="btn-volver">
-                    Volver a la lista de categorías
+                    <?= __('device.category.link.backList') ?>
                 </a>
             </div>
         </div>

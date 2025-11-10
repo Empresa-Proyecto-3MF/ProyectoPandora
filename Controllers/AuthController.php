@@ -4,6 +4,7 @@ require_once __DIR__ . '/../Core/Database.php';
 require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Controllers/HistorialController.php';
 require_once __DIR__ . '/../Core/Mail.php';
+require_once __DIR__ . '/../Core/Logger.php';
 
 class AuthController
 {
@@ -37,6 +38,7 @@ class AuthController
             }
 
             if ($user && password_verify($password, $user['password'])) {
+                Logger::channel('auth')->info('Login OK', ['email' => $email, 'user_id' => $user['id'] ?? null]);
                 
                 if (($user['role'] ?? '') === 'Administrador') {
                     $conn = $db->getConnection();
@@ -49,6 +51,7 @@ class AuthController
                 header('Location: /ProyectoPandora/Public/index.php?route=Default/Index');
                 exit;
             } else {
+                Logger::channel('auth')->warn('Login FAIL', ['email' => $email]);
                 header('Location: /ProyectoPandora/Public/index.php?route=Auth/Login');
                 exit;
             }
@@ -67,10 +70,10 @@ class AuthController
         exit;
     }
 
-    /* === Flujo: Olvidé mi contraseña === */
+    
     public function Forgot()
     {
-        // Vista con formulario: ingresar email
+        
         include_once __DIR__ . '/../Views/Auth/ForgotPassword.php';
     }
 
@@ -89,8 +92,8 @@ class AuthController
         $db->connectDatabase();
         $userModel = new UserModel($db->getConnection());
         $user = $userModel->findByEmail($email);
-        // No revelar si existe o no (para enumeración); simplemente avanzar
-        // Throttle: máximo 1 solicitud cada 60s por usuario (derivado de reset_expires_at - 15min)
+        
+        
         if ($user && !empty($user['reset_expires_at'])) {
             try {
                 $exp = new DateTime($user['reset_expires_at']);
@@ -103,7 +106,7 @@ class AuthController
                     return;
                 }
             } catch (Exception $e) {
-                // Ignore parse errors and continue
+                
             }
         }
 
@@ -111,11 +114,12 @@ class AuthController
         $expires = (new DateTime('+15 minutes'))->format('Y-m-d H:i:s');
         if ($user) {
             $userModel->setResetCodeByEmail($email, (string)$code, $expires);
-            // Email HTML con formato legible
+            
             $htmlBody = '<p>Usá este código para restablecer tu contraseña:</p>' .
                         '<p style="font-size:28px;letter-spacing:6px;font-weight:700;margin:12px 0;">' . $code . '</p>' .
                         '<p style="color:#666;margin:0;">Vence en 15 minutos.</p>';
             MailHelper::send($email, 'Código de recuperación', $htmlBody);
+            Logger::channel('auth')->info('Reset code generado y enviado', ['email' => $email]);
         }
         header('Location: /ProyectoPandora/Public/index.php?route=Auth/EnterCode&email=' . urlencode($email));
     }
@@ -139,8 +143,10 @@ class AuthController
         $userModel = new UserModel($db->getConnection());
         $check = $userModel->verifyResetCode($email, $code);
         if ($check['ok']) {
+            Logger::channel('auth')->info('Código verificado OK', ['email' => $email]);
             header('Location: /ProyectoPandora/Public/index.php?route=Auth/ResetPassword&email=' . urlencode($email) . '&ok=1');
         } else {
+            Logger::channel('auth')->warn('Código verificado FAIL', ['email' => $email, 'reason' => $check['reason'] ?? '']);
             header('Location: /ProyectoPandora/Public/index.php?route=Auth/EnterCode&email=' . urlencode($email) . '&err=' . $check['reason']);
         }
     }
@@ -169,8 +175,10 @@ class AuthController
         $userModel = new UserModel($db->getConnection());
         $ok = $userModel->updatePasswordByEmail($email, $pass1);
         if ($ok) {
+            Logger::channel('auth')->info('Password reset OK', ['email' => $email]);
             header('Location: /ProyectoPandora/Public/index.php?route=Auth/Login&reset=1');
         } else {
+            Logger::channel('auth')->error('Password reset FAIL', ['email' => $email]);
             header('Location: /ProyectoPandora/Public/index.php?route=Auth/ResetPassword&email=' . urlencode($email) . '&err=save');
         }
     }

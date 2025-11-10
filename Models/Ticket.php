@@ -10,15 +10,15 @@ class Ticket
 
     public function crear($cliente_id, $dispositivo_id, $descripcion_falla)
     {
-        // Determinar estado inicial válido (preferentemente 'Nuevo')
+        
         $estadoInicialId = null;
-        // 1) Intentar 'Nuevo'
+        
         if ($st = $this->conn->prepare("SELECT id FROM estados_tickets WHERE LOWER(name) = LOWER('Nuevo') LIMIT 1")) {
             $st->execute();
             $row = $st->get_result()->fetch_assoc();
             if ($row && isset($row['id'])) { $estadoInicialId = (int)$row['id']; }
         }
-        // 2) Si no existe, crearlo para cumplir con el flujo requerido
+        
         if (!$estadoInicialId) {
             if ($ins = $this->conn->prepare("INSERT INTO estados_tickets (name) VALUES ('Nuevo')")) {
                 if ($ins->execute()) {
@@ -27,7 +27,7 @@ class Ticket
             }
         }
         if (!$estadoInicialId) {
-            // No se pudo asegurar el estado 'Nuevo'
+            
             return false;
         }
 
@@ -233,7 +233,7 @@ class Ticket
 
     public function actualizarCompleto($id, $descripcion, $estado_id, $tecnico_id)
     {
-        // Si se asigna técnico y no se envía estado, forzar 'En espera' si el estado actual es 'Nuevo'
+        
         if ($tecnico_id !== null && ($estado_id === null || $estado_id === '')) {
             $q = $this->conn->prepare("SELECT e.name AS estado FROM tickets t INNER JOIN estados_tickets e ON e.id = t.estado_id WHERE t.id = ? LIMIT 1");
             if ($q) {
@@ -365,7 +365,7 @@ class Ticket
 
     public function asignarTecnico($ticket_id, $tecnico_id, ?int $actor_user_id = null, ?string $actor_role = null)
     {
-        // Detectar estado actual y decidir si forzar 'En espera'
+        
         $estadoNuevoId = null;
         $prev = $this->conn->prepare("SELECT t.tecnico_id, e.name AS estado FROM tickets t INNER JOIN estados_tickets e ON e.id=t.estado_id WHERE t.id=? LIMIT 1");
         if ($prev) {
@@ -393,7 +393,7 @@ class Ticket
             $stmt->bind_param("iii", $tecnico_id, $estadoNuevoId, $ticket_id);
             $ok = $stmt->execute();
 
-            // Registrar historial si nos pasan actor
+            
             if ($ok && $actor_user_id && $actor_role) {
                 require_once __DIR__ . '/TicketEstadoHistorial.php';
                 $hist = new TicketEstadoHistorialModel($this->conn);
@@ -438,13 +438,13 @@ class Ticket
         return $stmt->execute();
     }
 
-    /**
-     * Retorna true si existe al menos un ticket ACTIVO para el dispositivo dado.
-     * Activo = estado distinto de Finalizado, Cerrado o Cancelado.
-     */
+    
+
+
+
     public function hasActiveTicketForDevice(int $deviceId): bool
     {
-        // Activo = sin fecha_cierre (ajusta si usás estados)
+        
         $stmt = $this->conn->prepare("
             SELECT COUNT(*) c
             FROM tickets

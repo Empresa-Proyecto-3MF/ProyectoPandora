@@ -8,6 +8,7 @@
                 <h3>Actualizar Dispositivo</h3>
 
                 <form method="POST" enctype="multipart/form-data" action="/ProyectoPandora/Public/index.php?route=Device/ActualizarDevice&id=<?= $dispositivo['id'] ?>">
+                    <?= Csrf::input(); ?>
                     <input type="hidden" name="from" value="<?= $_GET['from'] ?? 'Cliente/MisDevice' ?>">
                     <input type="hidden" name="id" value="<?= $dispositivo['id'] ?>">
 

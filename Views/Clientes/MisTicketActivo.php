@@ -4,7 +4,7 @@
   
   <div class="Contenedor">
 
-    <?php /* Lógica de preview movida al controlador: usa $ticket['img_preview'] */ ?>
+    <?php  ?>
 
     <form method="get" action="/ProyectoPandora/Public/index.php" class="filtros" style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;align-items:center;">
       <input type="hidden" name="route" value="Cliente/MisTicketActivo" />
@@ -34,7 +34,7 @@
             <?php foreach ($tickets as $ticket): ?>
 
               <?php
-                // Imagen principal: helper encapsula la lógica nueva (uploads + fallback)
+                
                 $imgSrc = (string)($ticket['img_preview'] ?? '');
                 $estado = strtolower(trim($ticket['estado'] ?? ''));
 
@@ -74,7 +74,7 @@
                   <h3><?= htmlspecialchars($ticket['dispositivo']) ?> <?= htmlspecialchars($ticket['modelo']) ?></h3>
                   <p class="line-clamp-3"><strong>Descripción:</strong> <?= htmlspecialchars($ticket['descripcion_falla']) ?></p>
 
-                  <!-- ⭐ Estado del ticket mejorado -->
+                  
                   <div class="ticket-estado-wrapper">
                       <strong>Estado:</strong>
                       <span class="estado-tag <?= $estadoClass ?> <?= $isWorking ? 'estado-anim' : '' ?>">
@@ -118,4 +118,4 @@
   </div>
 </main>
 
-<script src="/ProyectoPandora/Public/js/clientes-mis-ticket-activo.js" defer></script>
+<script src="/ProyectoPandora/Public/js/clientes-mis-ticket-activo.js" defer></script>scriptscript

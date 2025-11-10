@@ -2,7 +2,7 @@
 <main>
     <div class="content">
         <div class="categoria-wrapper">
-            <h3>Agregar Categoría de Inventario</h3>
+            <h3><?= __('inventory.category.new.heading') ?></h3>
 
             <?php if (isset($_GET['error'])): ?>
                 <div style="color: red; font-weight: bold; margin-bottom: 15px;">
@@ -11,10 +11,11 @@
             <?php endif; ?>
 
             <form action="/ProyectoPandora/Public/index.php?route=Inventario/CrearCategoria" method="POST">
-                <label for="name">Nombre de la Categoría:</label>
+                <?= Csrf::input(); ?>
+                <label for="name"><?= __('inventory.category.field.name') ?>:</label>
                 <input type="text" id="name" name="name" required>
 
-                <button type="submit">Agregar Categoría</button>
+                <button type="submit"><?= __('inventory.category.button.add') ?></button>
             </form>
             <?php
                 $fallbackUrl = '/ProyectoPandora/Public/index.php?route=Inventario/ListarCategorias';
@@ -32,7 +33,7 @@
                     $volverUrl = $prevUrl;
                 }
             ?>
-            <a href="<?= htmlspecialchars($volverUrl, ENT_QUOTES, 'UTF-8') ?>" class="btn-volver">Volver</a>
+            <a href="<?= htmlspecialchars($volverUrl, ENT_QUOTES, 'UTF-8') ?>" class="btn-volver"><?= __('inventory.category.link.back') ?></a>
         </div>
     </div>
 </main>

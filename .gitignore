@@ -1,2 +1,16 @@
 Public/uploads/
 .env
+
+# Ignorar logs de la aplicación (pero mantener la carpeta con .gitkeep)
+/Logs/*
+!/Logs/.gitkeep
+
+# Ignorar archivos de rotación de logs si existen
+/Logs/*.log*
+
+# Opcional: archivos temporales del sistema/editor
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db

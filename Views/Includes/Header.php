@@ -1,5 +1,6 @@
 <?php
-// Dependencias principales ya cargadas por Sidebar (Auth, I18n, Storage)
+require_once __DIR__ . '/../../Core/Flash.php';
+
 $authUser = Auth::user();
 $rol = $authUser['role'] ?? '';
 $name = $authUser['name'] ?? '';
@@ -8,14 +9,14 @@ $avatarStored = $authUser['img_perfil'] ?? '';
 $avatar = \Storage::resolveProfileUrl($avatarStored);
 
 
-// Ruta actual (por si se requiere algún ajuste puntual)
+
 $route = $_GET['route'] ?? '';
-// ¿Es la Home?
+
 function isHomeRoute(string $route): bool {
 	if ($route === '' || strtolower($route) === 'default/index') return true;
 	return false;
 }
-// Meta dinámica por ruta (título/subtítulo)
+
 function headerMeta(string $route, string $rol): array {
 	$titleKey = 'header.default.title';
 	$subtitleKey = 'header.default.subtitle';
@@ -60,7 +61,7 @@ list($titleKey, $subtitleKey) = headerMeta($route, $rol);
 $title = __($titleKey);
 $subtitle = __($subtitleKey);
 ?>
-<!-- Estilos del header consolidados en AdminDash.css -->
+
 
 <header class="header hero-header">
 	<div class="hero-row">
@@ -79,7 +80,7 @@ $subtitle = __($subtitleKey);
 		</div>
 		<div class="hero-actions">
 			<?php 
-			// Unread count minimal (no JSON): calcular rápido solo cuando hay usuario
+			
 			$unread = 0; 
 			if ($authUser) {
 				require_once __DIR__ . '/../../Core/Database.php';
@@ -106,8 +107,15 @@ $subtitle = __($subtitleKey);
     </div>
 </header>
 
+<?php
+	$only = ['error','warning'];
+	include __DIR__ . '/FlashMessages.php';
+?>
+
+<!-- CSRF para AJAX: meta con token de un solo uso y helper JS global -->
+<meta name="csrf-token" content="<?= htmlspecialchars(Csrf::generate(), ENT_QUOTES, 'UTF-8') ?>">
+<script src="/ProyectoPandora/Public/js/csrf.js?v=<?= time(); ?>" defer></script>
+
 <script src="/ProyectoPandora/Public/js/DarkMode.js?v=<?= time(); ?>" defer></script>
 <script src="/ProyectoPandora/Public/js/Sidebar.js?v=<?= time(); ?>" defer></script>
-
 <script src="/ProyectoPandora/Public/js/layout-header.js" defer></script>
-<!-- Auto-refresh global deshabilitado: la UI se actualiza por AJAX en puntos específicos -->

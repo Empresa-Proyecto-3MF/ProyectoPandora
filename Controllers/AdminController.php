@@ -5,6 +5,7 @@ require_once __DIR__ . '/../Models/User.php';
 require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Core/Date.php';
 require_once __DIR__ . '/../Controllers/HistorialController.php';
+require_once __DIR__ . '/../Core/Flash.php';
 Auth::checkRole('Administrador');
 class AdminController
 {
@@ -27,7 +28,7 @@ class AdminController
     public function listarUsers()
     {
         $users = $this->userModel->getAllUsers();
-        // Preformatear fechas
+        
         foreach ($users as &$u) {
             if (!empty($u['created_at'])) {
                 $u['created_exact'] = DateHelper::exact($u['created_at']);
@@ -35,7 +36,7 @@ class AdminController
             }
         }
         unset($u);
-        // Mensajes flash
+        
         $flash = null;
         if (isset($_GET['success'])) {
             $flash = ['type' => 'success', 'message' => 'Operación realizada correctamente.'];
@@ -68,7 +69,7 @@ class AdminController
     public function listarTecs()
     {
         $tecnicos = $this->userModel->getAllTecnicos();
-        // Enriquecer con rating promedio y conteo
+        
         require_once __DIR__ . '/../Models/Rating.php';
         $dbx = new Database();
         $dbx->connectDatabase();
@@ -78,7 +79,7 @@ class AdminController
             list($avg, $count) = $ratingModel->getAvgForTecnico($tecId);
             $tec['rating_avg'] = $avg ? (float)$avg : 0.0;
             $tec['rating_count'] = (int)$count;
-            // Fechas
+            
             $created = $tec['created_at'] ?? '';
             if ($created) {
                 $tec['created_exact'] = DateHelper::exact($created);
@@ -141,7 +142,7 @@ class AdminController
         $db->connectDatabase();
         $userModel = new UserModel($db->getConnection());
 
-        // Determina el ID desde GET (vista) o POST (submit)
+        
         $userId = null;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = isset($_POST['id']) ? (int)$_POST['id'] : null;
@@ -150,7 +151,7 @@ class AdminController
         }
 
         if (!$userId) {
-            // Si no hay id, volver al listado
+            
             header('Location: /ProyectoPandora/Public/index.php?route=Admin/ListarUsers');
             exit;
         }
@@ -162,22 +163,24 @@ class AdminController
             $role = trim((string)($_POST['role'] ?? ''));
             $from = $_POST['from'] ?? 'Admin/ListarUsers';
 
-            // Validaciones básicas del servidor
+            
             if ($name === '') {
-                header('Location: /ProyectoPandora/Public/index.php?route=Admin/ActualizarUser&id='.(int)$userId.'&error=NombreRequerido&from='.urlencode($from));
+                Flash::error('El nombre es obligatorio.');
+                header('Location: /ProyectoPandora/Public/index.php?route=Admin/ActualizarUser&id='.(int)$userId.'&from='.urlencode($from));
                 exit;
             }
             $rolesValidos = ['Cliente','Tecnico','Supervisor','Administrador'];
             if ($role === '' || !in_array($role, $rolesValidos, true)) {
-                header('Location: /ProyectoPandora/Public/index.php?route=Admin/ActualizarUser&id='.(int)$userId.'&error=RolInvalido&from='.urlencode($from));
+                Flash::error('Seleccioná un rol válido.');
+                header('Location: /ProyectoPandora/Public/index.php?route=Admin/ActualizarUser&id='.(int)$userId.'&from='.urlencode($from));
                 exit;
             }
 
-            // Reobtén el usuario por ID para asegurar email correcto
+            
             $current = $userModel->findById($userId);
             $email = $current['email'] ?? ($user['email'] ?? '');
 
-            // Guardar datos previos para un log más claro
+            
             $before = $userModel->findById($userId);
             $oldName = $before['name'] ?? '—';
             $oldEmail = $before['email'] ?? '—';
@@ -190,22 +193,24 @@ class AdminController
             $cambios = [];
             if ($name !== '' && $name !== $oldName) { $cambios[] = "nombre: '{$oldName}' → '{$name}'"; }
             if ($role !== '' && $role !== $oldRole) { $cambios[] = "rol: {$oldRole} → {$role}"; }
-            // El email lo resolvemos siempre del registro real por seguridad
+            
             $detalle = "{$admin['name']} editó a {$oldName} (ID {$userId}, email {$oldEmail})";
             if (!empty($cambios)) { $detalle .= ". Cambios: " . implode(', ', $cambios) . "."; }
             $this->historialController->agregarAccion($accion, $detalle);
 
-            // Si el admin se cambia a sí mismo el rol, forzar logout para refrescar permisos
+            
             $currentAdmin = Auth::user();
             if ($currentAdmin && (int)$currentAdmin['id'] === (int)$userId && ($role !== ($currentAdmin['role'] ?? ''))) {
-                // Limpiar sesión y redirigir a login
+                
                 session_unset();
                 session_destroy();
                 header('Location: /ProyectoPandora/Public/index.php?route=Auth/Login&info=Reinicio%20de%20sesion%20por%20cambio%20de%20rol');
                 exit;
             }
 
-            header('Location: /ProyectoPandora/Public/index.php?route=' . $from . '&success=1');
+            require_once __DIR__ . '/../Core/Flash.php';
+            Flash::successQuiet('Usuario actualizado.');
+            header('Location: /ProyectoPandora/Public/index.php?route=' . $from);
             exit;
         }
         include_once __DIR__ . '/../Views/Admin/ActualizarUser.php';
@@ -218,7 +223,7 @@ class AdminController
         $db = new Database();
         $db->connectDatabase();
         $userModel = new UserModel($db->getConnection());
-        // Capturar info antes de eliminar para tener un log legible
+        
         $victim = $userModel->findById((int)$userId);
         $userModel->deleteUser($userId);
 
@@ -231,17 +236,19 @@ class AdminController
         }
         $this->historialController->agregarAccion($accion, $detalle);
 
-        header('Location: /ProyectoPandora/Public/index.php?route=Admin/ListarUsers&success=1');
+    require_once __DIR__ . '/../Core/Flash.php';
+    Flash::successQuiet('Usuario creado.');
+    header('Location: /ProyectoPandora/Public/index.php?route=Admin/ListarUsers');
         exit;
     }
 
-    /**
-     * Migra fotos legacy de tickets desde Public/img/imgTickets/{id}/ a Public/uploads/ticket/{id}/.
-     * Solo accesible por Administrador. Por defecto copia sin borrar origen.
-     * Parámetros opcionales:
-     *   - mode=move  (mueve y elimina el archivo original tras copiar)
-     *   - id=123     (migrar solo un ticket concreto)
-     */
+    
+
+
+
+
+
+
     public function MigrarTicketImages()
     {
         require_once __DIR__ . '/../Core/Storage.php';
@@ -267,7 +274,7 @@ class AdminController
         $dirs = @scandir($legacyBase) ?: [];
         foreach ($dirs as $dir) {
             if ($dir === '.' || $dir === '..') continue;
-            if (!ctype_digit($dir)) continue; // solo IDs numéricos
+            if (!ctype_digit($dir)) continue; 
             $ticketId = (int)$dir;
             if ($onlyId && $ticketId !== (int)$onlyId) continue;
             $srcDir = rtrim($legacyBase, '/\\') . '/' . $dir . '/';
@@ -282,7 +289,7 @@ class AdminController
                 if (!in_array($ext, $allowed, true)) continue;
                 $src = $srcDir . $fn;
                 $dst = rtrim($destDir, '/\\') . '/' . $fn;
-                // Si destino ya existe, evitar sobrescribir
+                
                 if (is_file($dst)) { $skippedForTicket++; $result['skipped']++; continue; }
                 if (@copy($src, $dst)) {
                     $movedForTicket++; $result['copied']++;
@@ -304,7 +311,7 @@ class AdminController
             ];
         }
 
-        // Render simple de resultados
+        
         echo '<main><div class="Contenedor">';
         echo '<h2>Migración de fotos de tickets</h2>';
         echo '<p>Modo: '.($isMove ? 'mover' : 'copiar').'</p>';

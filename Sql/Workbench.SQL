@@ -21,6 +21,8 @@ DROP TABLE IF EXISTS historial;
 DROP TABLE IF EXISTS estados_tickets;
 DROP TABLE IF EXISTS categorias_inventario;
 DROP TABLE IF EXISTS categorias;
+DROP TABLE IF EXISTS notification_user;
+DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS users;
 SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE users (

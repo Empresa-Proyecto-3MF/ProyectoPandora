@@ -29,7 +29,7 @@ class DefaultController
 
             @require_once __DIR__ . '/../Models/Rating.php';
             if (class_exists('RatingModel')) {
-                new \RatingModel($conn); // asegura ticket_ratings
+                new \RatingModel($conn); 
             }
 
             $counts = ['activos' => 0, 'finalizados' => 0, 'cancelados' => 0];
@@ -221,7 +221,7 @@ class DefaultController
             $role = $user['role'] ?? 'Invitado';
             $userId = isset($user['id']) ? (int)$user['id'] : null;
 
-            // Reutilizar modelo Ticket para obtener listados y contar activos por estado
+            
             $ticketModel = new \Ticket($conn);
             $inactivos = ['finalizado','cerrado','cancelado'];
             $activos = 0;
@@ -246,17 +246,17 @@ class DefaultController
             }
             $stats['activeTickets'] = $activos;
 
-            // Promedio de calificaciones
+            
             @require_once __DIR__ . '/../Models/Rating.php';
             if (class_exists('RatingModel')) {
-                new \RatingModel($conn); // ensureTable
+                new \RatingModel($conn); 
             }
             if ($q = $conn->query("SELECT ROUND(AVG(stars), 1) AS avg_s FROM ticket_ratings")) {
                 $row = $q->fetch_assoc();
                 $stats['avgRating'] = $row && $row['avg_s'] !== null ? (float)$row['avg_s'] : null;
             }
 
-            // Última actualización
+            
             $lastIso = null;
             if ($role === 'Cliente' && $userId) {
                 $sqlH = "SELECT MAX(h.created_at) AS last
@@ -330,7 +330,7 @@ class DefaultController
                 }
             }
     } catch (\Throwable $e) {
-            // error_log('[Home stats] ' . $e->getMessage());
+            
         }
         return $stats;
     }
@@ -382,11 +382,11 @@ class DefaultController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = $user['id'] ?? null;
-            // Parche de seguridad: asegura que el trigger de actualización de usuarios
-            // NO borre relaciones si no cambia el rol (evita cascadas al cambiar contraseña)
+            
+            
             try {
                 $connChk = (new \Database()); $connChk->connectDatabase(); $cx = $connChk->getConnection();
-                // Re-crear el trigger con guarda (idempotente)
+                
                 @$cx->query("DROP TRIGGER IF EXISTS trigger_actualizar_usuario_por_rol");
                 $sqlTrig = "CREATE TRIGGER trigger_actualizar_usuario_por_rol\n"
                     . "AFTER UPDATE ON users\n"
@@ -414,13 +414,13 @@ class DefaultController
                     . "    END IF;\n"
                     . "END";
                 @$cx->query($sqlTrig);
-            } catch (\Throwable $e) { /* noop */ }
+            } catch (\Throwable $e) {  }
             $newName = isset($_POST['name']) ? trim((string)$_POST['name']) : '';
             $newEmail = isset($_POST['email']) ? trim((string)$_POST['email']) : '';
             $imgPerfil = $user['img_perfil'] ?? '';
             $didUpload = false;
 
-            // Aceptar tanto 'img_perfil' como 'avatar' desde el formulario
+            
             $fileKey = null;
             if (isset($_FILES['img_perfil']) && $_FILES['img_perfil']['error'] === UPLOAD_ERR_OK) {
                 $fileKey = 'img_perfil';
@@ -436,10 +436,10 @@ class DefaultController
             }
 
             $userModel = new \UserModel($db->getConnection());
-            // Actualizar perfil solo si se enviaron datos de perfil (evita pisar con vacío)
+            
             $shouldUpdateProfile = ($newName !== '' || $newEmail !== '' || $didUpload);
             if ($shouldUpdateProfile) {
-                // Completar con valores actuales si alguno no viene
+                
                 $current = $userModel->findById((int)$userId);
                 $finalName = ($newName !== '') ? $newName : ($current['name'] ?? $userName);
                 $finalEmail = ($newEmail !== '') ? $newEmail : ($current['email'] ?? $userEmail);
@@ -449,12 +449,12 @@ class DefaultController
                 $_SESSION['user']['img_perfil'] = $imgPerfil;
             }
 
-            // Actualizar contraseña si corresponde (requiere contraseña actual válida)
+            
             $curPass = isset($_POST['current_password']) ? (string)$_POST['current_password'] : '';
             $newPass = isset($_POST['new_password']) ? (string)$_POST['new_password'] : '';
             $confPass = isset($_POST['confirm_password']) ? (string)$_POST['confirm_password'] : '';
             if ($curPass !== '' || $newPass !== '' || $confPass !== '') {
-                // Debe proveer los tres campos
+                
                 if ($curPass === '' || $newPass === '' || $confPass === '') {
                     header('Location: /ProyectoPandora/Public/index.php?route=Default/Perfil&error=pass');
                     exit;
@@ -463,7 +463,7 @@ class DefaultController
                     header('Location: /ProyectoPandora/Public/index.php?route=Default/Perfil&error=pass');
                     exit;
                 }
-                // Traer hash actual y verificar current_password
+                
                 $stGet = $db->getConnection()->prepare('SELECT password FROM users WHERE id = ? LIMIT 1');
                 if ($stGet) {
                     $stGet->bind_param('i', $userId);
@@ -474,19 +474,19 @@ class DefaultController
                         header('Location: /ProyectoPandora/Public/index.php?route=Default/Perfil&error=wrongpass');
                         exit;
                     }
-                    // Evitar cambiar a la misma contraseña
+                    
                     if (password_verify($newPass, $hashOld)) {
                         header('Location: /ProyectoPandora/Public/index.php?route=Default/Perfil&error=passsame');
                         exit;
                     }
                 }
-                // Actualizar a nuevo hash
+                
                 $hash = password_hash($newPass, PASSWORD_DEFAULT);
                 $stPw = $db->getConnection()->prepare('UPDATE users SET password = ? WHERE id = ?');
                 if ($stPw) { 
                     $stPw->bind_param('si', $hash, $userId); 
                     if ($stPw->execute()) {
-                        // Registrar en historial para trazabilidad
+                        
                         @require_once __DIR__ . '/HistorialController.php';
                         if (class_exists('HistorialController')) {
                             $hist = new \HistorialController();
@@ -496,13 +496,13 @@ class DefaultController
                         }
                     }
                 }
-                // Redirigir con ok=pass y cortar aquí para no confundir feedback
+                
                 header('Location: /ProyectoPandora/Public/index.php?route=Default/Perfil&ok=pass');
                 exit;
             }
 
             if ($rol === 'Tecnico') {
-                // Ajustes: disponibilidad
+                
                 if (isset($_POST['disponibilidad'])) {
                     $nuevaDisp = $_POST['disponibilidad'];
                     if ($nuevaDisp === 'Disponible' || $nuevaDisp === 'Ocupado') {
@@ -510,7 +510,7 @@ class DefaultController
                         if ($stmtUpd) { $stmtUpd->bind_param("si", $nuevaDisp, $userId); $stmtUpd->execute(); $tecnicoDisponibilidad = $nuevaDisp; }
                     }
                 }
-                // Perfil: especialidad
+                
                 if (isset($_POST['especialidad'])) {
                     $nuevaEsp = trim((string)$_POST['especialidad']);
                     $stmtEsp = $db->getConnection()->prepare("UPDATE tecnicos SET especialidad = ? WHERE user_id = ?");
@@ -518,7 +518,7 @@ class DefaultController
                 }
             }
 
-            // Redirigir con estado (solo perfil aquí; contraseña ya redirigió arriba)
+            
             $suffix = ($shouldUpdateProfile ? '&ok=perfil' : '');
             header('Location: /ProyectoPandora/Public/index.php?route=Default/Perfil' . $suffix);
             exit;

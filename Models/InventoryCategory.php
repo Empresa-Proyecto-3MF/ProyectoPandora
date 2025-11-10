@@ -9,7 +9,7 @@ class InventoryCategoryModel
         $this->conn = $dbConnection;
     }
 
-    // CRUD sobre tabla 'categorias_inventario'
+    
     public function createCategory(string $name)
     {
         $stmt = $this->conn->prepare("INSERT INTO categorias_inventario (name) VALUES (?)");
@@ -58,7 +58,7 @@ class InventoryCategoryModel
         return null;
     }
 
-    // Aliases de compatibilidad
+    
     public function crearCategoria(string $name) { return $this->createCategory($name); }
     public function actualizarCategory(int $id, string $name) { return $this->updateCategory($id, $name); }
     public function eliminarCategoria(int $id) { return $this->deleteCategory($id); }

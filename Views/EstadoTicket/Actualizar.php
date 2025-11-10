@@ -7,6 +7,7 @@
                 <h3>Actualizar Estado</h3>
 
                 <form method="POST" action="/ProyectoPandora/Public/index.php?route=EstadoTicket/Actualizar">
+                    <?= Csrf::input(); ?>
                     <input type="hidden" name="id" value="<?= htmlspecialchars($estado['id']) ?>">
 
                     <p>

@@ -18,11 +18,11 @@ $locale = I18n::getLocale();
   <link href='https://cdn.boxicons.com/fonts/basic/boxicons.min.css' rel='stylesheet'>
   <link href='https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
   <title><?= __('app.name') ?></title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>scriptscript
 </head>
 
 <body>
-  <!-- ===== Sidebar ===== -->
+  
   <aside class="sidebar">
     <div class=" flex">
       <span class="nav_image">
@@ -65,7 +65,7 @@ $locale = I18n::getLocale();
           <span class="line"></span>
         </div>
             
-        <!-- ===== Opciones según rol ===== -->
+        
         <li class="item menu-item-static">
           <a href="/ProyectoPandora/Public/index.php?route=Default/Index" class="link flex">
             <i class='bx bx-home'></i>
@@ -178,7 +178,7 @@ $locale = I18n::getLocale();
 
 </body>
 
-<!-- ===== JS ===== -->
+
 <?php 
   $authJsPath = rtrim($_SERVER['DOCUMENT_ROOT'],'/\\') . '/ProyectoPandora/Public/js/auth-login.js';
 ?>

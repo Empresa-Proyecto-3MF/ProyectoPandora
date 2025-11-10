@@ -9,7 +9,7 @@ class NotificationModel
         $this->conn = $db;
     }
 
-    // Crear notificación; audience: ALL | ROLE | USER
+    
     public function create(string $title, string $body, string $audience = 'ALL', ?string $role = null, ?int $userId = null, ?int $createdBy = null): ?int
     {
         $sql = "INSERT INTO notifications (title, body, audience, audience_role, target_user_id, created_by) VALUES (?,?,?,?,?,?)";
@@ -19,7 +19,7 @@ class NotificationModel
         if (!$stmt->execute()) return null;
         $notifId = (int)$this->conn->insert_id;
 
-        // Pre-popular notification_user para performance de contadores
+        
         if ($audience === 'ALL') {
             $q = $this->conn->query("SELECT id FROM users");
             if ($q) {
@@ -90,7 +90,7 @@ class NotificationModel
 
     public function markRead(int $userId, int $notificationId): bool
     {
-        // Upsert sencillo
+        
         $sql = "INSERT INTO notification_user (notification_id, user_id, is_read, read_at)
                 VALUES (?,?,1,NOW())
                 ON DUPLICATE KEY UPDATE is_read = 1, read_at = NOW()";

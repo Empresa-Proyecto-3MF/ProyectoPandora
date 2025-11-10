@@ -4,11 +4,11 @@
  * En entornos donde mail() no esté configurado (XAMPP por defecto),
  * se puede reemplazar por logging a archivo.
  */
+require_once __DIR__ . '/Logger.php';
+
 class MailHelper
 {
-    // Guardamos logs en /Logs, que creamos si no existe
-    private static string $logFile = __DIR__ . '/../Logs/mail.log';
-    // Se eliminó outbox: ya no guardamos copias .eml
+    // Se eliminó outbox: ya no guardamos copias .eml; logging central con Logger
 
     public static function send(string $to, string $subject, string $body): bool
     {
@@ -58,8 +58,8 @@ class MailHelper
         $err = $ok ? null : (function_exists('error_get_last') ? error_get_last() : null);
 
         // Log SIEMPRE el intento (éxito o fallo) para trazabilidad
-        self::logAttempt([
-            'when' => date('Y-m-d H:i:s'),
+        $logger = Logger::channel('mail');
+        $logger->info('mail() intento envío', [
             'to' => $to,
             'subject' => $subject,
             'from' => $mailFrom,
@@ -67,26 +67,12 @@ class MailHelper
             'elapsed_ms' => $elapsedMs,
             'smtp' => [ 'host' => $smtpHost, 'port' => $smtpPort ],
             'error' => $err ? ($err['message'] ?? 'unknown') : null,
-        ], $body);
+        ]);
 
         return $ok;
     }
 
-    private static function logAttempt(array $meta, string $body): void
-    {
-        $dir = dirname(self::$logFile);
-        if (!is_dir($dir)) { @mkdir($dir, 0777, true); }
-        $summary = sprintf(
-            '%s | TO:%s | SUBJECT:%s | STATUS:%s | %dms | BODY:%s',
-            $meta['when'] ?? date('Y-m-d H:i:s'),
-            $meta['to'] ?? '-',
-            $meta['subject'] ?? '-',
-            $meta['status'] ?? '-',
-            $meta['elapsed_ms'] ?? 0,
-            str_replace("\n", ' ', $body)
-        );
-        @file_put_contents(self::$logFile, $summary . "\n", FILE_APPEND);
-    }
+    // logAttempt removido: ahora se usa Logger central
 
     private static function encodeSubject(string $subject): string
     {

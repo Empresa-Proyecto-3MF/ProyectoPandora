@@ -30,7 +30,7 @@
           <?php if (!empty($tickets)): ?>
             <?php foreach ($tickets as $ticket): ?>
               <?php 
-                // Lógica movida al controlador: usar $ticket['img_preview']
+                
                 $imgSrc = (string)($ticket['img_preview'] ?? '');
 
                 $estado = strtolower(trim($ticket['estado'] ?? ''));
@@ -96,5 +96,5 @@
   </div>
 </section>
 
-<script src="/ProyectoPandora/Public/js/tecnicos-mis-reparaciones.js" defer></script>
+<script src="/ProyectoPandora/Public/js/tecnicos-mis-reparaciones.js" defer></script>scriptscript
 </main>

@@ -9,7 +9,7 @@ class DeviceCategoryModel
         $this->conn = $dbConnection;
     }
 
-    // CRUD sobre tabla 'categorias' (dispositivos)
+    
     public function createCategory(string $name)
     {
         $stmt = $this->conn->prepare("INSERT INTO categorias (name) VALUES (?)");
@@ -63,7 +63,7 @@ class DeviceCategoryModel
         return null;
     }
 
-    // Compatibilidad con usos existentes
+    
     public function findCategoryById(int $id): ?array
     {
         return $this->getCategoryById($id);

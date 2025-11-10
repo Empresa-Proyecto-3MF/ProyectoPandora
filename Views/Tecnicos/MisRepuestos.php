@@ -137,6 +137,7 @@
                                 <td><?php echo (int)$row['stock_actual']; ?><?php if ((int)$row['stock_actual'] <= 0) echo ' <span class="badge badge--muted">Sin stock</span>'; ?></td>
                                 <td>
                                     <form class="req-form" action="/ProyectoPandora/Public/index.php?route=Tecnico/SolicitarRepuesto" method="post">
+                                        <?= Csrf::input(); ?>
                                         <input type="hidden" name="ticket_id" value="<?php echo (int)$ticket_id; ?>" />
                                         <input type="hidden" name="inventario_id" value="<?php echo (int)$row['id']; ?>" />
                                         <?php if (!empty($_GET['rev'])): ?>
@@ -227,4 +228,4 @@
     </section>
 </main>
 
-<script src="/ProyectoPandora/Public/js/tecnicos-mis-repuestos.js" defer></script>
+<script src="/ProyectoPandora/Public/js/tecnicos-mis-repuestos.js" defer></script>scriptscript

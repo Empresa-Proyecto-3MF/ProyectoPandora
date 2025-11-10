@@ -15,6 +15,7 @@
 
                 <?php if (!isset($errorMsg)): ?>
                     <form action="/ProyectoPandora/Public/index.php?route=Device/CrearDispositivo" method="POST" enctype="multipart/form-data">
+                        <?= Csrf::input(); ?>
 
                         <?php if (isset($isAdmin) && $isAdmin && isset($clientes)): ?>
                             <p>

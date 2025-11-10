@@ -13,7 +13,8 @@
                     <div class="alert alert-warning"><?= htmlspecialchars($errorMsg) ?></div>
                 <?php endif; ?>
 
-                <form action="/ProyectoPandora/Public/index.php?route=Inventario/CrearItem" method="POST" enctype="multipart/form-data">
+        <form action="/ProyectoPandora/Public/index.php?route=Inventario/CrearItem" method="POST" enctype="multipart/form-data">
+            <?= Csrf::input(); ?>
                         <p>
                             <label for="categoria_id">Categoría:</label>
                             <select id="categoria_id" name="categoria_id" required>
