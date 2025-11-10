@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Gestionar reportes del sistema "
+
+actor "Admin" as A
+
+usecase "Gestionar reportes del sistema" as CU2
+
+
+
+A --> CU2 : Solicita Gestionar reportes del sistema 
+CU2 --> Sistema : Valida y Gestiona reportes del sistema
+
+
+
+@enduml

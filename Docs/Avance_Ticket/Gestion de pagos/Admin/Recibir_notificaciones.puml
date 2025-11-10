@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Recibir notificaciones "
+
+actor "Admin" as A
+
+usecase "Recibir notificaciones del sistema" as CU2
+
+
+
+A --> CU2 : Solicita recibir notificaciones del sistema
+CU2 --> Sistema : Valida y recibe notificaciones del sistema
+
+
+
+@enduml

@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Actualizar datos personales"
+
+actor "Admin" as A
+
+usecase "Actualizar datos personales" as CU2
+
+
+
+A --> CU2 : Solicita Actualizar datos personales
+CU2 --> Sistema : Valida y Actualiza datos personales
+
+
+
+@enduml

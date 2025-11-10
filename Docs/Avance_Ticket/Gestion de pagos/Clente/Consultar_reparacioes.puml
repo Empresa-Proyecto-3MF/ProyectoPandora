@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Consultar historial de reparaciones"
+
+actor "Cliente" as A
+
+usecase "Consultar historial de reparaciones" as CU2
+
+
+
+A --> CU2 : Solicita Consultar historial de reparaciones
+CU2 --> Sistema : Valida y Consulta historial de reparaciones
+
+
+
+@enduml

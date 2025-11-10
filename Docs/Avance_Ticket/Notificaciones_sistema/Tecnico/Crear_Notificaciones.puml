@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Crear Notificaciones"
+
+actor "Tecnico" as A
+
+usecase "Crear Notificaciones"as CU2
+
+
+
+A --> CU2 : Solicita Crear Notificacion
+CU2 --> Sistema : Valida y Crea Notificaciones
+
+
+
+@enduml

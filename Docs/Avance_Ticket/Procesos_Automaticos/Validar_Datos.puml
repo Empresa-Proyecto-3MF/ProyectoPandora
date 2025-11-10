@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Validar Integridad de Datos"
+actor "Sistema" as A
+
+usecase "Validar Integridad de Datos"as CU2
+
+
+
+A --> CU2 : Solicita Validar Integridad de Datos
+CU2 --> Sistema : Valida y Valida Integridad de Datos
+
+
+
+@enduml

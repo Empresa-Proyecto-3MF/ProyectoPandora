@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Calcular valor total del ítem usado"
+
+actor "Supervisor" as A
+
+usecase "Calcular valor total del ítem usado " as CU2
+
+
+
+A --> CU2 : Solicita Calcular valor total del ítem usado 
+CU2 --> Sistema : Valida y Calcula valor total del ítem usado
+
+
+
+@enduml

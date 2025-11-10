@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Crear usuarios"
+
+actor "Administrador" as A
+
+usecase "Crear usuario" as CU2
+
+
+
+A --> CU2 : Solicita crear usuario
+CU2 --> Sistema : Valida y crea el usuario
+
+
+
+
+@enduml

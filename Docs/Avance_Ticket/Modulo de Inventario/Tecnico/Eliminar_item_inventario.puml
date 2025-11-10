@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Eliminar item de inventario"
+
+actor "Tecnico" as A
+
+usecase "Eliminar item de inventario " as CU2
+
+
+
+A --> CU2 : Solicita Eliminar item de inventario 
+CU2 --> Sistema : Valida y Elimina item de inventario 
+
+
+
+
+@enduml

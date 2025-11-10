@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Registrar solicitud de Reparacion"
+
+actor "Cliente" as A
+
+usecase "Registrar solicitud de Reparacio" as CU2
+
+
+
+A --> CU2 : Solicita Registrar solicitud de Reparacio
+CU2 --> Sistema : Valida y Registrar solicitud de Reparacio
+
+
+
+
+@enduml

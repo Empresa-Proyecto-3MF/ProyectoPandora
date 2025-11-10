@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Gestionar usuarios "
+
+actor "Supervisor" as A
+
+usecase "Gestionar usuarios de servicios tecnicos" as CU2
+
+
+
+A --> CU2 : Solicita Gestionar usuarios de servicios tecnicos
+CU2 --> Sistema : Valida y Gestiona usuarios de servicios tecnicos
+
+
+
+@enduml

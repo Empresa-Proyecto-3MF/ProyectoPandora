@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Consultar Historial de Notificaciones"
+
+actor "Supervisores" as A
+
+usecase "Consultar Historial de Notificaciones"as CU2
+
+
+
+A --> CU2 : Solicita Consultar Historial de Notificaciones
+CU2 --> Sistema : Valida y Consulta Historial de Notificaciones
+
+
+
+@enduml

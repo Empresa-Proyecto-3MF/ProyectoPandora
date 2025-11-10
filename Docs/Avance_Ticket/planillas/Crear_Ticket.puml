@@ -1,0 +1,68 @@
+@startuml
+!define RECTANGLE class
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor #f2f2f2
+    BorderColor #333
+    ArrowColor #333
+    ActorBorderColor #333
+    ActorFontColor #333
+    ActorBackgroundColor #dedede
+}
+
+actor "Cliente" as Cliente
+
+rectangle "Sistema de Gestión de Tickets" {
+    usecase "CU-01: Crear Ticket" as UC_CrearTicket
+}
+
+Cliente --> UC_CrearTicket : Inicia solicitud
+
+note right of UC_CrearTicket
+== Crear Ticket ==
+**Actor principal:** Cliente  
+**Propósito:** Registrar una solicitud de servicio para un dispositivo.  
+**Disparador:** Cliente selecciona "Crear Ticket".  
+end note
+
+note bottom of UC_CrearTicket
+== Observaciones ==
+- Estado inicial del ticket: "Nuevo".  
+- Cliente sólo puede ver sus dispositivos.  
+- Puede registrarse historial si auditoría activa.  
+- Retorna a "Mis Tickets" tras crear.
+end note
+
+note left of UC_CrearTicket
+== Flujo básico ==
+1. Sistema muestra formulario con dispositivos.  
+2. Cliente describe falla y selecciona dispositivo.  
+3. Cliente confirma creación.  
+4. Sistema valida y crea ticket con estado "Nuevo".
+end note
+
+note right of UC_CrearTicket
+== Flujos alternativos ==
+FA1: Cliente sin dispositivos → informar y ofrecer registrar uno.  
+FA2: Validación fallida → mostrar errores, no crea ticket.  
+FA3: Error de persistencia → registrar incidente y notificar.
+end note
+
+note bottom of Cliente
+== Excepciones ==
+E1: Dispositivo no encontrado → error.  
+E2: Falla al insertar → registrar y notificar.  
+E3: Usuario no autenticado → redirigir a Login.  
+E4: Dispositivo no pertenece al cliente → denegar.
+end note
+
+note as N4
+== Restricciones ==
+- Estado inicial "Nuevo" (id=1).  
+- El dispositivo debe pertenecer al cliente autenticado.
+end note
+
+UC_CrearTicket -down-> N4 : Restricciones
+
+@enduml

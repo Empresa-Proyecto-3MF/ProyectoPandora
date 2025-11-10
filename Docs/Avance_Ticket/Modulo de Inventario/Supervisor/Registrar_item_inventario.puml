@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Registrar item de inventario"
+
+actor "Supervisor" as A
+
+usecase "Registrar item de inventario " as CU2
+
+
+
+A --> CU2 : Solicita Registrar item de inventario 
+CU2 --> Sistema : Valida y Registra item de inventario 
+
+
+
+
+@enduml

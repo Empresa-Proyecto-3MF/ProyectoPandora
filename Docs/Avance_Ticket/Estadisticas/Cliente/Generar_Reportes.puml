@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Generar Reportes de Rendimiento"
+actor "Cliente" as A
+
+usecase "Generar Reportes de Rendimiento"as CU2
+
+
+
+A --> CU2 : Solicita Generar Reportes de Rendimiento
+CU2 --> Sistema : Valida y Genera Reportes de Rendimiento
+
+
+
+@enduml

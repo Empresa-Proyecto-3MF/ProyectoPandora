@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title " Cambiar_rol_automáticamente"
+
+actor "Administrador" as A
+
+usecase "cambiar rol" as CU2
+
+
+
+A --> CU2 : Solicita cambiar rol
+CU2 --> Sistema : Valida y cambia el rol
+
+
+
+
+@enduml

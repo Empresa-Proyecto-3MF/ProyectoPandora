@@ -1,14 +1,20 @@
-@startuml UC07_Decidir_Presupuesto
+@startuml
 left to right direction
 skinparam actorStyle awesome
 skinparam shadowing false
 skinparam packageStyle rectangle
+title "Decidir Presupuesto"
 
-actor Cliente
-rectangle Sistema {
-  usecase "Decidir Presupuesto" as UC07
-}
+actor "Cliente" as A
 
-Cliente --> UC07 : Aprobar/Rechazar
-UC07 --> Sistema : Actualiza estado a "En reparación" o "Cancelado"
+usecase "Decidir Presupuesto" as CU2
+
+
+
+A --> CU2 : Solicita decidir presupuesto
+CU2 --> Sistema : Valida y crea la decisión de presupuesto
+
+
+
+
 @enduml

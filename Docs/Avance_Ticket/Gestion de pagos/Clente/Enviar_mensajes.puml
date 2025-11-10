@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Enviar mensaje o Consulta al soporte"
+
+actor "Cliente" as A
+
+usecase "Enviar mensaje o Consulta al soporte" as CU2
+
+
+
+A --> CU2 : Solicita Enviar mensaje o Consulta al soporte
+CU2 --> Sistema : Valida y Envia mensaje o Consulta al soporte
+
+
+
+@enduml

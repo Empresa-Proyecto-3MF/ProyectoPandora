@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Gestionar roles de usuarios"
+
+actor "Administrador" as A
+
+usecase "Gestionar rol" as CU2
+
+
+
+A --> CU2 : Solicita gestionar rol
+CU2 --> Sistema : Valida y gestiona el rol
+
+
+
+
+@enduml

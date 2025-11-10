@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Exportar Datos Estadisticos"
+actor "Tecnico" as A
+
+usecase "Exportar Datos Estadisticos"as CU2
+
+
+
+A --> CU2 : Solicita Exportar Datos Estadisticos
+CU2 --> Sistema : Valida y Exporta Datos Estadisticos
+
+
+
+@enduml

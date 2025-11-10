@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Administrar roles y permisos "
+
+actor "Supervisor" as A
+
+usecase "Administrar roles y permisos" as CU2
+
+
+
+A --> CU2 : Solicita Administrar roles y permisos
+CU2 --> Sistema : Valida y Administra roles y permisos
+
+
+
+@enduml

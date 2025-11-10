@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Consultar Estadisticas de Tecnico"
+actor "Tecnico" as A
+
+usecase "Consultar Estadisticas de Tecnico"as CU2
+
+
+
+A --> CU2 : Solicita Consultar Estadisticas de Tecnico
+CU2 --> Sistema : Valida y Consulta Estadisticas de Tecnico
+
+
+
+@enduml

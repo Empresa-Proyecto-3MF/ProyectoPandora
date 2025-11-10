@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Generar Reportes de Rendimiento"
+actor "Sistema" as A
+
+usecase "Actualizar Estadisticas internas"as CU2
+
+
+
+A --> CU2 : Solicita Actualizar Estadisticas internas
+CU2 --> Sistema : Valida y Actualiza Estadisticas internas
+
+
+
+@enduml

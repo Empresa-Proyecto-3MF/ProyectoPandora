@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Editar-Usuario"
+
+actor "Administrador" as A
+
+usecase " Editar usuario" as CU2
+
+
+
+A --> CU2 : Solicita editar  usuario
+CU2 --> Sistema : Valida y edita el usuario
+
+
+
+
+@enduml

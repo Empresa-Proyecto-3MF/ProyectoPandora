@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Enviar mensaje o Consulta al soporte"
+
+actor "Admin" as A
+
+usecase "Cerrar Sesion" as CU2
+
+
+
+A --> CU2 : Solicita Cerrar  Sesion
+CU2 --> Sistema : Valida y Cierra Sesion
+
+
+
+@enduml

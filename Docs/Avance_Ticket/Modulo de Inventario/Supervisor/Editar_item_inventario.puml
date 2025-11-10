@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Editar item de inventario"
+
+actor "Supervisor" as A
+
+usecase "Editar item de inventario " as CU2
+
+
+
+A --> CU2 : Solicita Editar item de inventario 
+CU2 --> Sistema : Valida y Edita item de inventario 
+
+
+
+
+@enduml

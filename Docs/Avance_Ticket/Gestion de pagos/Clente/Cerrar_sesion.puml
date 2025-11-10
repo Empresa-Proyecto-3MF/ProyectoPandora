@@ -3,17 +3,16 @@ left to right direction
 skinparam actorStyle awesome
 skinparam shadowing false
 skinparam packageStyle rectangle
-title "Crear Ticket"
+title "Enviar mensaje o Consulta al soporte"
 
 actor "Cliente" as A
 
-usecase "Crear Ticket" as CU2
+usecase "Cerrar Sesion" as CU2
 
 
 
-A --> CU2 : Solicita crear ticket
-CU2 --> Sistema : Valida y crea el ticket
-
+A --> CU2 : Solicita Cerrar  Sesion
+CU2 --> Sistema : Valida y Cierra Sesion
 
 
 

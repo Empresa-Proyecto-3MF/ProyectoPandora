@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Descargar Comprobante"
+
+actor "Tecnico" as A
+
+usecase "Descargar Comprobante " as CU2
+
+
+
+A --> CU2 : Solicita Descargar comprobante
+CU2 --> Sistema : Valida y descarga el comprobante
+
+
+
+
+@enduml

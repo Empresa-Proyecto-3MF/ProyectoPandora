@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Actualizar stock"
+
+actor "supervisor" as A
+
+usecase "Actualizar stock " as CU2
+
+
+
+A --> CU2 : Solicita Actualizar stock "
+CU2 --> Sistema : Valida y Actualiza stock "
+
+
+
+
+@enduml

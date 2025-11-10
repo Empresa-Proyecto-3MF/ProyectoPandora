@@ -3,17 +3,16 @@ left to right direction
 skinparam actorStyle awesome
 skinparam shadowing false
 skinparam packageStyle rectangle
-title "Publicar repuesto"
+title "Crear Notificaciones"
 
 actor "Supervisor" as A
 
-usecase "Publicar Repuesto" as CU2
+usecase "Crear Notificaciones"as CU2
 
 
 
-A --> CU2 : Solicita publicar repuesto
-CU2 --> Sistema : Valida y crea la publicación de repuesto
-
+A --> CU2 : Solicita Crear Notificacion
+CU2 --> Sistema : Valida y Crea Notificaciones
 
 
 

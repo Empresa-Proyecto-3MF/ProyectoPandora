@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Generar Backups Automaticos"
+actor "Sistema" as A
+
+usecase "Generar bakups Automaticos"as CU2
+
+
+
+A --> CU2 : Solicita Generar Backups Automaticos
+CU2 --> Sistema : Valida y Genera Backups Automaticos
+
+
+
+@enduml

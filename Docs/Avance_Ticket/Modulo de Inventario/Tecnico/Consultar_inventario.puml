@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title " Consultar inventario"
+
+actor "Tecnico" as A
+
+usecase " Consultar inventario" as CU2
+
+
+
+A --> CU2 : Solicita  Consultar inventario"
+CU2 --> Sistema : Valida y  Consulta inventario
+
+
+
+
+@enduml

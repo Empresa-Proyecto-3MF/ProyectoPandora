@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Controlar stock mínimo"
+
+actor "Tecnico" as A
+
+usecase "Controlar stock mínimo " as CU2
+
+
+
+A --> CU2 : Solicita Controlar stock mínimo 
+CU2 --> Sistema : Valida y Controla stock mínimo
+
+
+
+@enduml

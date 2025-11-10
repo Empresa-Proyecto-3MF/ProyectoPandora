@@ -1,14 +1,20 @@
-@startuml UC03_Asignar_Tecnico
+@startuml
 left to right direction
 skinparam actorStyle awesome
 skinparam shadowing false
 skinparam packageStyle rectangle
+title "Asignar Técnico"
 
-actor Supervisor
-rectangle Sistema {
-  usecase "Asignar Técnico" as UC03
-}
+actor "Supervisor" as A
 
-Supervisor --> UC03 : Seleccionar ticket y técnico
-UC03 --> Sistema : Vincular tecnico_id y supervisor_id
+usecase "Asignar Técnico" as CU2
+
+
+
+A --> CU2 : Solicita asignar técnico
+CU2 --> Sistema : Valida y asigna el técnico
+
+
+
+
 @enduml

@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Limpia Logs y Datos Temporales"
+actor "Sistema" as A
+
+usecase "Limpiar Logs y Datos Temporales"as CU2
+
+
+
+A --> CU2 : Solicita Limpiar Logs y Datos Temporales
+CU2 --> Sistema : Valida y Limpia Logs y Datos Temporales
+
+
+
+@enduml

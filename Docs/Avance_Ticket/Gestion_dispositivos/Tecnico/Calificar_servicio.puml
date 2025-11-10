@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam packageStyle rectangle
+title "Calificar servicios"
+
+actor "Tecnico" as A
+
+usecase "Calificar servicios" as CU2
+
+
+
+A --> CU2 : Solicita calificar servicios
+CU2 --> Sistema : Valida y califica el servicio
+
+
+
+
+@enduml
