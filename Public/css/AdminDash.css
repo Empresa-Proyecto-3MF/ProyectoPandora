@@ -39,29 +39,6 @@
   --shadow-border: rgba(0, 0, 0, 0.5);
 }
 
-/* 🎨 Modo claro (mantiene coherencia con el azul base) */
-body.dark-mode {
-  --primario: #1e293b;
-  --secundario: #007bff;
-  --tercero: #2563eb;
-  --cuarto: #00bfff;
-  --quinto: #6366f1;
-  --fondo: #f8fafc;
-  --fondo-header: #e2e8f0;
-  --fondo-formulario: #ffffff;
-  --sombra: #cbd5e1;
-  --sombra-formulario: #e5e7eb;
-
-  --color-surface: #ffffff;
-  --color-texto-primario: #1e293b;
-  --color-texto-secundario: #475569;
-  --color-border: #cbd5e1;
-  --color-tooltip-bg: #1e293b;
-  --color-tooltip-text: #ffffff;
-  --color-bg: #f1f5f9;
-  --shadow-border: rgba(0, 0, 0, 0.1);
-}
-
 
 /* =========================================
   2. ESTILOS GLOBALES
@@ -610,8 +587,6 @@ main {
     backdrop-filter: blur(6px);
 }
 /* ========== ZONA DE TABLAS ========== */
-/* === 💠 ESTILOS DE TABLAS MODERNAS (solo en .Tabla-Contenedor) === */
-
 .Tabla-Contenedor {
   background: var(--color-surface);
   border-radius: 12px;
@@ -858,7 +833,7 @@ p{
   color: white;
 }
 
-/* === 🧾 SECCIÓN PRESUPUESTOS === */
+/* === SECCIÓN PRESUPUESTOS === */
 .section-presupuestos {
   display: flex;
   flex-direction: column;
@@ -2477,8 +2452,7 @@ ul {
   padding-top: 0.5rem;
 }
 
-/* =================== ESTILO DE CALIFICACIÓN (ESTRELLAS) =================== */
-
+/* ============= ESTILO DE CALIFICACIÓN (ESTRELLAS) =========== */
 .bloque-cliente.calificacion {
   margin-top: 1.8rem;
   padding-top: 1rem;
@@ -3235,7 +3209,6 @@ h2, h3 {
 }
 
 /* ================= Supervisor: Asignar ================= */ 
-/*ALEEE puedo organizarte con mi prettier (PRETTIER es un organizador de codigo) todo el codigo css como este de aca? para q quede organizado si queres claro, escribme cuando leas esto*/
 .asignar-header {
   margin-bottom: 16px;
 }
@@ -4273,37 +4246,85 @@ input:checked + .slider:before {
   transform: translateX(26px);
 }
 
-/* idioma */
-.perfil-idioma select {
+
+/* ============================= */
+/*     OPCIÓN A (MEJORADA)      */
+/* ============================= */
+
+/* Tarjeta idioma mejorada */
+.idioma-card {
+  padding: 18px 24px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Título con icono */
+.idioma-title {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--color-texto-primario);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.9;
+}
+
+/* Controles alineados */
+.idioma-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Select (sobrescribe el tuyo suavemente) */
+.idioma-controls select {
+  flex: 1;
   background: var(--fondo-header);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  color: var(--color-texto-primario);
-  padding: 8px 12px;
+  border-radius: 10px;
+  padding: 10px 12px;
   font-size: 0.95em;
-  transition: all 0.3s ease;
-}
-
-.perfil-idioma select:hover {
-  border-color: var(--secundario);
-}
-
-.perfil-idioma button {
-  background: linear-gradient(135deg, var(--secundario), var(--cuarto));
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  color: #fff;
-  font-weight: 500;
-  cursor: pointer;
+  color: var(--color-texto-primario);
   transition: all 0.25s ease;
-  box-shadow: 0 0 8px rgba(0, 153, 255, 0.4);
 }
 
-.perfil-idioma button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(0, 153, 255, 0.6);
+.idioma-controls select:hover,
+.idioma-controls select:focus {
+  border-color: var(--secundario);
+  box-shadow: 0 0 10px rgba(0, 153, 255, 0.35);
 }
+
+/* Botón */
+.idioma-btn {
+  white-space: nowrap;
+  background: linear-gradient(135deg, var(--secundario), var(--cuarto));
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(0, 153, 255, 0.4);
+  transition: all 0.25s ease;
+}
+
+.idioma-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 14px rgba(0, 153, 255, 0.7);
+}
+
+
+/* ===== Remplaza tus estilos originales de select y botón solo aquí ===== */
+.perfil-idioma select { all: unset; }
+.perfil-idioma button { all: unset; }
+
+/* ===== Estos se reaplican para compatibilidad ===== */
+.perfil-idioma select,
+.perfil-idioma button {
+  display: initial;
+}
+
 
 /* Botón volver */
 .btn-volver-panel {
@@ -5110,7 +5131,6 @@ body.dark-mode .notif-btn-home:hover {
 
 
 /* ======= HOME ======= */
-
 .home-container {
   padding: 1rem 1.5rem;
   color: var(--color-texto-primario);
@@ -5509,8 +5529,7 @@ body.dark-mode .notif-btn-home:hover {
 }
 
 /* =========================================
-  6. MEDIA QUERIES (Consolidadas de menor a mayor ancho)
-  Estado: consolidado. Añadir nuevas reglas aquí para mantener coherencia.
+  6. MEDIA QUERIES 
 ========================================= */
 /* 0) max-width: 480px — Home (text sizes y cards) */
 @media (max-width: 480px) {

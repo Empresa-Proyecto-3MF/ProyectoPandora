@@ -46,6 +46,7 @@
           </div>
         <?php endif; ?>
 
+        <br>
         <button type="submit" class="btn-perfil-guardar"><?= I18n::t('profile.actions.save') ?></button>
       </form>
     </div>
@@ -73,27 +74,28 @@
         $prev = htmlspecialchars($current, ENT_QUOTES, 'UTF-8');
         $locale = function_exists('I18n\\getLocale') ? I18n::getLocale() : ($_SESSION['lang'] ?? 'es');
       ?>
-      <form method="get" action="index.php" class="perfil-idioma">
-        <input type="hidden" name="route" value="Language/Set" />
-        <input type="hidden" name="prev" value="<?= $prev ?>" />
-        <label for="langSelect"><?= I18n::t('profile.language.label') ?>:</label>
+<form method="get" action="index.php" class="perfil-idioma idioma-card">
+    <input type="hidden" name="route" value="Language/Set" />
+    <input type="hidden" name="prev" value="<?= $prev ?>" />
+
+    <div class="idioma-title">
+        🌐 <span><?= I18n::t('profile.language.label') ?></span>
+    </div>
+
+    <div class="idioma-controls">
         <select id="langSelect" name="lang">
           <option value="es" <?= ($locale==='es'?'selected':'') ?>><?= I18n::t('lang.spanish') ?></option>
           <option value="en" <?= ($locale==='en'?'selected':'') ?>><?= I18n::t('lang.english') ?></option>
           <option value="pt" <?= ($locale==='pt'?'selected':'') ?>><?= I18n::t('lang.portuguese') ?></option>
         </select>
-        <button type="submit"><?= I18n::t('profile.language.change') ?></button>
-      </form>
 
-      
-      <div class="perfil-campo modo-oscuro-toggle">
-        <label for="toggle-darkmode">🌙 <?= I18n::t('profile.darkmode.toggle') ?>:</label>
-        <label class="switch">
-          <input type="checkbox" id="toggle-darkmode">
-          <span class="slider"></span>
-        </label>
-      </div>
+        <button type="submit" class="idioma-btn">
+            <?= I18n::t('profile.language.change') ?>
+        </button>
     </div>
+</form>
+
+
 
     <div class="perfil-volver-panel">
       <a href="index.php?route=Default/Index" class="btn-volver-panel">
