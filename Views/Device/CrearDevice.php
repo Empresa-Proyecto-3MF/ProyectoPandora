@@ -86,6 +86,7 @@
                     $volverUrl = "index.php?route=Default/Index";
                 }
                 ?>
+                <br>
                 <a href="<?= $volverUrl ?>" class="btn-volver">Volver</a>
             </div>
         </div>
