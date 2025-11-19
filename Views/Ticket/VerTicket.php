@@ -1,4 +1,5 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+<?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Date.php'; ?>
 <?php require_once __DIR__ . '/../../Core/LogFormatter.php'; ?>
 <?php require_once __DIR__ . '/../../Core/ImageHelper.php'; ?>
@@ -90,6 +91,7 @@ $frontController = str_replace('\\', '/', $frontController);
           $resolvedImg = $rawImg !== '' ? device_image_url($rawImg) : '';
           $hasImg = $rawImg !== '' && $resolvedImg !== '';
         ?>
+        <br>
         <li class="dato-item imagen-card" data-field="device-image-card"<?= $hasImg ? '' : ' style="display:none;"' ?> >
           <h3 style="margin-top:0;"><?= I18n::t('ticket.field.deviceImage') ?></h3>
           <div class="imagen-contenedor">
@@ -105,6 +107,7 @@ $frontController = str_replace('\\', '/', $frontController);
           </div>
         </li>
 
+        <br>
     </ul>
 
   <?php else: ?>

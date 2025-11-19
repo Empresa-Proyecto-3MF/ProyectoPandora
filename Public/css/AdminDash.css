@@ -1349,7 +1349,7 @@ p{
 }
 
 .input-box input {
-    width: 100%;
+    width: 90%;
     height: 100%;
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.3);
@@ -5841,12 +5841,95 @@ body.dark-mode .notif-btn-home:hover {
   .alert { font-size: 0.8rem; padding: 10px 12px; }
 }
 
-/* 6.8) max-width: 768px — Login */
+/* ===== 📱 LOGIN RESPONSIVE (max-width: 768px) ===== */
 @media (max-width: 768px) {
-  .login-body { margin-left: 0; width: 100%; padding: 30px; }
-  .wrapper-login { width: 100%; max-width: 400px; padding: 40px 30px; }
-  .wrapper-login h1 { font-size: 32px; }
+
+  /* Asegura que todo se centre correctamente */
+  main {
+    padding: 0;
+  }
+
+  /* Cuerpo del login */
+  .login-body {
+    margin-left: 0;
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Contenedor principal */
+  .wrapper-login {
+    width: 100%;
+    max-width: 360px;
+    padding: 30px 20px;
+    border-radius: 20px;
+  }
+
+  /* Título */
+  .wrapper-login h1 {
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 30px;
+    line-height: 1.2;
+  }
+
+  /* Inputs */
+  .input-box {
+    margin-bottom: 18px;
+  }
+
+  .input-box input {
+    height: 45px;
+    width: 260px;
+    font-size: 15px;
+    padding-left: 40px;
+  }
+
+  .input-box i {
+    font-size: 18px;
+    left: 12px;
+  }
+
+  /* Recordar / Olvidaste */
+  .remember-forgot {
+    font-size: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  /* Botón */
+  .btn-login {
+    height: 45px;
+    font-size: 16px;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  /* Enlace de registro */
+  .register-link p {
+    font-size: 14px;
+    text-align: center;
+  }
+
+  /* Selector de idioma */
+  .language-switcher-login {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+  }
+
+
+  .language-switcher-login select {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
 }
+
 
 /* 6.9) max-width: 768px — Presupuesto: list/meta/filtros */
 @media (max-width: 768px) {

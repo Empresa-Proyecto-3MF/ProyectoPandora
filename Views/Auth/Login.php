@@ -1,4 +1,5 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+
 <?php $currentLang = I18n::getLocale(); ?>
 
 <main>
