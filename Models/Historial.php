@@ -9,29 +9,36 @@ class Historial
         $this->connection = $dbConnection;
     }
 
-    public function agregarAccion($accion, $detalle)
+    public function agregarAccion(string $accion, string $detalle): bool
     {
-        $stmt = $this->connection->prepare("INSERT INTO historial (acciones, detalles, fecha) VALUES (?, ?, NOW())");
-        if ($stmt) {
-            $stmt->bind_param("ss", $accion, $detalle);
-            return $stmt->execute();
+        $stmt = $this->connection->prepare('INSERT INTO historial (acciones, detalles, fecha) VALUES (?, ?, NOW())');
+        if (!$stmt) {
+            return false;
         }
-        return false;
+
+        $stmt->bind_param('ss', $accion, $detalle);
+        return $stmt->execute();
     }
 
-    public function obtenerHistorial()
+    public function obtenerHistorial(): array
     {
-        $stmt = $this->connection->prepare("SELECT * FROM historial ORDER BY fecha DESC");
-        if ($stmt) {
-            $stmt->execute();
-            return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt = $this->connection->prepare('SELECT * FROM historial ORDER BY fecha DESC');
+        if (!$stmt) {
+            return [];
         }
-        return [];
+
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    
-    public function buscarHistorial($q = '', $tipo = '', $desde = '', $hasta = '', $page = 1, $perPage = 20)
-    {
+    public function buscarHistorial(
+        string $q = '',
+        string $tipo = '',
+        string $desde = '',
+        string $hasta = '',
+        int $page = 1,
+        int $perPage = 20
+    ): array {
         $conds = [];
         $params = [];
         $types = '';
@@ -39,7 +46,9 @@ class Historial
         if ($q !== '') {
             $conds[] = '(acciones LIKE ? OR detalles LIKE ?)';
             $like = '%' . $q . '%';
-            $params[] = $like; $params[] = $like; $types .= 'ss';
+            $params[] = $like;
+            $params[] = $like;
+            $types .= 'ss';
         }
         if ($tipo !== '') {
             $conds[] = 'LOWER(acciones) LIKE ?';
@@ -48,44 +57,40 @@ class Historial
         }
         if ($desde !== '') {
             $conds[] = 'DATE(fecha) >= ?';
-            $params[] = $desde; $types .= 's';
+            $params[] = $desde;
+            $types .= 's';
         }
         if ($hasta !== '') {
             $conds[] = 'DATE(fecha) <= ?';
-            $params[] = $hasta; $types .= 's';
+            $params[] = $hasta;
+            $types .= 's';
         }
 
-        $where = empty($conds) ? '' : ('WHERE ' . implode(' AND ', $conds));
+        $where = $conds ? 'WHERE ' . implode(' AND ', $conds) : '';
 
-        
-        $sqlCount = "SELECT COUNT(*) AS c FROM historial $where";
-        $stmtC = $this->connection->prepare($sqlCount);
-        if ($stmtC) {
+        $stmtCount = $this->connection->prepare("SELECT COUNT(*) AS c FROM historial $where");
+        $total = 0;
+        if ($stmtCount) {
             if ($types !== '') {
-                $stmtC->bind_param($types, ...$params);
+                $stmtCount->bind_param($types, ...$params);
             }
-            $stmtC->execute();
-            $res = $stmtC->get_result()->fetch_assoc();
-            $total = (int)($res['c'] ?? 0);
-        } else {
-            $total = 0;
+            $stmtCount->execute();
+            $res = $stmtCount->get_result()->fetch_assoc();
+            $total = (int) ($res['c'] ?? 0);
         }
 
-        $page = max(1, (int)$page);
-        $perPage = max(1, min(200, (int)$perPage));
+        $page = max(1, $page);
+        $perPage = max(1, min(200, $perPage));
         $offset = ($page - 1) * $perPage;
 
-        
-        $sql = "SELECT * FROM historial $where ORDER BY fecha DESC LIMIT ? OFFSET ?";
-        $stmt = $this->connection->prepare($sql);
+        $stmt = $this->connection->prepare("SELECT * FROM historial $where ORDER BY fecha DESC LIMIT ? OFFSET ?");
         if (!$stmt) {
-            return ['data' => [], 'total' => 0, 'page' => $page, 'perPage' => $perPage];
+            return ['data' => [], 'total' => $total, 'page' => $page, 'perPage' => $perPage];
         }
 
         if ($types !== '') {
             $typesAll = $types . 'ii';
-            $paramsAll = array_merge($params, [ $perPage, $offset ]);
-            
+            $paramsAll = array_merge($params, [$perPage, $offset]);
             $stmt->bind_param($typesAll, ...$paramsAll);
         } else {
             $stmt->bind_param('ii', $perPage, $offset);
@@ -95,6 +100,7 @@ class Historial
         if ($stmt->execute()) {
             $data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         }
+
         return ['data' => $data, 'total' => $total, 'page' => $page, 'perPage' => $perPage];
     }
 }

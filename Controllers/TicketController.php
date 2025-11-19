@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Models/TicketEstadoHistorial.php';
 require_once __DIR__ . '/../Models/Notification.php';
 require_once __DIR__ . '/../Core/LogFormatter.php';
 require_once __DIR__ . '/../Core/Date.php';
-require_once __DIR__ . '/../Core/Storage.php';
+require_once __DIR__ . '/../Core/ImageHelper.php';
 require_once __DIR__ . '/../Core/I18n.php';
 
 class TicketController
@@ -78,7 +78,7 @@ class TicketController
                     $descripcion = $ticket['descripcion'] ?? $ticket['descripcion_falla'] ?? '';
                     $fechaCreacion = $ticket['fecha_creacion'] ?? null;
                     $fechaCierre = $ticket['fecha_cierre'] ?? null;
-                    $imgUrl = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? '');
+                    $imgUrl = device_image_url($ticket['img_dispositivo'] ?? '');
 
                     $response['detail'] = [
                         'cliente' => $clienteNombre,
@@ -377,37 +377,7 @@ class TicketController
         $flash = $_GET ?? [];
 
         
-        $fotos = [];
-        $allowed = ['jpg','jpeg','png','gif','webp'];
-        try {
-            
-            $relDir = 'ticket/' . (int)$ticket['id'];
-            $absDir = \Storage::basePath() . '/' . $relDir . '/';
-            if (is_dir($absDir)) {
-                $files = @scandir($absDir) ?: [];
-                foreach ($files as $fn) {
-                    if ($fn === '.' || $fn === '..') continue;
-                    $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                    if (!in_array($ext, $allowed, true)) continue;
-                    $rel = $relDir . '/' . $fn;
-                    $fotos[] = \Storage::publicUrl($rel);
-                }
-            }
-            
-            if (empty($fotos)) {
-                $legacyDir = __DIR__ . '/../Public/img/imgTickets/' . (int)$ticket['id'] . '/';
-                $legacyUrlBase = 'img/imgTickets/' . (int)$ticket['id'] . '/';
-                if (is_dir($legacyDir)) {
-                    $files = @scandir($legacyDir) ?: [];
-                    foreach ($files as $fn) {
-                        if ($fn === '.' || $fn === '..') continue;
-                        $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                        if (!in_array($ext, $allowed, true)) continue;
-                        $fotos[] = $legacyUrlBase . rawurlencode($fn);
-                    }
-                }
-            }
-        } catch (\Throwable $e) {  }
+        $fotos = ticket_photo_urls((int)$ticket['id']);
 
         
         $revState = md5($estadoLower.'|'.(string)$laborAmount.'|'.(string)count($items));
@@ -1036,35 +1006,7 @@ class TicketController
         $tecnicos = $this->userModel->getAllTecnicos();
 
         
-        $fotos = [];
-        $allowed = ['jpg','jpeg','png','gif','webp'];
-        try {
-            $relDir = 'ticket/' . (int)$ticket['id'];
-            $absDir = \Storage::basePath() . '/' . $relDir . '/';
-            if (is_dir($absDir)) {
-                $files = @scandir($absDir) ?: [];
-                foreach ($files as $fn) {
-                    if ($fn === '.' || $fn === '..') continue;
-                    $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                    if (!in_array($ext, $allowed, true)) continue;
-                    $rel = $relDir . '/' . $fn;
-                    $fotos[] = \Storage::publicUrl($rel);
-                }
-            }
-            if (empty($fotos)) {
-                $legacyDir = __DIR__ . '/../Public/img/imgTickets/' . (int)$ticket['id'] . '/';
-                $legacyUrlBase = 'img/imgTickets/' . (int)$ticket['id'] . '/';
-                if (is_dir($legacyDir)) {
-                    $files = @scandir($legacyDir) ?: [];
-                    foreach ($files as $fn) {
-                        if ($fn === '.' || $fn === '..') continue;
-                        $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                        if (!in_array($ext, $allowed, true)) continue;
-                        $fotos[] = $legacyUrlBase . rawurlencode($fn);
-                    }
-                }
-            }
-        } catch (\Throwable $e) {  }
+        $fotos = ticket_photo_urls((int)$ticket['id']);
 
         include_once __DIR__ . '/../Views/Ticket/ActualizarTicket.php';
     }
@@ -1097,18 +1039,15 @@ class TicketController
         
         if (!empty($_FILES['fotos']) && is_array($_FILES['fotos']['name'])) {
             $allowed = ['jpg','jpeg','png','gif','webp'];
-            $destBase = \Storage::ensure('ticket/' . (int)$id);
             $count = count($_FILES['fotos']['name']);
             for ($i=0; $i < $count; $i++) {
                 $name = $_FILES['fotos']['name'][$i] ?? '';
                 $tmp  = $_FILES['fotos']['tmp_name'][$i] ?? '';
                 $err  = $_FILES['fotos']['error'][$i] ?? UPLOAD_ERR_NO_FILE;
-                if ($err !== UPLOAD_ERR_OK || !$tmp) continue;
+                if ($err !== UPLOAD_ERR_OK || !$tmp) { continue; }
                 $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                if (!in_array($ext, $allowed, true)) continue;
-                $safe = preg_replace('/[^a-zA-Z0-9_\.-]/','_', basename($name));
-                $target = rtrim($destBase, '/\\') . '/' . (time()) . '_' . $safe;
-                @move_uploaded_file($tmp, $target);
+                if (!in_array($ext, $allowed, true)) { continue; }
+                save_ticket_photo($tmp, $name, (int)$id);
             }
         }
 

@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 class InventarioModel
 {
@@ -9,29 +9,30 @@ class InventarioModel
         $this->conn = $db;
     }
 
-    
     public function listar(): array
     {
-        $sql = "SELECT i.id, c.name AS categoria, i.name_item, i.valor_unitario, i.descripcion, i.foto_item, i.stock_actual, i.stock_minimo, i.fecha_creacion
+        $sql = 'SELECT i.id, c.name AS categoria, i.name_item, i.valor_unitario, i.descripcion, i.foto_item,
+                       i.stock_actual, i.stock_minimo, i.fecha_creacion
                 FROM inventarios i
                 INNER JOIN categorias_inventario c ON i.categoria_id = c.id
-                ORDER BY i.id DESC";
+                ORDER BY i.id DESC';
+
         $result = $this->conn->query($sql);
-        $data = [];
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $data[] = $row;
-            }
-        }
-        return $data;
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    
-    public function listarFiltrado($categoria_id = null, $buscar = '', $limit = null, $offset = null, $sort = 'i.id', $dir = 'DESC'): array
-    {
-        $sql = "SELECT i.id, c.name AS categoria, i.name_item, i.valor_unitario, i.foto_item, i.stock_actual, i.stock_minimo
+    public function listarFiltrado(
+        ?int $categoriaId = null,
+        string $buscar = '',
+        ?int $limit = null,
+        ?int $offset = null,
+        string $sort = 'i.id',
+        string $dir = 'DESC'
+    ): array {
+        $sql = 'SELECT i.id, c.name AS categoria, i.name_item, i.valor_unitario, i.foto_item, i.stock_actual, i.stock_minimo
                 FROM inventarios i
-                INNER JOIN categorias_inventario c ON i.categoria_id = c.id";
+                INNER JOIN categorias_inventario c ON i.categoria_id = c.id';
+
         $conds = [];
         $params = [];
         $types = '';
@@ -48,214 +49,241 @@ class InventarioModel
             'stock_actual' => 'i.stock_actual',
             'i.stock_actual' => 'i.stock_actual',
             'stock_minimo' => 'i.stock_minimo',
-            'i.stock_minimo' => 'i.stock_minimo'
+            'i.stock_minimo' => 'i.stock_minimo',
         ];
-        $sortKey = strtolower(trim((string)$sort));
+
+        $sortKey = strtolower(trim($sort));
         $sortColumn = $allowedSort[$sortKey] ?? 'i.id';
         $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
-        if ($categoria_id) {
+
+        if ($categoriaId) {
             $conds[] = 'i.categoria_id = ?';
             $types .= 'i';
-            $params[] = (int)$categoria_id;
+            $params[] = $categoriaId;
         }
         if ($buscar !== '') {
             $conds[] = 'i.name_item LIKE ?';
             $types .= 's';
             $params[] = '%' . $buscar . '%';
         }
+
         if ($conds) {
             $sql .= ' WHERE ' . implode(' AND ', $conds);
         }
+
         $sql .= " ORDER BY $sortColumn $dir";
+
         if ($limit !== null && $offset !== null) {
             $sql .= ' LIMIT ? OFFSET ?';
             $types .= 'ii';
-            $params[] = (int)$limit;
-            $params[] = (int)$offset;
+            $params[] = $limit;
+            $params[] = $offset;
         }
 
-        if ($types) {
+        $result = null;
+        if ($types !== '') {
             $stmt = $this->conn->prepare($sql);
-            if (!$stmt) return [];
+            if (!$stmt) {
+                return [];
+            }
 
-            $bindParams = [];
-            $bindParams[] = &$types;
-            foreach ($params as $k => $v) {
-                $bindParams[] = &$params[$k];
-            }
-            call_user_func_array([$stmt, 'bind_param'], $bindParams);
+            $this->bindParams($stmt, $types, $params);
             $stmt->execute();
-            $res = $stmt->get_result();
+            $result = $stmt->get_result();
         } else {
-            $res = $this->conn->query($sql);
+            $result = $this->conn->query($sql);
         }
-        $data = [];
-        if ($res) {
-            while ($row = $res->fetch_assoc()) {
-                $data[] = $row;
-            }
-        }
-        return $data;
+
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    public function contarFiltrado($categoria_id = null, $buscar = ''): int
+    public function contarFiltrado(?int $categoriaId = null, string $buscar = ''): int
     {
-        $sql = "SELECT COUNT(*) AS total
+        $sql = 'SELECT COUNT(*) AS total
                 FROM inventarios i
-                INNER JOIN categorias_inventario c ON i.categoria_id = c.id";
+                INNER JOIN categorias_inventario c ON i.categoria_id = c.id';
+
         $conds = [];
         $params = [];
         $types = '';
-        if ($categoria_id) {
+
+        if ($categoriaId) {
             $conds[] = 'i.categoria_id = ?';
             $types .= 'i';
-            $params[] = (int)$categoria_id;
+            $params[] = $categoriaId;
         }
         if ($buscar !== '') {
             $conds[] = 'i.name_item LIKE ?';
             $types .= 's';
             $params[] = '%' . $buscar . '%';
         }
+
         if ($conds) {
             $sql .= ' WHERE ' . implode(' AND ', $conds);
         }
-        if ($types) {
+
+        $result = null;
+        if ($types !== '') {
             $stmt = $this->conn->prepare($sql);
-            if (!$stmt) return 0;
-            $bindParams = [];
-            $bindParams[] = & $types;
-            foreach ($params as $k => $v) {
-                $bindParams[] = & $params[$k];
+            if (!$stmt) {
+                return 0;
             }
-            call_user_func_array([$stmt, 'bind_param'], $bindParams);
+            $this->bindParams($stmt, $types, $params);
             $stmt->execute();
-            $res = $stmt->get_result();
+            $result = $stmt->get_result();
         } else {
-            $res = $this->conn->query($sql);
+            $result = $this->conn->query($sql);
         }
-        if ($res && ($row = $res->fetch_assoc())) {
-            return (int)$row['total'];
+
+        if ($result && ($row = $result->fetch_assoc())) {
+            return (int) $row['total'];
         }
+
         return 0;
     }
 
-    
-    public function crear($categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo): bool
-    {
-        
-        if ((float)$valor_unitario < 0 || (int)$stock_actual < 0 || (int)$stock_minimo < 0) {
+    public function crear(
+        int $categoriaId,
+        string $nameItem,
+        float $valorUnitario,
+        string $descripcion,
+        string $fotoItem,
+        int $stockActual,
+        int $stockMinimo
+    ): bool {
+        if ($valorUnitario < 0 || $stockActual < 0 || $stockMinimo < 0) {
             return false;
         }
-        $sql = "INSERT INTO inventarios (categoria_id, name_item, valor_unitario, descripcion, foto_item, stock_actual, stock_minimo)
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $this->conn->prepare($sql);
-        if ($stmt) {
-            $stmt->bind_param("isdssii", $categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo);
-            return $stmt->execute();
-        }
-        return false;
-    }
 
-    
-    public function eliminar($id): bool
-    {
-        $stmt = $this->conn->prepare("DELETE FROM inventarios WHERE id = ?");
-        if ($stmt) {
-            $stmt->bind_param("i", $id);
-            return $stmt->execute();
-        }
-        return false;
-    }
-
-    
-    public function obtenerPorId($id): ?array
-    {
-        $stmt = $this->conn->prepare("SELECT * FROM inventarios WHERE id = ?");
-        if ($stmt) {
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            return $stmt->get_result()->fetch_assoc();
-        }
-        return null;
-    }
-
-    
-    public function actualizar($id, $categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo): bool
-    {
-        if ((float)$valor_unitario < 0 || (int)$stock_actual < 0 || (int)$stock_minimo < 0) {
+        $stmt = $this->conn->prepare(
+            'INSERT INTO inventarios (categoria_id, name_item, valor_unitario, descripcion, foto_item, stock_actual, stock_minimo)
+             VALUES (?, ?, ?, ?, ?, ?, ?)'
+        );
+        if (!$stmt) {
             return false;
         }
-        $sql = "UPDATE inventarios SET categoria_id=?, name_item=?, valor_unitario=?, descripcion=?, foto_item=?, stock_actual=?, stock_minimo=?
-                WHERE id=?";
-        $stmt = $this->conn->prepare($sql);
-        if ($stmt) {
-            $stmt->bind_param("isdssiii", $categoria_id, $name_item, $valor_unitario, $descripcion, $foto_item, $stock_actual, $stock_minimo, $id);
-            return $stmt->execute();
-        }
-        return false;
+
+        $stmt->bind_param('isdssii', $categoriaId, $nameItem, $valorUnitario, $descripcion, $fotoItem, $stockActual, $stockMinimo);
+        return $stmt->execute();
     }
 
-    
-    public function findByCategoryAndName($categoria_id, $name_item): ?array
+    public function eliminar(int $id): bool
     {
-        $sql = "SELECT * FROM inventarios WHERE categoria_id = ? AND name_item = ? LIMIT 1";
-        $stmt = $this->conn->prepare($sql);
-        if ($stmt) {
-            $stmt->bind_param("is", $categoria_id, $name_item);
-            $stmt->execute();
-            $res = $stmt->get_result();
-            return $res->fetch_assoc();
-        }
-        return null;
-    }
-
-    
-    public function sumarStock($id, $cantidad): bool
-    {
-        if ((int)$cantidad <= 0) { return false; }
-        $sql = "UPDATE inventarios SET stock_actual = stock_actual + ? WHERE id = ?";
-        $stmt = $this->conn->prepare($sql);
-        if ($stmt) {
-            $stmt->bind_param("ii", $cantidad, $id);
-            return $stmt->execute();
-        }
-        return false;
-    }
-
-    
-    public function reducirStock($id, $cantidad): bool
-    {
-        
-        $stmtSel = $this->conn->prepare("SELECT stock_actual FROM inventarios WHERE id = ?");
-        if (!$stmtSel) return false;
-        $stmtSel->bind_param("i", $id);
-        $stmtSel->execute();
-        $res = $stmtSel->get_result();
-        $row = $res->fetch_assoc();
-        if (!$row || (int)$row['stock_actual'] < (int)$cantidad) {
+        $stmt = $this->conn->prepare('DELETE FROM inventarios WHERE id = ?');
+        if (!$stmt) {
             return false;
         }
-        $stmtUpd = $this->conn->prepare("UPDATE inventarios SET stock_actual = stock_actual - ? WHERE id = ?");
-        if ($stmtUpd) {
-            $stmtUpd->bind_param("ii", $cantidad, $id);
-            return $stmtUpd->execute();
-        }
-        return false;
+
+        $stmt->bind_param('i', $id);
+        return $stmt->execute();
     }
 
-    
+    public function obtenerPorId(int $id): ?array
+    {
+        $stmt = $this->conn->prepare('SELECT * FROM inventarios WHERE id = ?');
+        if (!$stmt) {
+            return null;
+        }
+
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc() ?: null;
+    }
+
+    public function actualizar(
+        int $id,
+        int $categoriaId,
+        string $nameItem,
+        float $valorUnitario,
+        string $descripcion,
+        string $fotoItem,
+        int $stockActual,
+        int $stockMinimo
+    ): bool {
+        if ($valorUnitario < 0 || $stockActual < 0 || $stockMinimo < 0) {
+            return false;
+        }
+
+        $stmt = $this->conn->prepare(
+            'UPDATE inventarios
+             SET categoria_id = ?, name_item = ?, valor_unitario = ?, descripcion = ?, foto_item = ?, stock_actual = ?, stock_minimo = ?
+             WHERE id = ?'
+        );
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param('isdssiii', $categoriaId, $nameItem, $valorUnitario, $descripcion, $fotoItem, $stockActual, $stockMinimo, $id);
+        return $stmt->execute();
+    }
+
+    public function findByCategoryAndName(int $categoriaId, string $nameItem): ?array
+    {
+        $stmt = $this->conn->prepare('SELECT * FROM inventarios WHERE categoria_id = ? AND name_item = ? LIMIT 1');
+        if (!$stmt) {
+            return null;
+        }
+
+        $stmt->bind_param('is', $categoriaId, $nameItem);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc() ?: null;
+    }
+
+    public function sumarStock(int $id, int $cantidad): bool
+    {
+        if ($cantidad <= 0) {
+            return false;
+        }
+
+        $stmt = $this->conn->prepare('UPDATE inventarios SET stock_actual = stock_actual + ? WHERE id = ?');
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param('ii', $cantidad, $id);
+        return $stmt->execute();
+    }
+
+    public function reducirStock(int $id, int $cantidad): bool
+    {
+        if ($cantidad <= 0) {
+            return false;
+        }
+        $stmtSelect = $this->conn->prepare('SELECT stock_actual FROM inventarios WHERE id = ?');
+        if (!$stmtSelect) {
+            return false;
+        }
+
+        $stmtSelect->bind_param('i', $id);
+        $stmtSelect->execute();
+        $row = $stmtSelect->get_result()->fetch_assoc();
+
+        if (!$row || (int) $row['stock_actual'] < $cantidad) {
+            return false;
+        }
+
+        $stmtUpdate = $this->conn->prepare('UPDATE inventarios SET stock_actual = stock_actual - ? WHERE id = ?');
+        if (!$stmtUpdate) {
+            return false;
+        }
+
+        $stmtUpdate->bind_param('ii', $cantidad, $id);
+        return $stmtUpdate->execute();
+    }
+
     public function listarCategorias(): array
     {
-        $sql = "SELECT id, name FROM categorias_inventario ORDER BY name";
-        $result = $this->conn->query($sql);
-        $data = [];
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $data[] = $row;
-            }
+        $result = $this->conn->query('SELECT id, name FROM categorias_inventario ORDER BY name');
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    }
+
+    private function bindParams($stmt, string &$types, array &$params): void
+    {
+        $bindParams = [&$types];
+        foreach ($params as $key => $value) {
+            $bindParams[] = &$params[$key];
         }
-        return $data;
+
+        call_user_func_array([$stmt, 'bind_param'], $bindParams);
     }
 }
-
-?>

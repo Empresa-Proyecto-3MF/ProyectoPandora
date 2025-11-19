@@ -1,4 +1,7 @@
-Public/uploads/
+Public/img/device/
+Public/img/profile/
+Public/img/inventory/
+Public/img/ticket/
 .env
 
 # Ignorar logs de la aplicación (pero mantener la carpeta con .gitkeep)

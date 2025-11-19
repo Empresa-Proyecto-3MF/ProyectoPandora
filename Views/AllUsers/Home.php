@@ -7,7 +7,6 @@ $role = strtolower($authUser['role'] ?? 'invitado');
     <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 
     <div class="home-container">
-        
         <section class="home-hero">
             <div class="hero-left">
                 <h2><i class='bx bx-grid-alt'></i> <?= I18n::t('home.hero.title') ?></h2>
@@ -60,58 +59,32 @@ $role = strtolower($authUser['role'] ?? 'invitado');
                 </div>
             </div>
         </section>
-
-        
         <div class="home-wrap">
             <div class="home-grid">
-
-            
-                
-                <section class="home-news card-wide">
-                    <h3><i class='bx bx-news'></i> <?= I18n::t('home.news.title') ?></h3>
-                    <ul>
-                        <li><strong><?= I18n::t('home.news.item.new') ?></strong> Seguimiento de repuestos en tiempo real disponible.</li>
-                        <li><strong><?= I18n::t('home.news.item.info') ?></strong> Mantenimiento programado — 12 Oct (00:00 - 02:00)</li>
-                        <li><strong><?= I18n::t('home.news.item.tip') ?></strong> Recordá calificar al técnico tras finalizar tu reparación.</li>
-                    </ul>
+                <section class="home-charts card-wide">
+                    <h3><i class='bx bx-analyse'></i> <?= I18n::t('home.stats.title') ?></h3>
+                    <div id="chartsStatus" class="alert alert-warning" style="display:none;"></div>
+                    <div class="charts-grid">
+                        <div class="chart-box">
+                        <h4><i class='bx bx-pie-chart'></i> <?= I18n::t('home.chart.tickets') ?></h4>
+                        <canvas id="ticketsChart"></canvas>
+                        </div>
+                        <div class="chart-box">
+                        <h4><i class='bx bx-medal'></i> <?= I18n::t('home.chart.ranking') ?></h4>
+                        <canvas id="rankingChart"></canvas>
+                        </div>
+                        <div class="chart-box">
+                        <h4><i class='bx bx-bar-chart-alt'></i> <?= I18n::t('home.chart.category') ?></h4>
+                        <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
                 </section>
-
-                
-        <section class="home-charts card-wide">
-    <h3><i class='bx bx-analyse'></i> <?= I18n::t('home.stats.title') ?></h3>
-        <div id="chartsStatus" class="alert alert-warning" style="display:none;"></div>
-        <div class="charts-grid">
-
-                    
-                    <div class="chart-box">
-                    <h4><i class='bx bx-pie-chart'></i> <?= I18n::t('home.chart.tickets') ?></h4>
-                    <canvas id="ticketsChart"></canvas>
-                    </div>
-
-                    
-                    <div class="chart-box">
-                    <h4><i class='bx bx-medal'></i> <?= I18n::t('home.chart.ranking') ?></h4>
-                    <canvas id="rankingChart"></canvas>
-                    </div>
-
-                    
-                    <div class="chart-box">
-                    <h4><i class='bx bx-bar-chart-alt'></i> <?= I18n::t('home.chart.category') ?></h4>
-                    <canvas id="categoryChart"></canvas>
-                    </div>
-
-                </div>
-                </section>
-
-
-                
                 <section class="help card-wide">
                     <h3><i class='bx bx-question-mark'></i> <?= I18n::t('home.help.title') ?></h3>
                     <p><?= I18n::t('home.help.subtitle') ?></p>
                 </section>
             </div>
         </div>
-
         <footer class="footer">
             <small>© <span id="year"></span> <?= I18n::t('home.footer') ?></small>
         </footer>

@@ -4,8 +4,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Bitcount:wght@100..900&display=swap");
 
-
-/* 🎨 Modo oscuro (azul neón coherente con el login) */
 :root {
   --primario: #e2e8f0; /* texto base claro */
   --secundario: #3ba4ff; /* acento principal coherente con el logo */
@@ -38,7 +36,105 @@
   --color-bg: #0d1117;
   --shadow-border: rgba(0, 0, 0, 0.5);
 }
+/* 🎨 Modo oscuro (azul neón coherente con el login) */
+.home-charts {
+  background: var(--home-charts-bg);
+  padding: 1.75rem;
+  border-radius: 1.2rem;
+  box-shadow: var(--chart-box-shadow);
+  border: 1px solid var(--chart-box-border);
+  backdrop-filter: blur(6px);
+}
+.home-charts h3 {
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
 
+.chart-box {
+  position: relative;
+  background: var(--chart-box-bg);
+  border-radius: 1.1rem;
+  padding: 1.1rem;
+  text-align: center;
+  border: 1px solid var(--chart-box-border);
+  box-shadow: var(--chart-box-shadow);
+  overflow: hidden;
+}
+
+.chart-box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  border: 1px solid var(--chart-overlay-border);
+  opacity: 0.5;
+}
+
+.chart-box h4 {
+  margin-bottom: 0.75rem;
+  color: var(--chart-heading-color);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.chart-box h4 i {
+  font-size: 1.05rem;
+  color: var(--chart-heading-accent);
+}
+
+.chart-box canvas {
+  width: 100%;
+  height: 260px;
+  max-height: 280px;
+}
+
+<<<<<<< HEAD
+=======
+/* 🎨 Modo claro (mantiene coherencia con el azul base) */
+body.dark-mode {
+  --primario: #1e293b;
+  --secundario: #007bff;
+  --tercero: #2563eb;
+  --cuarto: #00bfff;
+  --quinto: #6366f1;
+  --fondo: #f8fafc;
+  --fondo-header: #e2e8f0;
+  --fondo-formulario: #ffffff;
+  --sombra: #cbd5e1;
+  --sombra-formulario: #e5e7eb;
+
+  --color-surface: #ffffff;
+  --color-texto-primario: #1e293b;
+  --color-texto-secundario: #475569;
+  --color-border: #cbd5e1;
+  --color-tooltip-bg: #1e293b;
+  --color-tooltip-text: #ffffff;
+  --color-bg: #f1f5f9;
+  --shadow-border: rgba(0, 0, 0, 0.1);
+
+  --home-charts-bg: linear-gradient(135deg, rgba(17,24,39,0.95), rgba(11,15,22,0.92));
+  --chart-box-bg: radial-gradient(circle at top, rgba(139,92,246,0.25), rgba(16,24,40,0.95));
+  --chart-box-border: rgba(255,255,255,0.05);
+  --chart-box-shadow: 0 25px 55px rgba(0,0,0,0.45);
+  --chart-overlay-border: rgba(255,255,255,0.04);
+  --chart-heading-color: var(--primario, #f8fafc);
+  --chart-heading-accent: var(--quinto, #22d3ee);
+}
+
+>>>>>>> 1a75c95aefe9f1471a2b66cb4cbbf06dfb798767
 
 /* =========================================
   2. ESTILOS GLOBALES

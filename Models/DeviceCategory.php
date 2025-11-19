@@ -9,65 +9,71 @@ class DeviceCategoryModel
         $this->conn = $dbConnection;
     }
 
-    
-    public function createCategory(string $name)
+    public function createCategory(string $name): bool
     {
-        $stmt = $this->conn->prepare("INSERT INTO categorias (name) VALUES (?)");
-        if ($stmt) {
-            $stmt->bind_param('s', $name);
-            return $stmt->execute();
+        $sql = 'INSERT INTO categorias (name) VALUES (?)';
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return false;
         }
-        return false;
+
+        $stmt->bind_param('s', $name);
+        return $stmt->execute();
     }
 
-    public function updateCategory(int $id, string $name)
+    public function updateCategory(int $id, string $name): bool
     {
-        $stmt = $this->conn->prepare("UPDATE categorias SET name = ? WHERE id = ?");
-        if ($stmt) {
-            $stmt->bind_param('si', $name, $id);
-            return $stmt->execute();
+        $sql = 'UPDATE categorias SET name = ? WHERE id = ?';
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return false;
         }
-        return false;
+
+        $stmt->bind_param('si', $name, $id);
+        return $stmt->execute();
     }
 
-    public function deleteCategory(int $id)
+    public function deleteCategory(int $id): bool
     {
-        $stmt = $this->conn->prepare("DELETE FROM categorias WHERE id = ?");
-        if ($stmt) {
-            $stmt->bind_param('i', $id);
-            return $stmt->execute();
+        $sql = 'DELETE FROM categorias WHERE id = ?';
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return false;
         }
-        return false;
+
+        $stmt->bind_param('i', $id);
+        return $stmt->execute();
     }
 
     public function getAllCategories(): array
     {
-        $stmt = $this->conn->prepare("SELECT * FROM categorias");
-        if ($stmt) {
-            $stmt->execute();
-            $res = $stmt->get_result();
-            return $res->fetch_all(MYSQLI_ASSOC);
+        $stmt = $this->conn->prepare('SELECT * FROM categorias');
+        if (!$stmt) {
+            return [];
         }
-        return [];
+
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        return $res->fetch_all(MYSQLI_ASSOC);
     }
 
     public function getCategoryById(int $id): ?array
     {
-        $stmt = $this->conn->prepare("SELECT * FROM categorias WHERE id = ?");
-        if ($stmt) {
-            $stmt->bind_param('i', $id);
-            $stmt->execute();
-            $res = $stmt->get_result();
-            return $res->fetch_assoc() ?: null;
+        $stmt = $this->conn->prepare('SELECT * FROM categorias WHERE id = ?');
+        if (!$stmt) {
+            return null;
         }
-        return null;
+
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        return $res->fetch_assoc() ?: null;
     }
 
-    
     public function findCategoryById(int $id): ?array
     {
         return $this->getCategoryById($id);
     }
 }
-
-?>

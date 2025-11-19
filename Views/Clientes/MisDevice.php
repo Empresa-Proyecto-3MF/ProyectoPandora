@@ -1,4 +1,8 @@
-<?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+<?php
+require_once __DIR__ . '/../../Core/ImageHelper.php';
+$fallbackDevice = device_image_url('');
+include_once __DIR__ . '/../Includes/Sidebar.php';
+?>
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 
@@ -14,11 +18,11 @@
               <article class="device-card">
                 <div class="device-img">
                   <img 
-                    src="<?= htmlspecialchars($d['img_url'] ?? \Storage::fallbackDeviceUrl()) ?>" 
+                    src="<?= htmlspecialchars($d['img_url'] ?? $fallbackDevice) ?>" 
                     alt="Dispositivo <?= htmlspecialchars(($d['marca'] ?? '') . ' ' . ($d['modelo'] ?? '')) ?>"
                     loading="lazy"
                     decoding="async"
-                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(\Storage::fallbackDeviceUrl()) ?>'"
+                    onerror="this.onerror=null;this.src='<?= htmlspecialchars($fallbackDevice, ENT_QUOTES, 'UTF-8') ?>'"
                   >
                 </div>
                 <div class="device-info u-flex-col u-flex-1">

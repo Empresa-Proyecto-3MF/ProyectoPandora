@@ -18,6 +18,7 @@ class EstadoTicketController
 
 public function listar()
 {
+    Auth::checkRole('Administrador');
     $estados = $this->estadoModel->obtenerTodos() ?? [];
     include __DIR__ . '/../Views/EstadoTicket/ListarEstado.php';
 }

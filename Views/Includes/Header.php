@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../Core/Flash.php';
 require_once __DIR__ . '/../../Core/I18n.php';
+require_once __DIR__ . '/../../Core/ImageHelper.php';
 I18n::boot();
 
 $authUser = Auth::user();
@@ -8,7 +9,7 @@ $rol = $authUser['role'] ?? '';
 $name = $authUser['name'] ?? '';
 $email = $authUser['email'] ?? '';
 $avatarStored = $authUser['img_perfil'] ?? '';
-$avatar = \Storage::resolveProfileUrl($avatarStored);
+$avatar = profile_image_url($avatarStored);
 
 
 

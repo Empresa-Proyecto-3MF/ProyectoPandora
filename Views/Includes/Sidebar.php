@@ -2,10 +2,16 @@
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once __DIR__ . '/../../Core/Auth.php';
 require_once __DIR__ . '/../../Core/I18n.php';
-require_once __DIR__ . '/../../Core/Storage.php';
+require_once __DIR__ . '/../../Core/ImageHelper.php';
 I18n::boot();
 $authUser = Auth::user();
 $locale = I18n::getLocale();
+$i18nPayload = [
+  'locale' => $locale,
+  'messages' => I18n::messages()
+];
+$i18nJson = json_encode($i18nPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG);
+if ($i18nJson === false) { $i18nJson = '{}'; }
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($locale) ?>">
@@ -13,12 +19,25 @@ $locale = I18n::getLocale();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <?php $adminCssPath = rtrim($_SERVER['DOCUMENT_ROOT'],'/\\') . 'css/AdminDash.css'; ?>
+  <?php
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    $scriptDir = str_replace('\\', '/', dirname($scriptName ?: '/index.php'));
+    if ($scriptDir === '/' || $scriptDir === '.' || $scriptDir === '') {
+      $baseHref = '/';
+    } else {
+      $baseHref = rtrim($scriptDir, '/') . '/';
+    }
+    $adminCssPath = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\') . '/css/AdminDash.css';
+  ?>
+  <base href="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>">
   <link rel="stylesheet" href="css/AdminDash.css?v=<?= file_exists($adminCssPath) ? filemtime($adminCssPath) : time(); ?>">
   <link href='https://cdn.boxicons.com/fonts/basic/boxicons.min.css' rel='stylesheet'>
   <link href='https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
   <title><?= I18n::t('app.name') ?></title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    window.APP_I18N = <?= $i18nJson ?>;
+  </script>
 </head>
 
 <body>
@@ -38,7 +57,7 @@ $locale = I18n::getLocale();
           $name = $authUser['name'] ?? '';
           $email = $authUser['email'] ?? '';
           $avatarStored = $authUser['img_perfil'] ?? '';
-          $avatar = \Storage::resolveProfileUrl($avatarStored);
+          $avatar = profile_image_url($avatarStored);
         ?>
         <?php if ($authUser): ?>
           <li class="item user-block">
@@ -181,7 +200,9 @@ $locale = I18n::getLocale();
 
 <?php 
   $authJsPath = rtrim($_SERVER['DOCUMENT_ROOT'],'/\\') . 'js/auth-login.js';
+  $i18nRuntimePath = __DIR__ . '/../../Public/js/i18n-runtime.js';
 ?>
+<script src="js/i18n-runtime.js?v=<?= file_exists($i18nRuntimePath) ? filemtime($i18nRuntimePath) : time(); ?>" defer></script>
 <script src="js/auth-login.js?v=<?= file_exists($authJsPath) ? filemtime($authJsPath) : time(); ?>" defer></script>
 <script src="js/notifications.js?v=<?= time(); ?>" defer></script>
 <script src="js/confirm-actions.js?v=<?= time(); ?>" defer></script>

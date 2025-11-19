@@ -1,4 +1,8 @@
-<?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+<?php
+require_once __DIR__ . '/../../Core/ImageHelper.php';
+$fallbackTicketImg = device_image_url('');
+include_once __DIR__ . '/../Includes/Sidebar.php';
+?>
 
 
 <main>
@@ -32,6 +36,7 @@
                         <?php 
                             
                             $imgSrc = (string)($ticket['img_preview'] ?? '');
+                            if ($imgSrc === '') { $imgSrc = $fallbackTicketImg; }
 
                             $estado = strtolower(trim($ticket['estado'] ?? 'finalizado'));
                             $estadoMap = [
@@ -57,7 +62,7 @@
                                                                     alt="Ticket #<?= (int)$ticket['id'] ?> - <?= htmlspecialchars(($ticket['dispositivo'] ?? '') . ' ' . ($ticket['modelo'] ?? '')) ?>"
                                                                     loading="lazy"
                                                                     decoding="async"
-                                                                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(\Storage::fallbackDeviceUrl()) ?>'"
+                                                                    onerror="this.onerror=null;this.src='<?= htmlspecialchars($fallbackTicketImg, ENT_QUOTES, 'UTF-8') ?>'"
                                                                 >
                                                         </div>
                             <div class="ticket-info">

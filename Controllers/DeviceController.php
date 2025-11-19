@@ -7,7 +7,7 @@ require_once __DIR__ . '/../Models/User.php';
 require_once __DIR__ . '/../Models/Ticket.php';
 require_once __DIR__ . '/../Models/Historial.php';
 require_once __DIR__ . '/../Controllers/HistorialController.php';
-require_once __DIR__ . '/../Core/Storage.php';
+require_once __DIR__ . '/../Core/ImageHelper.php';
 require_once __DIR__ . '/../Core/Flash.php';
 
 class DeviceController
@@ -104,7 +104,7 @@ class DeviceController
             $marca = $_POST['marca'] ?? '';
             $modelo = $_POST['modelo'] ?? '';
             $descripcion = $_POST['descripcion_falla'] ?? '';
-            $img_dispositivo = $_FILES['img_dispositivo']['name'] ?? '';
+            $img_dispositivo = 'img/imgDispositivos/NoFoto.jpg';
 
             if (!$categoriaId || !$marca || !$modelo) {
                 $error = "Todos los campos son obligatorios.";
@@ -113,16 +113,14 @@ class DeviceController
             }
 
             
-            if (!empty($img_dispositivo)) {
-                $stored = Storage::storeUploadedFile($_FILES['img_dispositivo'], 'device');
-                if (!$stored) {
+            if (!empty($_FILES['img_dispositivo']['name'])) {
+                $storedPath = save_device_photo($_FILES['img_dispositivo'], (int)$userId);
+                if (!$storedPath) {
                     $error = "Error al subir la imagen.";
                     include_once __DIR__ . '/../Views/Device/CrearDevice.php';
                     return;
                 }
-                $img_dispositivo = $stored['relative'];
-            } else {
-                $img_dispositivo = 'NoFoto.jpg';
+                $img_dispositivo = $storedPath;
             }
 
             if ($this->deviceModel->createDevice($userId, $categoriaId, $marca, $modelo, $descripcion, $img_dispositivo)) {
@@ -232,16 +230,16 @@ class DeviceController
             $descripcion_falla = $_POST['descripcion_falla'] ?? null;
 
             if ($categoria_id && $marca && $modelo && $descripcion_falla) {
-                $img_dispositivo = $dispositivo['img_dispositivo'];
+                $img_dispositivo = $dispositivo['img_dispositivo'] ?: 'img/imgDispositivos/NoFoto.jpg';
                 if (!empty($_FILES['img_dispositivo']['name'])) {
-                    $stored = Storage::storeUploadedFile($_FILES['img_dispositivo'], 'device');
-                    if (!$stored) {
+                    $storedPath = save_device_photo($_FILES['img_dispositivo'], (int)$dispositivo['user_id']);
+                    if (!$storedPath) {
                         $error = "Error al subir la nueva imagen.";
                         $categorias = $this->categoryModel->getAllCategories();
                         include __DIR__ . '/../Views/Device/ActualizarDevice.php';
                         return;
                     }
-                    $img_dispositivo = $stored['relative'];
+                    $img_dispositivo = $storedPath;
                 }
                 $this->deviceModel->updateDevice($id, $categoria_id, $marca, $modelo, $descripcion_falla, $img_dispositivo);
 

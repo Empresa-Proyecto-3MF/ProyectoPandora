@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+  const t = (key, fallback) => (typeof __ === 'function' ? __(key, null, fallback) : (fallback || key));
   const yearEl = document.getElementById('year');
   if (yearEl) {
     yearEl.textContent = new Date().getFullYear();
@@ -29,13 +30,27 @@ document.addEventListener('DOMContentLoaded', function () {
     grid: 'rgba(148,163,184,0.18)'
   };
 
+  const legendOptions = {
+    position: 'bottom',
+    labels: {
+      color: '#c9d1d9',
+      usePointStyle: true,
+      boxWidth: 12,
+      padding: 12,
+    }
+  };
+
   const charts = {
     tickets: new Chart(ctxTickets, {
       type: 'doughnut',
       data: {
-        labels: ['Activos', 'Finalizados', 'Cancelados'],
+        labels: [
+          t('tickets.chart.active', 'Activos'),
+          t('tickets.chart.closed', 'Finalizados'),
+          t('tickets.chart.cancelled', 'Cancelados')
+        ],
         datasets: [{
-          label: 'Tickets',
+          label: t('ticket.common.ticket', 'Tickets'),
           data: [0, 0, 0],
           backgroundColor: [palette.active, palette.finalized, palette.canceled],
           borderColor: '#111827',
@@ -43,13 +58,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }]
       },
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%',
+        layout: { padding: 10 },
         plugins: {
-          legend: { labels: { color: '#c9d1d9' } },
-          title: {
-            display: true,
-            text: 'Tickets activos vs finalizados',
-            color: '#c9d1d9'
-          }
+          legend: legendOptions,
+          title: { display: false }
         }
       }
     }),
@@ -58,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
       data: {
         labels: ['1', '2', '3', '4', '5'],
         datasets: [{
-          label: 'Cantidad de técnicos',
+          label: t('home.chart.ranking', 'Cantidad de técnicos'),
           data: [0, 0, 0, 0, 0],
           backgroundColor: palette.techBar,
           borderColor: palette.techBorder,
@@ -67,13 +82,12 @@ document.addEventListener('DOMContentLoaded', function () {
       },
       options: {
         plugins: {
-          legend: { labels: { color: '#c9d1d9' } },
-          title: {
-            display: true,
-            text: 'Promedio de técnicos (estrellas)',
-            color: '#c9d1d9'
-          }
+          legend: legendOptions,
+          title: { display: false }
         },
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: 10 },
         scales: {
           x: {
             ticks: { color: '#c9d1d9' },
@@ -92,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
       data: {
         labels: [],
         datasets: [{
-          label: 'Reparaciones',
+          label: t('home.chart.category.dataset', 'Reparaciones'),
           data: [],
           borderColor: palette.lineStroke,
           backgroundColor: palette.lineFill,
@@ -102,13 +116,12 @@ document.addEventListener('DOMContentLoaded', function () {
       },
       options: {
         plugins: {
-          legend: { labels: { color: '#c9d1d9' } },
-          title: {
-            display: true,
-            text: 'Reparaciones por categoría',
-            color: '#c9d1d9'
-          }
+          legend: legendOptions,
+          title: { display: false }
         },
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: 10 },
         scales: {
           x: {
             ticks: { color: '#c9d1d9' },
@@ -160,25 +173,25 @@ document.addEventListener('DOMContentLoaded', function () {
   const updateCharts = (payload) => {
     if (!payload) return;
 
-    const t = payload.tickets;
-    if (t) {
-      charts.tickets.data.labels = t.labels || charts.tickets.data.labels;
-      charts.tickets.data.datasets[0].data = Array.isArray(t.data) ? t.data : [0, 0, 0];
+    const ticketData = payload.tickets;
+    if (ticketData) {
+      charts.tickets.data.labels = ticketData.labels || charts.tickets.data.labels;
+      charts.tickets.data.datasets[0].data = Array.isArray(ticketData.data) ? ticketData.data : [0, 0, 0];
       charts.tickets.update('none');
     }
 
-    const r = payload.ranking;
-    if (r) {
-      const labels = Array.isArray(r.labels) ? r.labels.map((v) => String(v)) : ['1','2','3','4','5'];
+    const rankingData = payload.ranking;
+    if (rankingData) {
+      const labels = Array.isArray(rankingData.labels) ? rankingData.labels.map((v) => String(v)) : ['1','2','3','4','5'];
       charts.ranking.data.labels = labels;
-      charts.ranking.data.datasets[0].data = Array.isArray(r.data) ? r.data : [0,0,0,0,0];
+      charts.ranking.data.datasets[0].data = Array.isArray(rankingData.data) ? rankingData.data : [0,0,0,0,0];
       charts.ranking.update('none');
     }
 
-    const c = payload.categories;
-    if (c) {
-      charts.categories.data.labels = Array.isArray(c.labels) ? c.labels : [];
-      charts.categories.data.datasets[0].data = Array.isArray(c.data) ? c.data : [];
+    const categoriesData = payload.categories;
+    if (categoriesData) {
+      charts.categories.data.labels = Array.isArray(categoriesData.labels) ? categoriesData.labels : [];
+      charts.categories.data.datasets[0].data = Array.isArray(categoriesData.data) ? categoriesData.data : [];
       charts.categories.update('none');
     }
   };
@@ -188,8 +201,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!chartsStatus) return;
     chartsStatus.style.display = 'block';
     chartsStatus.textContent = state.failures >= state.maxFailures
-      ? 'No se pudo actualizar las estadísticas. Verificá tu conexión.'
-      : 'Reintentando actualizar estadísticas...';
+      ? t('dashboard.metrics.error', 'No se pudo actualizar las estadísticas. Verificá tu conexión.')
+      : t('dashboard.metrics.retry', 'Reintentando actualizar estadísticas...');
   };
 
   const resetStatus = () => {

@@ -47,7 +47,7 @@
                     <?php if (!empty($dispositivo['img_dispositivo'])): ?>
                         <p class="block">
                             <div class="preview-img">
-                                    <?php $imgPreview = \Storage::resolveDeviceUrl($dispositivo['img_dispositivo']); ?>
+                                    <?php $imgPreview = device_image_url($dispositivo['img_dispositivo']); ?>
                                     <img src="<?= htmlspecialchars($imgPreview) ?>" alt="Dispositivo">
                             </div>
                         </p>

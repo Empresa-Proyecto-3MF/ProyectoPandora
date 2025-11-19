@@ -4,52 +4,19 @@ require_once __DIR__ . '/../Models/Device.php';
 require_once __DIR__ . '/../Core/Database.php';
 require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Core/Date.php';
-require_once __DIR__ . '/../Core/Storage.php';
+require_once __DIR__ . '/../Core/ImageHelper.php';
 
 class ClienteController {
     
     private function ticketPreviewUrl(array $ticket): string {
-        $imgDevice = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? '');
-        $imgSrc = $imgDevice;
-        try {
-            $allowed = ['jpg','jpeg','png','gif','webp'];
-            $relDir = 'ticket/' . (int)($ticket['id'] ?? 0);
-            $absDir = \Storage::basePath() . '/' . $relDir . '/';
-            if (is_dir($absDir)) {
-                $files = @scandir($absDir) ?: [];
-                $latestFile = '';
-                $latestTime = 0;
-                foreach ($files as $fn) {
-                    if ($fn === '.' || $fn === '..') continue;
-                    $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                    if (!in_array($ext, $allowed, true)) continue;
-                    $t = @filemtime($absDir . $fn) ?: 0;
-                    if ($t >= $latestTime) { $latestTime = $t; $latestFile = $fn; }
-                }
-                if ($latestFile) {
-                    $imgSrc = \Storage::publicUrl($relDir . '/' . $latestFile);
-                }
+        $imgSrc = device_image_url($ticket['img_dispositivo'] ?? '');
+        $photos = ticket_photo_urls((int)($ticket['id'] ?? 0));
+        if (!empty($photos)) {
+            $latest = end($photos);
+            if (is_string($latest) && $latest !== '') {
+                $imgSrc = $latest;
             }
-            if ($imgSrc === $imgDevice) {
-                $legacyDir = __DIR__ . '/../Public/img/imgTickets/' . (int)($ticket['id'] ?? 0) . '/';
-                $legacyUrlBase = 'img/imgTickets/' . (int)($ticket['id'] ?? 0) . '/';
-                if (is_dir($legacyDir)) {
-                    $files = @scandir($legacyDir) ?: [];
-                    $latestFile = '';
-                    $latestTime = 0;
-                    foreach ($files as $fn) {
-                        if ($fn === '.' || $fn === '..') continue;
-                        $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                        if (!in_array($ext, $allowed, true)) continue;
-                        $t = @filemtime($legacyDir . $fn) ?: 0;
-                        if ($t >= $latestTime) { $latestTime = $t; $latestFile = $fn; }
-                    }
-                    if ($latestFile) {
-                        $imgSrc = $legacyUrlBase . rawurlencode($latestFile);
-                    }
-                }
-            }
-        } catch (\Throwable $e) {  }
+        }
         return $imgSrc;
     }
     
@@ -136,7 +103,7 @@ class ClienteController {
         $dispositivos = $deviceModel->getDevicesByUserId($user['id']);
         
         foreach ($dispositivos as &$d) {
-            $d['img_url'] = \Storage::resolveDeviceUrl($d['img_dispositivo'] ?? '');
+            $d['img_url'] = device_image_url($d['img_dispositivo'] ?? '');
             if (!array_key_exists('has_active_ticket', $d)) {
                 $d['has_active_ticket'] = $ticketModel->hasActiveTicketForDevice((int)($d['id'] ?? 0));
             }

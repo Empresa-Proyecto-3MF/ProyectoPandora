@@ -20,9 +20,9 @@ return [
         'controller' => 'Default',
         'action' => 'HomeMetrics'
     ],
-    'Default/StorageDiag' => [
+    'Default/MediaDiag' => [
         'controller' => 'Default',
-        'action' => 'StorageDiag'
+        'action' => 'MediaDiag'
     ],
     
     
@@ -92,10 +92,6 @@ return [
     'Admin/ListarAdmins' => [
         'controller' => 'Admin',
         'action' => 'listarAdmins'
-    ],
-    'Admin/MigrarTicketImages' => [
-        'controller' => 'Admin',
-        'action' => 'MigrarTicketImages'
     ],
     'Admin/ActualizarUser' => [
         'controller' => 'Admin',
@@ -357,6 +353,10 @@ return [
     'Inventario/SumarStock'=> [
         'controller' => 'Inventario',
         'action' => 'sumarStock'
+    ],
+    'Inventario/ReducirStock'=> [
+        'controller' => 'Inventario',
+        'action' => 'reducirStock'
     ],
     'Inventario/EliminarItem'=> [
         'controller' => 'Inventario',

@@ -1,6 +1,8 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Date.php'; ?>
 <?php require_once __DIR__ . '/../../Core/LogFormatter.php'; ?>
+<?php require_once __DIR__ . '/../../Core/ImageHelper.php'; ?>
+<?php $fallbackInventoryImg = inventory_image_url(''); ?>
 
 
 <main class="inv-page">
@@ -127,9 +129,9 @@
                                 <td>
                                     <?php
                                     $foto = $row['foto_item'] ?? '';
-                                    $imgSrc = \Storage::resolveInventoryUrl($foto);
+                                    $imgSrc = inventory_image_url($foto);
                                     ?>
-                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($row['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars(\Storage::fallbackInventoryUrl()); ?>'" />
+                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($row['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars($fallbackInventoryImg, ENT_QUOTES, 'UTF-8'); ?>'" />
                                 </td>
                                 <td><?php echo htmlspecialchars($row['categoria']); ?></td>
                                 <td><?php echo htmlspecialchars($row['name_item']); ?></td>
@@ -182,9 +184,9 @@
                                 <td>
                                     <?php
                                     $foto = $it['foto_item'] ?? '';
-                                    $imgSrc = \Storage::resolveInventoryUrl($foto);
+                                    $imgSrc = inventory_image_url($foto);
                                     ?>
-                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($it['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars(\Storage::fallbackInventoryUrl()); ?>'" />
+                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($it['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars($fallbackInventoryImg, ENT_QUOTES, 'UTF-8'); ?>'" />
                                 </td>
                                 <td><?php echo htmlspecialchars($it['categoria']); ?></td>
                                 <td><?php echo htmlspecialchars($it['name_item']); ?></td>

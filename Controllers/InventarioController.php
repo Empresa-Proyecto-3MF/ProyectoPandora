@@ -4,7 +4,7 @@ require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Models/Inventario.php';
 require_once __DIR__ . '/HistorialController.php';
 require_once __DIR__ . '/../Models/InventoryCategory.php';
-require_once __DIR__ . '/../Core/Storage.php';
+require_once __DIR__ . '/../Core/ImageHelper.php';
 require_once __DIR__ . '/../Core/Middleware.php';
 require_once __DIR__ . '/../Core/Flash.php';
 
@@ -70,14 +70,14 @@ class InventarioController
             }
 
             if (!empty($_FILES['foto_item']['name'])) {
-                $stored = Storage::storeUploadedFile($_FILES['foto_item'], 'inventory');
+                $stored = save_inventory_photo($_FILES['foto_item']);
                 if (!$stored) {
                     $categorias = $this->inventarioModel->listarCategorias();
                     $errorMsg = "Error al subir la imagen del ítem.";
                     include_once __DIR__ . '/../Views/Inventario/CrearItem.php';
                     return;
                 }
-                $foto_item = $stored['relative'];
+                $foto_item = $stored;
             }
 
             
@@ -176,9 +176,12 @@ class InventarioController
             $foto_item = $foto_item_actual !== '' ? $foto_item_actual : 'NoItem.jpg';
 
             if (!empty($_FILES['foto_item']['name'])) {
-                $stored = Storage::storeUploadedFile($_FILES['foto_item'], 'inventory');
+                $stored = save_inventory_photo($_FILES['foto_item']);
                 if ($stored) {
-                    $foto_item = $stored['relative'];
+                    if ($foto_item_actual && $foto_item_actual !== 'NoItem.jpg' && $foto_item_actual !== $stored) {
+                        remove_file_if_exists($foto_item_actual);
+                    }
+                    $foto_item = $stored;
                 }
             }
 
@@ -251,6 +254,71 @@ class InventarioController
             }
         }
         Flash::error('Operación inválida para sumar stock.');
+        header('Location: index.php?route=Supervisor/GestionInventario');
+        exit;
+    }
+
+    public function reducirStock()
+    {
+        
+        Auth::checkRole(['Supervisor']);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_POST['id'] ?? 0);
+            $cantidad = (int)($_POST['cantidad'] ?? 0);
+            if ($id > 0 && $cantidad > 0) {
+                $item = $this->inventarioModel->obtenerPorId($id);
+                if (!$item) {
+                    Flash::error('Ítem de inventario no encontrado.');
+                    header('Location: index.php?route=Supervisor/GestionInventario');
+                    exit;
+                }
+
+                $stockActual = (int)($item['stock_actual'] ?? 0);
+                if ($cantidad > $stockActual) {
+                    Flash::error('La cantidad a restar supera el stock disponible.');
+                    header('Location: index.php?route=Supervisor/GestionInventario');
+                    exit;
+                }
+
+                $nameItem = $item['name_item'] ?? ('Ítem #' . $id);
+                $stockMinimo = (int)($item['stock_minimo'] ?? 0);
+                $stockRestante = max(0, $stockActual - $cantidad);
+
+                $deleted = false;
+                $ok = false;
+                if ($stockRestante === 0) {
+                    $deleted = $this->inventarioModel->eliminar($id);
+                    $ok = $deleted;
+                } else {
+                    $ok = $this->inventarioModel->reducirStock($id, $cantidad);
+                }
+
+                if ($ok) {
+                    $user = Auth::user();
+                    if ($deleted) {
+                        $this->historialController->agregarAccion(
+                            'Baja de ítem en inventario',
+                            sprintf("%s retiró %d unidad(es) de '%s' (ID %d) y el ítem se eliminó por stock agotado.", $user['name'], $cantidad, $nameItem, $id)
+                        );
+                        Flash::successQuiet('Ítem eliminado por stock agotado.');
+                    } else {
+                        $this->historialController->agregarAccion(
+                            'Consumo de stock',
+                            sprintf("%s retiró %d unidad(es) de '%s' (ID %d). Stock restante: %d.", $user['name'], $cantidad, $nameItem, $id, $stockRestante)
+                        );
+                        if ($stockRestante < $stockMinimo) {
+                            Flash::set('warning', "El ítem '{$nameItem}' quedó por debajo del stock mínimo ({$stockRestante} < {$stockMinimo}).");
+                        } elseif ($stockRestante == $stockMinimo) {
+                            Flash::set('info', "El ítem '{$nameItem}' quedó exactamente en el stock mínimo ({$stockMinimo}).");
+                        }
+                        Flash::successQuiet('Stock actualizado.');
+                    }
+                    header('Location: index.php?route=Supervisor/GestionInventario');
+                    exit;
+                }
+            }
+        }
+        Flash::error('Operación inválida para restar stock.');
         header('Location: index.php?route=Supervisor/GestionInventario');
         exit;
     }

@@ -3,7 +3,7 @@ require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Models/Ticket.php';
 require_once __DIR__ . '/../Models/Device.php';
 require_once __DIR__ . '/../Core/Database.php';
-require_once __DIR__ . '/../Core/Storage.php';
+require_once __DIR__ . '/../Core/ImageHelper.php';
 
 class DefaultController
 {
@@ -167,7 +167,7 @@ class DefaultController
     }
 
     // Diagnóstico simple del almacenamiento. Sólo Administrador.
-    public function StorageDiag()
+    public function MediaDiag()
     {
         $user = Auth::user();
         if (!$user || ($user['role'] ?? '') !== 'Administrador') {
@@ -178,8 +178,40 @@ class DefaultController
         }
         header('Content-Type: application/json; charset=utf-8');
         try {
-            $diag = \Storage::diagnostics();
-            echo json_encode(['ok' => true, 'storage' => $diag], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $publicDir = public_path();
+            $folders = ['img', 'img/imgDispositivos', 'img/imgPerfil', 'img/imgInventario', 'img/ticket'];
+            $details = [];
+            foreach ($folders as $rel) {
+                $abs = public_path($rel);
+                $exists = is_dir($abs);
+                $info = ['exists' => $exists, 'files' => 0, 'bytes' => 0];
+                if ($exists) {
+                    try {
+                        $rii = new \RecursiveIteratorIterator(
+                            new \RecursiveDirectoryIterator($abs, \FilesystemIterator::SKIP_DOTS)
+                        );
+                        foreach ($rii as $file) {
+                            if ($file->isFile()) {
+                                $info['files']++;
+                                $info['bytes'] += (int)$file->getSize();
+                            }
+                        }
+                    } catch (\Throwable $inner) {
+                        $info['error'] = 'scan-failed';
+                    }
+                }
+                $details[$rel] = $info;
+            }
+            $payload = [
+                'ok' => true,
+                'media' => [
+                    'public_dir' => $publicDir,
+                    'disk_free' => @disk_free_space($publicDir) ?: null,
+                    'disk_total' => @disk_total_space($publicDir) ?: null,
+                    'folders' => $details,
+                ],
+            ];
+            echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         } catch (\Throwable $e) {
             http_response_code(500);
             echo json_encode(['ok' => false, 'message' => 'diag-failed']);
@@ -363,7 +395,7 @@ class DefaultController
         $user = $_SESSION['user'] ?? [];
         $userName = $user['name'] ?? 'Usuario';
         $userEmail = $user['email'] ?? '';
-        $userImg = \Storage::resolveProfileUrl($user['img_perfil'] ?? '');
+        $userImg = profile_image_url($user['img_perfil'] ?? '');
         $rol = $user['role'] ?? '';
         $userId = $user['id'] ?? null;
 
@@ -448,9 +480,12 @@ class DefaultController
                 $fileKey = 'avatar';
             }
             if ($fileKey !== null) {
-                $stored = \Storage::storeUploadedFile($_FILES[$fileKey], 'profile');
+                $stored = save_profile_photo($_FILES[$fileKey], (int)$userId);
                 if ($stored) {
-                    $imgPerfil = $stored['relative'];
+                    if (!empty($imgPerfil) && $imgPerfil !== 'img/imgPerfil/default.png') {
+                        remove_file_if_exists($imgPerfil);
+                    }
+                    $imgPerfil = $stored;
                     $didUpload = true;
                 }
             }

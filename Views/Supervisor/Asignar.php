@@ -1,4 +1,8 @@
-<?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+<?php
+require_once __DIR__ . '/../../Core/ImageHelper.php';
+$fallbackAvatar = profile_image_url('');
+include_once __DIR__ . '/../Includes/Sidebar.php';
+?>
 
 <main class="asignar-page">
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
@@ -67,12 +71,12 @@
 				<?php else: ?>
 					<?php foreach ($filtrados as $tec): ?>
 						<?php
-							$avatar = \Storage::resolveProfileUrl($tec['img_perfil'] ?? '');
+							$avatar = profile_image_url($tec['img_perfil'] ?? '');
 							$estado = $tec['disponibilidad'] ?? 'Desconocido';
 						?>
 						<div class="asignar-card">
 							<div class="asignar-card__head">
-								<img src="<?php echo htmlspecialchars($avatar); ?>" alt="<?= I18n::t('profile.avatar.alt'); ?>" class="asignar-avatar" />
+								<img src="<?php echo htmlspecialchars($avatar); ?>" alt="<?= I18n::t('profile.avatar.alt'); ?>" class="asignar-avatar" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars($fallbackAvatar, ENT_QUOTES, 'UTF-8'); ?>'" />
 								<div class="asignar-card__title">
 									<div class="asignar-card__row">
 										<h3 class="asignar-card__name"><?php echo htmlspecialchars($tec['name'] ?? ''); ?></h3>

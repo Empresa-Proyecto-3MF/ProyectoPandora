@@ -1,6 +1,14 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Date.php'; ?>
 <?php require_once __DIR__ . '/../../Core/LogFormatter.php'; ?>
+<?php require_once __DIR__ . '/../../Core/ImageHelper.php'; ?>
+<?php
+$frontController = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
+if ($frontController === '' || $frontController === '/') {
+  $frontController = '/index.php';
+}
+$frontController = str_replace('\\', '/', $frontController);
+?>
 
 <main>
   <div class="detalle-ticket-layout">
@@ -78,8 +86,9 @@
 
         
         <?php
-          $resolvedImg = \Storage::resolveDeviceUrl($t['img_dispositivo'] ?? '');
-          $hasImg = $resolvedImg !== '';
+          $rawImg = trim((string)($t['img_dispositivo'] ?? ''));
+          $resolvedImg = $rawImg !== '' ? device_image_url($rawImg) : '';
+          $hasImg = $rawImg !== '' && $resolvedImg !== '';
         ?>
         <li class="dato-item imagen-card" data-field="device-image-card"<?= $hasImg ? '' : ' style="display:none;"' ?> >
           <h3 style="margin-top:0;"><?= I18n::t('ticket.field.deviceImage') ?></h3>
@@ -183,13 +192,13 @@
             </div>
 
             <?php if ($estadoLower === 'presupuesto'): ?>
-      <form method="post" action="index.php?route=Ticket/AprobarPresupuesto" class="inline-form">
+      <form method="post" action="<?= htmlspecialchars($frontController) ?>?route=Ticket/AprobarPresupuesto" class="inline-form">
         <?= Csrf::input(); ?>
                 <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
                 <input type="hidden" name="comentario" value="<?= I18n::t('ticket.budget.comment.approvedByClient') ?>" />
                 <button class="btn btn-success" type="submit"><?= I18n::t('ticket.budget.approve') ?></button>
             </form>
-      <form method="post" action="index.php?route=Ticket/RechazarPresupuesto" class="inline-form">
+      <form method="post" action="<?= htmlspecialchars($frontController) ?>?route=Ticket/RechazarPresupuesto" class="inline-form">
         <?= Csrf::input(); ?>
                 <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
                 <input type="hidden" name="comentario" value="<?= I18n::t('ticket.budget.comment.rejectedByClient') ?>" />
@@ -205,7 +214,7 @@
           <div class="bloque-cliente calificacion">
             <hr>
             <h3><?= I18n::t('ticket.rating.title') ?></h3>
-      <form method="post" action="index.php?route=Ticket/Calificar">
+      <form method="post" action="<?= htmlspecialchars($frontController) ?>?route=Ticket/Calificar">
         <?= Csrf::input(); ?>
                 <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>"/>
                 <label><?= I18n::t('ticket.rating.stars') ?></label>
@@ -233,7 +242,7 @@
         <?php foreach ($view['tecnico']['acciones'] as $accion): ?>
           <?php $label = (string)$accion['label']; $isFinDiag = (stripos($label,'diagnóstico finalizado') !== false || stripos($label,'diagnostico finalizado') !== false); ?>
           <?php if ($isFinDiag && !$readyDiag) continue; ?>
-          <form method="post" action="index.php?route=Ticket/ActualizarEstado" class="inline-form">
+          <form method="post" action="<?= htmlspecialchars($frontController) ?>?route=Ticket/ActualizarEstado" class="inline-form">
             <?= Csrf::input(); ?>
             <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
             <input type="hidden" name="estado_id" value="<?= (int)$accion['estado_id'] ?>" />
@@ -256,7 +265,7 @@
                 </div>
 
     <?php if (!empty($view['tecnico']['labor_editable'])): ?>
-          <form method="post" action="index.php?route=Tecnico/ActualizarStats" class="presu-labor">
+          <form method="post" action="<?= htmlspecialchars($frontController) ?>?route=Tecnico/ActualizarStats" class="presu-labor">
             <?= Csrf::input(); ?>
                         <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>"/>
             <input type="hidden" name="rev_state" value="<?= htmlspecialchars((string)($view['rev_state'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"/>
@@ -265,7 +274,7 @@
                         <button class="btn btn-primary" type="submit"><?= I18n::t('ticket.labor.save') ?></button>
                     </form>
         <?php elseif (!empty($view['tecnico']['labor_editable_en_espera'])): ?>
-          <form method="post" action="index.php?route=Tecnico/ActualizarStats" class="presu-labor">
+          <form method="post" action="<?= htmlspecialchars($frontController) ?>?route=Tecnico/ActualizarStats" class="presu-labor">
             <?= Csrf::input(); ?>
             <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>"/>
             <input type="hidden" name="rev_state" value="<?= htmlspecialchars((string)($view['rev_state'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"/>
@@ -286,11 +295,11 @@
         
         if (in_array($estadoLower, ['diagnóstico','diagnostico'])): ?>
                 <div style="margin-top:12px;">
-                  <a class="btn btn-outline" href="index.php?route=Tecnico/MisRepuestos&ticket_id=<?= (int)$view['ticket']['id'] ?>&rev=<?= urlencode((string)($view['rev_state'] ?? '')) ?>"><?= I18n::t('ticket.parts.addToThisTicket') ?></a>
+                  <a class="btn btn-outline" href="<?= htmlspecialchars($frontController) ?>?route=Tecnico/MisRepuestos&ticket_id=<?= (int)$view['ticket']['id'] ?>&rev=<?= urlencode((string)($view['rev_state'] ?? '')) ?>"><?= I18n::t('ticket.parts.addToThisTicket') ?></a>
                 </div>
       <?php elseif ($estadoLower === 'en espera' && !empty($view['tecnico']['has_items']) && !empty($view['tecnico']['has_labor'])): ?>
         <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-                  <a class="btn btn-outline" href="index.php?route=Tecnico/MisRepuestos&ticket_id=<?= (int)$view['ticket']['id'] ?>&rev=<?= urlencode((string)($view['rev_state'] ?? '')) ?>"><?= I18n::t('ticket.parts.edit') ?></a>
+                  <a class="btn btn-outline" href="<?= htmlspecialchars($frontController) ?>?route=Tecnico/MisRepuestos&ticket_id=<?= (int)$view['ticket']['id'] ?>&rev=<?= urlencode((string)($view['rev_state'] ?? '')) ?>"><?= I18n::t('ticket.parts.edit') ?></a>
         </div>
       <?php endif; ?>
         <?php endif; ?>
@@ -302,14 +311,14 @@
             <hr>
             <h3><?= I18n::t('ticket.supervisor.actions') ?></h3>
             <?php if (!empty($view['supervisor']['puede_listo'])): ?>
-        <form method="post" action="index.php?route=Ticket/MarcarListoParaRetirar" class="inline-form">
+        <form method="post" action="<?= htmlspecialchars($frontController) ?>?route=Ticket/MarcarListoParaRetirar" class="inline-form">
           <?= Csrf::input(); ?>
                     <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
                     <button class="btn btn-primary" type="submit"><?= I18n::t('ticket.supervisor.markReadyForPickup') ?></button>
                 </form>
             <?php endif; ?>
             <?php if (!empty($view['supervisor']['puede_finalizar'])): ?>
-        <form method="post" action="index.php?route=Ticket/MarcarPagadoYFinalizar" class="inline-form">
+        <form method="post" action="<?= htmlspecialchars($frontController) ?>?route=Ticket/MarcarPagadoYFinalizar" class="inline-form">
           <?= Csrf::input(); ?>
                     <input type="hidden" name="ticket_id" value="<?= (int)$view['ticket']['id'] ?>" />
                     <button class="btn btn-success" type="submit"><?= I18n::t('ticket.supervisor.registerPaymentAndFinish') ?></button>
@@ -318,7 +327,7 @@
         <?php endif; ?>
       </div> 
 
-  <a href="<?= htmlspecialchars($view['backHref'] ?? 'index.php?route=Default/Index') ?>" class="boton-volver"><?= I18n::t('common.back') ?></a>
+  <a href="<?= htmlspecialchars($view['backHref'] ?? ($frontController . '?route=Default/Index')) ?>" class="boton-volver"><?= I18n::t('common.back') ?></a>
 
       <?php
         
