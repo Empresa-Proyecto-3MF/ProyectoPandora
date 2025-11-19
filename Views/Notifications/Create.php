@@ -25,7 +25,7 @@
       <?php endif; ?>
 
       <form class="notif-form" method="POST" action="">
-        <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'] ?? '') ?>" />
+        <?= Csrf::input(); ?>
 
         <div class="notif-field">
           <label>Título</label>
@@ -74,4 +74,4 @@
   </div>
 </main>
 
-<script src="/ProyectoPandora/Public/js/notifications-create.js?v=<?= time(); ?>" defer></script>
+<script src="js/notifications-create.js?v=<?= time(); ?>" defer></script>

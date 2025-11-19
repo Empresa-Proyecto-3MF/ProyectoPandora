@@ -4,7 +4,7 @@
     <div class="Tabla-Contenedor">
          <div class="botones">
             <div class="btn-table-acciones">
-                <a class="btn-all btn-acciones-cate" href="/ProyectoPandora/Public/index.php?route=EstadoTicket/Crear">Añadir Estado</a>
+                <a class="btn-all btn-acciones-cate" href="index.php?route=EstadoTicket/Crear">Añadir Estado</a>
             </div>
         </div>
         <table id="userTable">
@@ -22,9 +22,9 @@
                     <td><?php echo htmlspecialchars($estado['name']); ?></td>
                     <td>
                         <div class='action-buttons'>
-                            <a href="/ProyectoPandora/Public/index.php?route=EstadoTicket/Editar&id=<?php echo $estado['id']; ?>" class="btn edit-btn">Actualizar</a>
+                            <a href="index.php?route=EstadoTicket/Editar&id=<?php echo $estado['id']; ?>" class="btn edit-btn">Actualizar</a>
                             |
-                            <a href="/ProyectoPandora/Public/index.php?route=EstadoTicket/Eliminar&id=<?php echo $estado['id']; ?>" class="btn delete-btn">Eliminar</a>
+                            <a href="index.php?route=EstadoTicket/Eliminar&id=<?php echo $estado['id']; ?>" class="btn delete-btn">Eliminar</a>
                         </div>
                     </td>
                 </tr>

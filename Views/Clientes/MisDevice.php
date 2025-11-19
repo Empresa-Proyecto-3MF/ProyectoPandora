@@ -1,4 +1,8 @@
-<?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
+<?php
+require_once __DIR__ . '/../../Core/ImageHelper.php';
+$fallbackDevice = device_image_url('');
+include_once __DIR__ . '/../Includes/Sidebar.php';
+?>
 <main>
 <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 
@@ -14,11 +18,11 @@
               <article class="device-card">
                 <div class="device-img">
                   <img 
-                    src="<?= htmlspecialchars($d['img_url'] ?? \Storage::fallbackDeviceUrl()) ?>" 
+                    src="<?= htmlspecialchars($d['img_url'] ?? $fallbackDevice) ?>" 
                     alt="Dispositivo <?= htmlspecialchars(($d['marca'] ?? '') . ' ' . ($d['modelo'] ?? '')) ?>"
                     loading="lazy"
                     decoding="async"
-                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(\Storage::fallbackDeviceUrl()) ?>'"
+                    onerror="this.onerror=null;this.src='<?= htmlspecialchars($fallbackDevice, ENT_QUOTES, 'UTF-8') ?>'"
                   >
                 </div>
                 <div class="device-info u-flex-col u-flex-1">
@@ -33,9 +37,10 @@
                 </div>
                 <div class="device-card__actions">
                   <?php if (empty($d['has_active_ticket'])): ?>
-        <form method="post" action="/ProyectoPandora/Public/index.php?route=Device/Eliminar"
+        <form method="post" action="index.php?route=Device/Eliminar"
           data-confirm="¿Eliminar este dispositivo? Esta acción no se puede deshacer."
           style="display:inline-block">
+                      <?= Csrf::input(); ?>
                       <input type="hidden" name="device_id" value="<?= (int)$d['id'] ?>">
                       <button type="submit" class="btn btn-danger">Eliminar</button>
                     </form>
@@ -48,7 +53,7 @@
           <?php else: ?>
             <div class="no-device">
               <p>No tienes dispositivos registrados aún.</p>
-              <a href="/ProyectoPandora/Public/index.php?route=Device/MostrarCrearDispositivo" class="btn-float-add btn-center" title="Agregar dispositivo">+</a>
+              <a href="index.php?route=Device/MostrarCrearDispositivo" class="btn-float-add btn-center" title="Agregar dispositivo">+</a>
             </div>
           <?php endif; ?>
         </div>
@@ -58,6 +63,6 @@
   </div>
 </main>
 
-<a href="/ProyectoPandora/Public/index.php?route=Device/MostrarCrearDispositivo" class="btn-float-add" id="btnAdd" title="Agregar dispositivo">+</a>
+<a href="index.php?route=Device/MostrarCrearDispositivo" class="btn-float-add" id="btnAdd" title="Agregar dispositivo">+</a>
 
-<script src="/ProyectoPandora/Public/js/clientes-mis-device.js" defer></script>
+<script src="js/clientes-mis-device.js" defer></script>

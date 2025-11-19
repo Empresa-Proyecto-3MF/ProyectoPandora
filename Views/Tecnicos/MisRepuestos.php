@@ -1,6 +1,8 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 <?php require_once __DIR__ . '/../../Core/Date.php'; ?>
 <?php require_once __DIR__ . '/../../Core/LogFormatter.php'; ?>
+<?php require_once __DIR__ . '/../../Core/ImageHelper.php'; ?>
+<?php $fallbackInventoryImg = inventory_image_url(''); ?>
 
 
 <main class="inv-page">
@@ -39,11 +41,11 @@
                         </small>
                         <?php if ($prefijado): ?>
                             <div style="margin-top:8px;">
-                                <a class="btn btn-secondary" href="/ProyectoPandora/Public/index.php?route=Ticket/Ver&id=<?php echo (int)$ticket_id; ?>">← Volver al ticket</a>
+                                <a class="btn btn-secondary" href="index.php?route=Ticket/Ver&id=<?php echo (int)$ticket_id; ?>">← Volver al ticket</a>
                             </div>
                         <?php endif; ?>
                     </div>
-                    <form method="get" action="/ProyectoPandora/Public/index.php" style="display:flex; gap:8px; align-items:end; flex-wrap:wrap;">
+                    <form method="get" action="index.php" style="display:flex; gap:8px; align-items:end; flex-wrap:wrap;">
                         <input type="hidden" name="route" value="Tecnico/MisRepuestos" />
                         <?php if (!empty($_GET['rev'])): ?>
                             <input type="hidden" name="rev" value="<?php echo htmlspecialchars((string)$_GET['rev']); ?>" />
@@ -127,16 +129,17 @@
                                 <td>
                                     <?php
                                     $foto = $row['foto_item'] ?? '';
-                                    $imgSrc = \Storage::resolveInventoryUrl($foto);
+                                    $imgSrc = inventory_image_url($foto);
                                     ?>
-                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($row['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars(\Storage::fallbackInventoryUrl()); ?>'" />
+                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($row['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars($fallbackInventoryImg, ENT_QUOTES, 'UTF-8'); ?>'" />
                                 </td>
                                 <td><?php echo htmlspecialchars($row['categoria']); ?></td>
                                 <td><?php echo htmlspecialchars($row['name_item']); ?></td>
                                 <td><span class="precio" data-precio="<?php echo (float)$row['valor_unitario']; ?>"><?php echo htmlspecialchars(LogFormatter::monto((float)$row['valor_unitario'])); ?></span></td>
                                 <td><?php echo (int)$row['stock_actual']; ?><?php if ((int)$row['stock_actual'] <= 0) echo ' <span class="badge badge--muted">Sin stock</span>'; ?></td>
                                 <td>
-                                    <form class="req-form" action="/ProyectoPandora/Public/index.php?route=Tecnico/SolicitarRepuesto" method="post">
+                                    <form class="req-form" action="index.php?route=Tecnico/SolicitarRepuesto" method="post">
+                                        <?= Csrf::input(); ?>
                                         <input type="hidden" name="ticket_id" value="<?php echo (int)$ticket_id; ?>" />
                                         <input type="hidden" name="inventario_id" value="<?php echo (int)$row['id']; ?>" />
                                         <?php if (!empty($_GET['rev'])): ?>
@@ -181,9 +184,9 @@
                                 <td>
                                     <?php
                                     $foto = $it['foto_item'] ?? '';
-                                    $imgSrc = \Storage::resolveInventoryUrl($foto);
+                                    $imgSrc = inventory_image_url($foto);
                                     ?>
-                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($it['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars(\Storage::fallbackInventoryUrl()); ?>'" />
+                                    <img class="inv-thumb" src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($it['name_item']); ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='<?php echo htmlspecialchars($fallbackInventoryImg, ENT_QUOTES, 'UTF-8'); ?>'" />
                                 </td>
                                 <td><?php echo htmlspecialchars($it['categoria']); ?></td>
                                 <td><?php echo htmlspecialchars($it['name_item']); ?></td>
@@ -216,7 +219,7 @@
                         'page' => $p,
                         'rev' => isset($_GET['rev']) ? (string)$_GET['rev'] : null,
                     ]);
-                    return '/ProyectoPandora/Public/index.php?' . $q;
+                    return 'index.php?' . $q;
                 };
                 ?>
                 <a class="btn btn-outline" href="<?php echo htmlspecialchars($buildUrl(max(1, $curr - 1))); ?>">« Prev</a>
@@ -227,4 +230,4 @@
     </section>
 </main>
 
-<script src="/ProyectoPandora/Public/js/tecnicos-mis-repuestos.js" defer></script>
+<script src="js/tecnicos-mis-repuestos.js" defer></script>

@@ -21,6 +21,8 @@ DROP TABLE IF EXISTS historial;
 DROP TABLE IF EXISTS estados_tickets;
 DROP TABLE IF EXISTS categorias_inventario;
 DROP TABLE IF EXISTS categorias;
+DROP TABLE IF EXISTS notification_user;
+DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS users;
 SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE users (
@@ -34,6 +36,11 @@ CREATE TABLE users (
     remember_selector VARCHAR(100) DEFAULT NULL,
     remember_token VARCHAR(255) DEFAULT NULL,
     remember_expires_at DATETIME DEFAULT NULL,
+    -- Usamos 255 para almacenar password_hash del código (hash ~60 chars)
+    reset_code VARCHAR(255) DEFAULT NULL,
+    reset_expires_at DATETIME DEFAULT NULL,
+    reset_attempts INT DEFAULT 0,
+    reset_locked_until DATETIME DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     role ENUM(
         'Cliente',
@@ -156,10 +163,10 @@ CREATE TABLE inventarios (
     id INT NOT NULL AUTO_INCREMENT,
     categoria_id INT NOT NULL,
     name_item VARCHAR(100) NOT NULL,
-    valor_unitario DECIMAL(10, 2) NOT NULL,
+    valor_unitario DECIMAL(10, 2) NOT NULL CHECK (valor_unitario >= 0),
     descripcion TEXT,
-    stock_actual INT NOT NULL DEFAULT 0,
-    stock_minimo INT NOT NULL DEFAULT 0,
+    stock_actual INT NOT NULL DEFAULT 0 CHECK (stock_actual >= 0),
+    stock_minimo INT NOT NULL DEFAULT 0 CHECK (stock_minimo >= 0),
     foto_item VARCHAR(255),
     fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),

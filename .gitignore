@@ -1,2 +1,24 @@
+<<<<<<< HEAD
 Public/uploads/
 .env
+=======
+Public/img/device/
+Public/img/profile/
+Public/img/inventory/
+Public/img/ticket/
+.env
+
+# Ignorar logs de la aplicación (pero mantener la carpeta con .gitkeep)
+/Logs/*
+!/Logs/.gitkeep
+
+# Ignorar archivos de rotación de logs si existen
+/Logs/*.log*
+
+# Opcional: archivos temporales del sistema/editor
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+>>>>>>> 4944a813758c8e8cb1408a567514e17dab2335e7

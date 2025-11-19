@@ -20,11 +20,39 @@ return [
         'controller' => 'Default',
         'action' => 'HomeMetrics'
     ],
+    'Default/MediaDiag' => [
+        'controller' => 'Default',
+        'action' => 'MediaDiag'
+    ],
     
     
     'Auth/Login' => [
         'controller' => 'Auth',
         'action' => 'Login'
+    ],
+    'Auth/Forgot' => [
+        'controller' => 'Auth',
+        'action' => 'Forgot'
+    ],
+    'Auth/SendResetCode' => [
+        'controller' => 'Auth',
+        'action' => 'SendResetCode'
+    ],
+    'Auth/EnterCode' => [
+        'controller' => 'Auth',
+        'action' => 'EnterCode'
+    ],
+    'Auth/VerifyResetCode' => [
+        'controller' => 'Auth',
+        'action' => 'VerifyResetCode'
+    ],
+    'Auth/ResetPassword' => [
+        'controller' => 'Auth',
+        'action' => 'ResetPassword'
+    ],
+    'Auth/DoResetPassword' => [
+        'controller' => 'Auth',
+        'action' => 'DoResetPassword'
     ],
     'Register/Register' => [
         'controller' => 'Register',
@@ -329,6 +357,10 @@ return [
     'Inventario/SumarStock'=> [
         'controller' => 'Inventario',
         'action' => 'sumarStock'
+    ],
+    'Inventario/ReducirStock'=> [
+        'controller' => 'Inventario',
+        'action' => 'reducirStock'
     ],
     'Inventario/EliminarItem'=> [
         'controller' => 'Inventario',

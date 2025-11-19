@@ -18,6 +18,7 @@
     const method = (form.method || 'POST').toUpperCase();
     const url = form.action || window.location.href;
 
+    // CSRF: wrapper fetch añadirá token si falta
     fetch(url, {
       method,
       body: method === 'GET' ? null : formData,

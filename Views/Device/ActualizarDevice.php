@@ -7,7 +7,8 @@
             <div class="contact-form">
                 <h3>Actualizar Dispositivo</h3>
 
-                <form method="POST" enctype="multipart/form-data" action="/ProyectoPandora/Public/index.php?route=Device/ActualizarDevice&id=<?= $dispositivo['id'] ?>">
+                <form method="POST" enctype="multipart/form-data" action="index.php?route=Device/ActualizarDevice&id=<?= $dispositivo['id'] ?>">
+                    <?= Csrf::input(); ?>
                     <input type="hidden" name="from" value="<?= $_GET['from'] ?? 'Cliente/MisDevice' ?>">
                     <input type="hidden" name="id" value="<?= $dispositivo['id'] ?>">
 
@@ -46,7 +47,7 @@
                     <?php if (!empty($dispositivo['img_dispositivo'])): ?>
                         <p class="block">
                             <div class="preview-img">
-                                    <?php $imgPreview = \Storage::resolveDeviceUrl($dispositivo['img_dispositivo']); ?>
+                                    <?php $imgPreview = device_image_url($dispositivo['img_dispositivo']); ?>
                                     <img src="<?= htmlspecialchars($imgPreview) ?>" alt="Dispositivo">
                             </div>
                         </p>
@@ -57,7 +58,7 @@
                     </p>
                 </form>
 
-                <a href="<?= $_SESSION['prev_url'] ?? '/ProyectoPandora/Public/index.php?route=Default/Index' ?>" class="btn-volver">Volver</a>
+                <a href="<?= $_SESSION['prev_url'] ?? 'index.php?route=Default/Index' ?>" class="btn-volver">Volver</a>
             </div>
         </div>
 

@@ -20,7 +20,7 @@
   // Polling notifications count every 10s
   if (badge) {
     const refresh = () => {
-      fetch('/ProyectoPandora/Public/index.php?route=Notification/Count', { cache: 'no-store' })
+      fetch('index.php?route=Notification/Count', { cache: 'no-store' })
         .then(r => r.ok ? r.text() : '0')
         .then(txt => {
           const n = parseInt((txt||'0').trim(), 10);

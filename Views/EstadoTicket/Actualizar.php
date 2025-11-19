@@ -6,7 +6,8 @@
             <div class="contact-form">
                 <h3>Actualizar Estado</h3>
 
-                <form method="POST" action="/ProyectoPandora/Public/index.php?route=EstadoTicket/Actualizar">
+                <form method="POST" action="index.php?route=EstadoTicket/Actualizar">
+                    <?= Csrf::input(); ?>
                     <input type="hidden" name="id" value="<?= htmlspecialchars($estado['id']) ?>">
 
                     <p>
@@ -19,7 +20,7 @@
                     </p>
                 </form>
 
-                <a href="/ProyectoPandora/Public/index.php?route=EstadoTicket/ListarEstados" class="btn-volver">Volver a la lista de Estados</a>
+                <a href="index.php?route=EstadoTicket/ListarEstados" class="btn-volver">Volver a la lista de Estados</a>
             </div>
         </div>
 

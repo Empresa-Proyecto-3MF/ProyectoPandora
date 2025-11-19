@@ -4,55 +4,22 @@ require_once __DIR__ . '/../Models/Device.php';
 require_once __DIR__ . '/../Core/Database.php';
 require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/../Core/Date.php';
-require_once __DIR__ . '/../Core/Storage.php';
+require_once __DIR__ . '/../Core/ImageHelper.php';
 
 class ClienteController {
-    // Calcula la mejor imagen de preview para un ticket: uploads -> legacy -> imagen del dispositivo
+    
     private function ticketPreviewUrl(array $ticket): string {
-        $imgDevice = \Storage::resolveDeviceUrl($ticket['img_dispositivo'] ?? '');
-        $imgSrc = $imgDevice;
-        try {
-            $allowed = ['jpg','jpeg','png','gif','webp'];
-            $relDir = 'ticket/' . (int)($ticket['id'] ?? 0);
-            $absDir = \Storage::basePath() . '/' . $relDir . '/';
-            if (is_dir($absDir)) {
-                $files = @scandir($absDir) ?: [];
-                $latestFile = '';
-                $latestTime = 0;
-                foreach ($files as $fn) {
-                    if ($fn === '.' || $fn === '..') continue;
-                    $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                    if (!in_array($ext, $allowed, true)) continue;
-                    $t = @filemtime($absDir . $fn) ?: 0;
-                    if ($t >= $latestTime) { $latestTime = $t; $latestFile = $fn; }
-                }
-                if ($latestFile) {
-                    $imgSrc = \Storage::publicUrl($relDir . '/' . $latestFile);
-                }
+        $imgSrc = device_image_url($ticket['img_dispositivo'] ?? '');
+        $photos = ticket_photo_urls((int)($ticket['id'] ?? 0));
+        if (!empty($photos)) {
+            $latest = end($photos);
+            if (is_string($latest) && $latest !== '') {
+                $imgSrc = $latest;
             }
-            if ($imgSrc === $imgDevice) {
-                $legacyDir = __DIR__ . '/../Public/img/imgTickets/' . (int)($ticket['id'] ?? 0) . '/';
-                $legacyUrlBase = '/ProyectoPandora/Public/img/imgTickets/' . (int)($ticket['id'] ?? 0) . '/';
-                if (is_dir($legacyDir)) {
-                    $files = @scandir($legacyDir) ?: [];
-                    $latestFile = '';
-                    $latestTime = 0;
-                    foreach ($files as $fn) {
-                        if ($fn === '.' || $fn === '..') continue;
-                        $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                        if (!in_array($ext, $allowed, true)) continue;
-                        $t = @filemtime($legacyDir . $fn) ?: 0;
-                        if ($t >= $latestTime) { $latestTime = $t; $latestFile = $fn; }
-                    }
-                    if ($latestFile) {
-                        $imgSrc = $legacyUrlBase . rawurlencode($latestFile);
-                    }
-                }
-            }
-        } catch (\Throwable $e) { /* noop */ }
+        }
         return $imgSrc;
     }
-    // Helpers de presentación pedidos en el controlador
+    
     private function estadoBadgeClass(?string $estado): string {
         $s = strtolower(trim($estado ?? ''));
         if (in_array($s, ['finalizado'], true)) return 'badge badge--success';
@@ -66,13 +33,13 @@ class ClienteController {
         return strtolower(trim($estado ?? '')) === 'nuevo';
     }
 
-    // Aplica filtros básicos por GET (estado ya viene aplicado por origen) y enriquece datos
+    
     private function aplicarFiltrosYPresentacion(array $tickets): array {
         $q = isset($_GET['q']) ? trim((string)$_GET['q']) : '';
         $desde = isset($_GET['desde']) ? trim((string)$_GET['desde']) : '';
         $hasta = isset($_GET['hasta']) ? trim((string)$_GET['hasta']) : '';
 
-        // Filtro por texto
+        
         if ($q !== '') {
             $qLower = mb_strtolower($q, 'UTF-8');
             $tickets = array_values(array_filter($tickets, function($t) use ($qLower){
@@ -91,7 +58,7 @@ class ClienteController {
             }));
         }
 
-        // Filtro por rango de fechas (creación)
+        
         if ($desde !== '' || $hasta !== '') {
             $tickets = array_values(array_filter($tickets, function($t) use ($desde, $hasta){
                 $f = substr((string)($t['fecha_creacion'] ?? ''), 0, 10);
@@ -101,7 +68,7 @@ class ClienteController {
             }));
         }
 
-        // Enriquecer para la vista (badge + flags + fechas formateadas)
+        
         foreach ($tickets as &$t) {
             $t['estadoClass'] = $this->estadoBadgeClass($t['estado'] ?? '');
             $t['puedeEliminar'] = $this->puedeEliminarTicket($t['estado'] ?? '');
@@ -116,14 +83,14 @@ class ClienteController {
     }
     
     public function PanelCliente(){
-        header('Location: /ProyectoPandora/Public/index.php?route=Cliente/MisDevice');
+        header('Location: index.php?route=Cliente/MisDevice');
         exit;
     }
 
     public function MisDevice() {
         $user = Auth::user();
         if (!$user) {
-            header('Location: /ProyectoPandora/Public/index.php?route=Auth/Login');
+            header('Location: index.php?route=Auth/Login');
             exit;
         }
 
@@ -134,13 +101,13 @@ class ClienteController {
 
         
         $dispositivos = $deviceModel->getDevicesByUserId($user['id']);
-        // Enriquecer datos para la vista: URL de imagen ya resuelta y flag de ticket activo
+        
         foreach ($dispositivos as &$d) {
-            $d['img_url'] = \Storage::resolveDeviceUrl($d['img_dispositivo'] ?? '');
+            $d['img_url'] = device_image_url($d['img_dispositivo'] ?? '');
             if (!array_key_exists('has_active_ticket', $d)) {
                 $d['has_active_ticket'] = $ticketModel->hasActiveTicketForDevice((int)($d['id'] ?? 0));
             }
-            // Fechas formateadas para la vista (evita usar DateHelper en la vista)
+            
             if (!empty($d['fecha_registro'])) {
                 $d['fecha_exact'] = DateHelper::exact($d['fecha_registro']);
                 $d['fecha_human'] = DateHelper::smart($d['fecha_registro']);
@@ -151,17 +118,17 @@ class ClienteController {
         include_once __DIR__ . '/../Views/Clientes/MisDevice.php';
     }
 
-    // Compat: redirige a activos para ruta antigua
+    
     public function MisTicket() {
-        header('Location: /ProyectoPandora/Public/index.php?route=Cliente/MisTicketActivo');
+        header('Location: index.php?route=Cliente/MisTicketActivo');
         exit;
     }
 
     public function MisTicketActivo() {
         $user = Auth::user();
-        if (!$user) { header('Location: /ProyectoPandora/Public/index.php?route=Auth/Login'); exit; }
+        if (!$user) { header('Location: index.php?route=Auth/Login'); exit; }
         $db = new Database(); $db->connectDatabase(); $ticketModel = new Ticket($db->getConnection());
-        // Soporta filtro de estado (activos/finalizados/todos) para unificar vista vía filtros
+        
         $estado = strtolower(trim($_GET['estado'] ?? 'activos'));
         if ($estado === 'todos') {
             $tickets = array_merge(
@@ -169,16 +136,16 @@ class ClienteController {
                 $ticketModel->getTicketsTerminadosByUserId($user['id'])
             );
         } elseif ($estado === 'finalizados') {
-            // Redirigir a la ruta de terminados para URL coherente, preservando filtros
+            
             $qs = $_GET; $qs['route'] = 'Cliente/MisTicketTerminados';
-            $url = '/ProyectoPandora/Public/index.php?' . http_build_query($qs);
+            $url = 'index.php?' . http_build_query($qs);
             header('Location: ' . $url);
             exit;
         } else {
             $tickets = $ticketModel->getTicketsActivosByUserId($user['id']);
         }
         $tickets = $this->aplicarFiltrosYPresentacion($tickets);
-        // Enriquecer con imagen de preview ya resuelta para la vista
+        
         foreach ($tickets as &$t) {
             $t['img_preview'] = $this->ticketPreviewUrl($t);
         }
@@ -188,9 +155,9 @@ class ClienteController {
 
     public function MisTicketTerminados() {
         $user = Auth::user();
-        if (!$user) { header('Location: /ProyectoPandora/Public/index.php?route=Auth/Login'); exit; }
+        if (!$user) { header('Location: index.php?route=Auth/Login'); exit; }
         $db = new Database(); $db->connectDatabase(); $ticketModel = new Ticket($db->getConnection());
-        // Soporta filtro de estado (activos/finalizados/todos)
+        
         $estado = strtolower(trim($_GET['estado'] ?? 'finalizados'));
         if ($estado === 'todos') {
             $tickets = array_merge(
@@ -199,7 +166,7 @@ class ClienteController {
             );
         } elseif ($estado === 'activos') {
             $qs = $_GET; $qs['route'] = 'Cliente/MisTicketActivo';
-            $url = '/ProyectoPandora/Public/index.php?' . http_build_query($qs);
+            $url = 'index.php?' . http_build_query($qs);
             header('Location: ' . $url);
             exit;
         } else {

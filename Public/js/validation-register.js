@@ -38,40 +38,48 @@
   }
 
   window.validarEmailRegistro = function(form){
+    var ds = form && form.dataset ? form.dataset : {};
+    var MSG_NAME_REQUIRED = ds.msgNameRequired || 'El nombre es obligatorio.';
+    var MSG_EMAIL_INVALID = ds.msgEmailInvalid || 'Ingresá un email válido (debe incluir un dominio con punto, ej: usuario@dominio.com)';
+    var MSG_PASSWORD_SHORT = ds.msgPasswordShort || 'La contraseña debe tener al menos 8 caracteres.';
     var nameInput = form.querySelector('input[name="name"]');
     var emailInput = form.querySelector('input[name="email"]');
     var passInput = form.querySelector('input[name="password"]');
     if (!nameInput || (nameInput.value || '').trim() === '') {
-      showValidationDialog('El nombre es obligatorio.', nameInput);
+      showValidationDialog(MSG_NAME_REQUIRED, nameInput);
       return false;
     }
     var val = emailInput ? (emailInput.value || '').trim().toLowerCase() : '';
     if (!isValidEmail(val)) {
-      showValidationDialog('Ingresá un email válido (debe incluir un dominio con punto, ej: usuario@dominio.com)', emailInput);
+      showValidationDialog(MSG_EMAIL_INVALID, emailInput);
       return false;
     }
     if (!passInput || (passInput.value || '').length < 8) {
-      showValidationDialog('La contraseña debe tener al menos 8 caracteres.', passInput);
+      showValidationDialog(MSG_PASSWORD_SHORT, passInput);
       return false;
     }
     return true;
   };
 
   window.validarEmailRegistroAdmin = function(form){
+    var ds = form && form.dataset ? form.dataset : {};
+    var MSG_NAME_REQUIRED = ds.msgNameRequired || 'El nombre es obligatorio.';
+    var MSG_EMAIL_INVALID = ds.msgEmailInvalid || 'Ingresá un email válido (debe incluir un dominio con punto, ej: usuario@dominio.com)';
+    var MSG_PASSWORD_SHORT = ds.msgPasswordShort || 'La contraseña debe tener al menos 8 caracteres.';
     var nameInput = form.querySelector('input[name="name"]');
     var emailInput = form.querySelector('input[name="email"]');
     var passInput = form.querySelector('input[name="password"]');
     if (!nameInput || (nameInput.value || '').trim() === '') {
-      showValidationDialog('El nombre es obligatorio.', nameInput);
+      showValidationDialog(MSG_NAME_REQUIRED, nameInput);
       return false;
     }
     var val = emailInput ? (emailInput.value || '').trim().toLowerCase() : '';
     if (!isValidEmail(val)) {
-      showValidationDialog('Ingresá un email válido (debe incluir un dominio con punto, ej: usuario@dominio.com)', emailInput);
+      showValidationDialog(MSG_EMAIL_INVALID, emailInput);
       return false;
     }
     if (!passInput || (passInput.value || '').length < 8) {
-      showValidationDialog('La contraseña debe tener al menos 8 caracteres.', passInput);
+      showValidationDialog(MSG_PASSWORD_SHORT, passInput);
       return false;
     }
     return true;

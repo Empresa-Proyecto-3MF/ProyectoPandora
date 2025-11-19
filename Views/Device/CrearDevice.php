@@ -14,7 +14,8 @@
                 <?php endif; ?>
 
                 <?php if (!isset($errorMsg)): ?>
-                    <form action="/ProyectoPandora/Public/index.php?route=Device/CrearDispositivo" method="POST" enctype="multipart/form-data">
+                    <form action="index.php?route=Device/CrearDispositivo" method="POST" enctype="multipart/form-data">
+                        <?= Csrf::input(); ?>
 
                         <?php if (isset($isAdmin) && $isAdmin && isset($clientes)): ?>
                             <p>
@@ -78,11 +79,11 @@
                 $user = $_SESSION['user'] ?? null;
                 $rol = $user['role'] ?? '';
                 if ($rol === 'Administrador') {
-                    $volverUrl = "/ProyectoPandora/Public/index.php?route=Default/Index";
+                    $volverUrl = "index.php?route=Default/Index";
                 } elseif ($rol === 'Cliente') {
-                    $volverUrl = "/ProyectoPandora/Public/index.php?route=Cliente/MisDevice";
+                    $volverUrl = "index.php?route=Cliente/MisDevice";
                 } else {
-                    $volverUrl = "/ProyectoPandora/Public/index.php?route=Default/Index";
+                    $volverUrl = "index.php?route=Default/Index";
                 }
                 ?>
                 <a href="<?= $volverUrl ?>" class="btn-volver">Volver</a>

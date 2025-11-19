@@ -1,14 +1,17 @@
 <?php
 
-class TecnicoStatsModel {
+class TecnicoStatsModel
+{
     private $conn;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
         $this->ensureTable();
     }
 
-    private function ensureTable() {
+    private function ensureTable(): void
+    {
         $sql = "CREATE TABLE IF NOT EXISTS tecnico_stats (
             id INT AUTO_INCREMENT PRIMARY KEY,
             tecnico_id INT NOT NULL,
@@ -20,30 +23,42 @@ class TecnicoStatsModel {
             UNIQUE KEY uq_tecnico_stats_tecnico (tecnico_id),
             FOREIGN KEY (tecnico_id) REFERENCES tecnicos(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
         $this->conn->query($sql);
     }
 
-    public function getByTecnico($tecnico_id) {
-        $stmt = $this->conn->prepare("SELECT * FROM tecnico_stats WHERE tecnico_id = ? LIMIT 1");
-        if (!$stmt) return null;
-        $stmt->bind_param("i", $tecnico_id);
+    public function getByTecnico(int $tecnicoId): ?array
+    {
+        $stmt = $this->conn->prepare('SELECT * FROM tecnico_stats WHERE tecnico_id = ? LIMIT 1');
+        if (!$stmt) {
+            return null;
+        }
+
+        $stmt->bind_param('i', $tecnicoId);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+
+        return $stmt->get_result()->fetch_assoc() ?: null;
     }
 
-    public function upsert($tecnico_id, $labor_min, $labor_max) {
-        $exists = $this->getByTecnico($tecnico_id);
-        if ($exists) {
-            $stmt = $this->conn->prepare("UPDATE tecnico_stats SET labor_min = ?, labor_max = ? WHERE tecnico_id = ?");
-            if (!$stmt) return false;
-            $stmt->bind_param("ddi", $labor_min, $labor_max, $tecnico_id);
+    public function upsert(int $tecnicoId, float $laborMin, float $laborMax): bool
+    {
+        if ($this->getByTecnico($tecnicoId)) {
+            $stmt = $this->conn->prepare('UPDATE tecnico_stats SET labor_min = ?, labor_max = ? WHERE tecnico_id = ?');
+            if (!$stmt) {
+                return false;
+            }
+
+            $stmt->bind_param('ddi', $laborMin, $laborMax, $tecnicoId);
             return $stmt->execute();
         }
-        $stmt = $this->conn->prepare("INSERT INTO tecnico_stats (tecnico_id, labor_min, labor_max) VALUES (?,?,?)");
-        if (!$stmt) return false;
-        $stmt->bind_param("idd", $tecnico_id, $labor_min, $labor_max);
+
+        $stmt = $this->conn->prepare('INSERT INTO tecnico_stats (tecnico_id, labor_min, labor_max) VALUES (?, ?, ?)');
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param('idd', $tecnicoId, $laborMin, $laborMax);
         return $stmt->execute();
     }
 }
 
-?>

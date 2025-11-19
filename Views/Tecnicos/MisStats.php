@@ -66,5 +66,5 @@
 
 </main>
 
-<script src="/ProyectoPandora/Public/js/tecnicos-mis-stats.js?v=<?= time(); ?>" defer></script>
+<script src="js/tecnicos-mis-stats.js?v=<?= time(); ?>" defer></script>
 

@@ -1,9 +1,11 @@
 // Notificaciones: marcar como leídas y actualizar el badge del header
 (function(){
+  const t = (key, fallback) => (typeof __ === 'function' ? __(key, null, fallback) : (fallback || key));
+
   function updateBellCount(){
     const badge = document.getElementById('notifBadge');
     if (!badge) return;
-    fetch('/ProyectoPandora/Public/index.php?route=Notification/Count', { cache: 'no-store' })
+    fetch('index.php?route=Notification/Count', { cache: 'no-store' })
       .then(r => r.ok ? r.text() : '0')
       .then(txt => {
         const n = parseInt((txt||'0').trim(), 10);
@@ -28,6 +30,7 @@
 
     const li = form.closest('li, .notification-item');
     const formData = new FormData(form);
+    // CSRF: si el FormData no trae _csrf desde el formulario, el wrapper fetch lo agrega
     fetch(form.action || form.getAttribute('action') || window.location.href, {
       method: form.method || 'POST',
       body: formData,
@@ -36,7 +39,7 @@
       if (resp.redirected) {
         window.location.href = resp.url; return;
       }
-      if (!resp.ok) throw new Error('Error HTTP al marcar como leída');
+      if (!resp.ok) throw new Error(t('notifications.read.error', 'Error HTTP al marcar como leída'));
       // Actualización optimista de UI
       if (li) {
         li.classList.remove('unread');
@@ -46,7 +49,7 @@
         if (statusBadge) {
           statusBadge.classList.remove('bg-primary','bg-warning','badge--primary');
           statusBadge.classList.add('bg-secondary','badge--muted');
-          statusBadge.textContent = 'Leída';
+          statusBadge.textContent = t('notifications.read.label', 'Leída');
         }
         // Ocultar/eliminar botón/formulario
         form.remove();

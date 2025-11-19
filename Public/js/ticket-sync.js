@@ -246,7 +246,7 @@
   const poll = async () => {
     try {
       const rev = getLocalRev();
-      const url = `/ProyectoPandora/Public/index.php?route=Ticket/SyncStatus&ticket_id=${ticketId}${rev ? `&rev=${encodeURIComponent(rev)}` : ''}`;
+      const url = `index.php?route=Ticket/SyncStatus&ticket_id=${ticketId}${rev ? `&rev=${encodeURIComponent(rev)}` : ''}`;
       const res = await fetch(url, {
         headers: { 'Accept': 'application/json' },
         cache: 'no-store',

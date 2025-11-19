@@ -1,72 +1,60 @@
 <?php include_once __DIR__ . '/../Includes/Sidebar.php'; ?>
 
-<main class="guia-container">
-    <section class="guia-hero" aria-label="Guía de uso de Innovasys">
+<?php $appName = I18n::t('app.name'); ?>
+
+<main class="guia-container" aria-label="<?= I18n::t('guide.hero.aria', ['app' => $appName]); ?>">
+    <section class="guia-hero" aria-label="<?= I18n::t('guide.hero.aria', ['app' => $appName]); ?>">
         <div class="guia-header">
-            <span class="badge" data-lang="guia_rapida">Guía rápida</span>
-            <button id="toggleLang" class="lang-btn">EN 🇬🇧</button>
+            <span class="badge"><?= I18n::t('guide.hero.badge'); ?></span>
         </div>
-        <h1 data-lang="titulo">Cómo usar Innovasys</h1>
-        <p data-lang="descripcion">
-            Seguí estos pasos para registrar tus dispositivos, crear tickets y hacer seguimiento de tus reparaciones.
-        </p>
+        <h1><?= I18n::t('guide.hero.title', ['app' => $appName]); ?></h1>
+        <p><?= I18n::t('guide.hero.description'); ?></p>
         <div class="guia-cta">
-            <a class="btn-prim" href="/ProyectoPandora/Public/index.php?route=Register/Register" data-lang="registrarme">Registrarme</a>
-            <a class="btn-sec" href="/ProyectoPandora/Public/index.php?route=Auth/Login" data-lang="ya_cuenta">Ya tengo cuenta</a>
+            <a class="btn-prim" href="index.php?route=Register/Register"><?= I18n::t('guide.cta.register'); ?></a>
+            <a class="btn-sec" href="index.php?route=Auth/Login"><?= I18n::t('guide.cta.login'); ?></a>
         </div>
     </section>
 
     <div class="guia-wrap">
-        <div class="guia-grid" role="list" aria-label="Pasos de uso">
+        <div class="guia-grid" role="list" aria-label="<?= I18n::t('guide.hero.steps.aria'); ?>">
             <article class="guia-card" role="listitem">
                 <div class="guia-num">1</div>
                 <div class="guia-body">
-                    <h3 data-lang="registro_titulo">Registro</h3>
-                    <p data-lang="registro_desc">
-                        Creá tu cuenta desde <strong>Registrarse</strong> con tu nombre, email y contraseña.
-                    </p>
+                    <h3><?= I18n::t('guide.step.register.title'); ?></h3>
+                    <p><?= I18n::t('guide.step.register.description'); ?></p>
                 </div>
             </article>
             <article class="guia-card" role="listitem">
                 <div class="guia-num">2</div>
                 <div class="guia-body">
-                    <h3 data-lang="acceso_titulo">Acceso</h3>
-                    <p data-lang="acceso_desc">
-                        Ingresá a tu cuenta desde <strong>Iniciar sesión</strong> para entrar a tu panel.
-                    </p>
+                    <h3><?= I18n::t('guide.step.access.title'); ?></h3>
+                    <p><?= I18n::t('guide.step.access.description'); ?></p>
                 </div>
             </article>
             <article class="guia-card" role="listitem">
                 <div class="guia-num">3</div>
                 <div class="guia-body">
-                    <h3 data-lang="panel_titulo">Panel de usuario</h3>
-                    <p data-lang="panel_desc">
-                        Gestioná tus <em>dispositivos</em> y consultá tus <em>tickets</em> en curso.
-                    </p>
+                    <h3><?= I18n::t('guide.step.panel.title'); ?></h3>
+                    <p><?= I18n::t('guide.step.panel.description'); ?></p>
                 </div>
             </article>
             <article class="guia-card" role="listitem">
                 <div class="guia-num">4</div>
                 <div class="guia-body">
-                    <h3 data-lang="reparacion_titulo">Solicitar reparación</h3>
-                    <p data-lang="reparacion_desc">
-                        Agregá tu dispositivo y <strong>creá un ticket</strong>. Podés ver el estado en todo momento.
-                    </p>
+                    <h3><?= I18n::t('guide.step.repair.title'); ?></h3>
+                    <p><?= I18n::t('guide.step.repair.description'); ?></p>
                 </div>
             </article>
             <article class="guia-card" role="listitem">
                 <div class="guia-num">5</div>
                 <div class="guia-body">
-                    <h3 data-lang="soporte_titulo">Soporte y seguimiento</h3>
-                    <p data-lang="soporte_desc">
-                        Ante dudas, consultá la ayuda o contactá a soporte desde tu panel.
-                    </p>
+                    <h3><?= I18n::t('guide.step.support.title'); ?></h3>
+                    <p><?= I18n::t('guide.step.support.description'); ?></p>
                 </div>
             </article>
         </div>
 
-        <p class="guia-thanks" data-lang="gracias">¡Gracias por confiar en <strong>Innovasys</strong>! 💜</p>
+        <p class="guia-thanks"><?= I18n::t('guide.thanks'); ?></p>
     </div>
 </main>
-<script src="/ProyectoPandora/Public/js/guia.js?v=<?= time(); ?>" defer></script>
 

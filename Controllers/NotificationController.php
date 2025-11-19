@@ -21,7 +21,7 @@ class NotificationController
         include_once __DIR__ . '/../Views/Notifications/List.php';
     }
 
-    // Endpoint ligero para el badge: devuelve el conteo sin recargar todo
+    
     public function Count()
     {
         Auth::check();
@@ -39,14 +39,14 @@ class NotificationController
     {
         Auth::check();
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /ProyectoPandora/Public/index.php?route=Notification/Index'); exit;
+            header('Location: index.php?route=Notification/Index'); exit;
         }
         $user = Auth::user();
         $id = (int)($_POST['id'] ?? 0);
         $db = new Database(); $db->connectDatabase();
         $model = new NotificationModel($db->getConnection());
         if ($id) { $model->markRead((int)$user['id'], $id); }
-        header('Location: /ProyectoPandora/Public/index.php?route=Notification/Index');
+        header('Location: index.php?route=Notification/Index');
         exit;
     }
 
@@ -54,11 +54,11 @@ class NotificationController
     {
         Auth::checkRole(['Administrador','Supervisor']);
         $user = Auth::user();
-        // CSRF simple
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $token = $_POST['csrf'] ?? '';
             if (!isset($_SESSION['csrf']) || !hash_equals((string)$_SESSION['csrf'], (string)$token)) {
-                header('Location: /ProyectoPandora/Public/index.php?route=Notification/Create&error=csrf');
+                header('Location: index.php?route=Notification/Create&error=csrf');
                 exit;
             }
             $title = trim((string)($_POST['title'] ?? ''));
@@ -68,59 +68,59 @@ class NotificationController
             $target = isset($_POST['target_user_id']) && $_POST['target_user_id'] !== '' ? (int)$_POST['target_user_id'] : null;
             $db = new Database(); $db->connectDatabase();
             $model = new NotificationModel($db->getConnection());
-            // Validaciones de permisos según rol del emisor
+            
             $senderRole = (string)($user['role'] ?? '');
             $isAdmin = ($senderRole === 'Administrador');
             $isSupervisor = ($senderRole === 'Supervisor');
             if ($isSupervisor) {
-                // Supervisor NO puede ALL; solo ROLE (Cliente|Tecnico) o USER (usuario con rol Cliente|Tecnico)
+                
                 if ($aud === 'ALL') {
-                    header('Location: /ProyectoPandora/Public/index.php?route=Notification/Create&error=aud');
+                    header('Location: index.php?route=Notification/Create&error=aud');
                     exit;
                 }
                 if ($aud === 'ROLE') {
                     if (!in_array((string)$role, ['Cliente','Tecnico'], true)) {
-                        header('Location: /ProyectoPandora/Public/index.php?route=Notification/Create&error=role');
+                        header('Location: index.php?route=Notification/Create&error=role');
                         exit;
                     }
                 } elseif ($aud === 'USER') {
                     if (!$target || $target <= 0) {
-                        header('Location: /ProyectoPandora/Public/index.php?route=Notification/Create&error=target');
+                        header('Location: index.php?route=Notification/Create&error=target');
                         exit;
                     }
                     $um = new UserModel($db->getConnection());
                     $tu = $um->findById($target);
                     $tRole = $tu['role'] ?? '';
                     if (!in_array($tRole, ['Cliente','Tecnico'], true)) {
-                        header('Location: /ProyectoPandora/Public/index.php?route=Notification/Create&error=target_role');
+                        header('Location: index.php?route=Notification/Create&error=target_role');
                         exit;
                     }
                 }
             }
             if ($title === '' || $body === '') {
-                header('Location: /ProyectoPandora/Public/index.php?route=Notification/Create&error=required');
+                header('Location: index.php?route=Notification/Create&error=required');
                 exit;
             }
             $notifId = $model->create($title, $body, $aud, $role, $target, (int)$user['id']);
-            // Log en historial
+            
             try {
                 $hist = new HistorialController();
                 $audTxt = 'Todos';
                 if ($aud === 'ROLE') { $audTxt = 'Rol: '.($role ?? ''); }
                 if ($aud === 'USER') { $audTxt = 'Usuario ID: '.(int)$target; }
                 $hist->agregarAccion('Notificación creada', ($user['name'] ?? 'Usuario').' creó una notificación ('.$audTxt.") titulada '".$title."'.");
-            } catch (\Throwable $e) { /* noop */ }
-            header('Location: /ProyectoPandora/Public/index.php?route=Notification/Index');
+            } catch (\Throwable $e) {  }
+            header('Location: index.php?route=Notification/Index');
             exit;
         }
-        // Armar contexto para la vista (restricciones de opciones)
+        
         $_SESSION['csrf'] = bin2hex(random_bytes(16));
         $senderRole = (string)($user['role'] ?? '');
         $canBroadcastAll = ($senderRole === 'Administrador');
         $allowedAudienceRoles = $canBroadcastAll
             ? ['Cliente','Tecnico','Supervisor','Administrador']
             : ['Cliente','Tecnico'];
-        // Construir lista de usuarios seleccionables para 'USER'
+        
         $db2 = new Database(); $db2->connectDatabase();
         $um = new UserModel($db2->getConnection());
         $allUsers = $um->getAllUsers();
@@ -129,7 +129,7 @@ class NotificationController
             if ($senderRole === 'Supervisor') {
                 return in_array($role, ['Cliente','Tecnico'], true);
             }
-            return true; // Admin ve todos
+            return true; 
         }));
         include_once __DIR__ . '/../Views/Notifications/Create.php';
     }

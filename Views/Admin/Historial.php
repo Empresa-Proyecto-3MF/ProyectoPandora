@@ -2,7 +2,7 @@
 <main>
     <?php include_once __DIR__ . '/../Includes/Header.php'; ?>
 
-    <form method="get" action="/ProyectoPandora/Public/index.php" class="filtros" style="display:flex;gap:10px;flex-wrap:nowrap;margin:10px 0;align-items:center;overflow-x:auto;">
+    <form method="get" action="index.php" class="filtros" style="display:flex;gap:10px;flex-wrap:nowrap;margin:10px 0;align-items:center;overflow-x:auto;">
             <input type="hidden" name="route" value="Historial/ListarHistorial" />
         <input name="q" value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" class="asignar-input asignar-input--small" type="text" placeholder="Buscar texto..." style="min-width:220px;" />
             <input name="desde" value="<?= htmlspecialchars($_GET['desde'] ?? '') ?>" class="asignar-input asignar-input--small" type="date" />
@@ -22,7 +22,7 @@
                 <?php endforeach; ?>
             </select>
             <button class="btn btn-primary" type="submit">Filtrar</button>
-            <a href="/ProyectoPandora/Public/index.php?route=Historial/ListarHistorial" class="btn btn-outline">Limpiar</a>
+            <a href="index.php?route=Historial/ListarHistorial" class="btn btn-outline">Limpiar</a>
         </form>
 
         <table id="tablaHistorial">
@@ -65,7 +65,7 @@
                 'perPage' => $perPage,
                 'page' => $p,
             ]);
-            return '/ProyectoPandora/Public/index.php?'.$qs;
+            return 'index.php?'.$qs;
           };
         ?>
         <div class="paginacion" style="display:flex; gap:8px; align-items:center; justify-content:center; margin:12px 0;">

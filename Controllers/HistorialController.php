@@ -32,7 +32,7 @@ class HistorialController
         $perPage = max(1, min(100, (int)($_GET['perPage'] ?? 20)));
 
         $result = $this->historialModel->buscarHistorial($q, $tipo, $desde, $hasta, $page, $perPage);
-        // Preformatear fechas para minimizar PHP en la vista
+        
         $historial = array_map(function($row){
             $iso = $row['fecha'] ?? null;
             $row['fecha_exact'] = DateHelper::exact($iso);

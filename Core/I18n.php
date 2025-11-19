@@ -52,4 +52,22 @@ class I18n {
         }
         return $val;
     }
+
+    public static function messages(?array $onlyKeys = null): array {
+        if (empty(self::$messages)) {
+            self::boot();
+        }
+
+        if ($onlyKeys === null || $onlyKeys === []) {
+            return self::$messages;
+        }
+
+        $result = [];
+        foreach ($onlyKeys as $key) {
+            if (isset(self::$messages[$key])) {
+                $result[$key] = self::$messages[$key];
+            }
+        }
+        return $result;
+    }
 }
